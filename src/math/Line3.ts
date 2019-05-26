@@ -1,44 +1,49 @@
-import { Vector3 } from './Vector3.js';
-import { _Math } from './Math.js';
+import { Vector3 } from './Vector3';
+import { _Math } from './Math';
+import { Matrix4 } from './Matrix4';
 
 /**
  * @author bhouston / http://clara.io
  */
 
-function Line3( start, end ) {
+export class Line3 {
 
-	this.start = ( start !== undefined ) ? start : new Vector3();
-	this.end = ( end !== undefined ) ? end : new Vector3();
+	constructor( start?: Vector3, end?: Vector3 ) {
 
-}
+		this.start = start !== undefined ? start : new Vector3();
+		this.end = end !== undefined ? end : new Vector3();
 
-Object.assign( Line3.prototype, {
+	}
 
-	set: function ( start, end ) {
+	start: Vector3;
+
+	end: Vector3;
+
+	set( start: Vector3, end: Vector3 ) {
 
 		this.start.copy( start );
 		this.end.copy( end );
 
 		return this;
 
-	},
+	}
 
-	clone: function () {
+	clone() {
 
-		return new this.constructor().copy( this );
+		return new Line3().copy( this );
 
-	},
+	}
 
-	copy: function ( line ) {
+	copy( line: Line3 ) {
 
 		this.start.copy( line.start );
 		this.end.copy( line.end );
 
 		return this;
 
-	},
+	}
 
-	getCenter: function ( target ) {
+	getCenter( target?: Vector3 ) {
 
 		if ( target === undefined ) {
 
@@ -49,9 +54,9 @@ Object.assign( Line3.prototype, {
 
 		return target.addVectors( this.start, this.end ).multiplyScalar( 0.5 );
 
-	},
+	}
 
-	delta: function ( target ) {
+	delta( target: Vector3 ) {
 
 		if ( target === undefined ) {
 
@@ -62,21 +67,21 @@ Object.assign( Line3.prototype, {
 
 		return target.subVectors( this.end, this.start );
 
-	},
+	}
 
-	distanceSq: function () {
+	distanceSq() {
 
 		return this.start.distanceToSquared( this.end );
 
-	},
+	}
 
-	distance: function () {
+	distance() {
 
 		return this.start.distanceTo( this.end );
 
-	},
+	}
 
-	at: function ( t, target ) {
+	at( t: number, target: Vector3 ) {
 
 		if ( target === undefined ) {
 
@@ -85,16 +90,21 @@ Object.assign( Line3.prototype, {
 
 		}
 
-		return this.delta( target ).multiplyScalar( t ).add( this.start );
+		return this.delta( target )
+			.multiplyScalar( t )
+			.add( this.start );
 
-	},
+	}
 
-	closestPointToPointParameter: function () {
+	closestPointToPointParameter = ( () => {
 
 		var startP = new Vector3();
 		var startEnd = new Vector3();
 
-		return function closestPointToPointParameter( point, clampToLine ) {
+		const closestPointToPointParameter = (
+			point: Vector3,
+			clampToLine?: boolean
+		) => {
 
 			startP.subVectors( point, this.start );
 			startEnd.subVectors( this.end, this.start );
@@ -114,39 +124,42 @@ Object.assign( Line3.prototype, {
 
 		};
 
-	}(),
+		return closestPointToPointParameter;
 
-	closestPointToPoint: function ( point, clampToLine, target ) {
+	} )();
+
+	closestPointToPoint( point: Vector3, clampToLine: boolean, target: Vector3 ) {
 
 		var t = this.closestPointToPointParameter( point, clampToLine );
 
 		if ( target === undefined ) {
 
-			console.warn( 'THREE.Line3: .closestPointToPoint() target is now required' );
+			console.warn(
+				'THREE.Line3: .closestPointToPoint() target is now required'
+			);
 			target = new Vector3();
 
 		}
 
-		return this.delta( target ).multiplyScalar( t ).add( this.start );
+		return this.delta( target )
+			.multiplyScalar( t )
+			.add( this.start );
 
-	},
+	}
 
-	applyMatrix4: function ( matrix ) {
+	applyMatrix4( matrix: Matrix4 ) {
 
 		this.start.applyMatrix4( matrix );
 		this.end.applyMatrix4( matrix );
 
 		return this;
 
-	},
+	}
 
-	equals: function ( line ) {
+	equals( line: Line3 ) {
 
 		return line.start.equals( this.start ) && line.end.equals( this.end );
 
 	}
 
-} );
-
-
-export { Line3 };
+}

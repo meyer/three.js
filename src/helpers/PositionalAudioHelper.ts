@@ -2,11 +2,11 @@
  * @author Mugen87 / http://github.com/Mugen87
  */
 
-import { BufferGeometry } from '../core/BufferGeometry.js';
-import { BufferAttribute } from '../core/BufferAttribute.js';
-import { LineBasicMaterial } from '../materials/LineBasicMaterial.js';
-import { Line } from '../objects/Line.js';
-import { _Math } from '../math/Math.js';
+import { BufferGeometry } from '../core/BufferGeometry';
+import { BufferAttribute } from '../core/BufferAttribute';
+import { LineBasicMaterial } from '../materials/LineBasicMaterial';
+import { Line } from '../objects/Line';
+import { _Math } from '../math/Math';
 
 function PositionalAudioHelper( audio, range, divisionsInnerAngle, divisionsOuterAngle ) {
 

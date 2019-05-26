@@ -1,4 +1,6 @@
-import { Vector3 } from './Vector3.js';
+import { Vector3 } from './Vector3';
+
+type NineElementArray<T> = [T, T, T, T, T, T, T, T, T];
 
 /**
  * @author bhouston / http://clara.io
@@ -13,23 +15,25 @@ import { Vector3 } from './Vector3.js';
 
 // 3-band SH defined by 9 coefficients
 
-function SphericalHarmonics3() {
+class SphericalHarmonics3 {
 
-	this.coefficients = [];
+	constructor() {
 
-	for ( var i = 0; i < 9; i ++ ) {
+		this.coefficients = [] as any;
 
-		this.coefficients.push( new Vector3() );
+		for ( var i = 0; i < 9; i ++ ) {
+
+			this.coefficients.push( new Vector3() );
+
+		}
 
 	}
 
-}
+	coefficients: NineElementArray<Vector3>;
 
-Object.assign( SphericalHarmonics3.prototype, {
+	isSphericalHarmonics3 = true;
 
-	isSphericalHarmonics3: true,
-
-	set: function ( coefficients ) {
+	set( coefficients: Vector3[] ) {
 
 		for ( var i = 0; i < 9; i ++ ) {
 
@@ -39,9 +43,9 @@ Object.assign( SphericalHarmonics3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	zero: function () {
+	zero() {
 
 		for ( var i = 0; i < 9; i ++ ) {
 
@@ -51,15 +55,17 @@ Object.assign( SphericalHarmonics3.prototype, {
 
 		return this;
 
-	},
+	}
 
 	// get the radiance in the direction of the normal
 	// target is a Vector3
-	getAt: function ( normal, target ) {
+	getAt( normal: Vector3, target: Vector3 ) {
 
 		// normal is assumed to be unit length
 
-		var x = normal.x, y = normal.y, z = normal.z;
+		var x = normal.x,
+			y = normal.y,
+			z = normal.z;
 
 		var coeff = this.coefficients;
 
@@ -80,16 +86,18 @@ Object.assign( SphericalHarmonics3.prototype, {
 
 		return target;
 
-	},
+	}
 
 	// get the irradiance (radiance convolved with cosine lobe) in the direction of the normal
 	// target is a Vector3
 	// https://graphics.stanford.edu/papers/envmap/envmap.pdf
-	getIrradianceAt: function ( normal, target ) {
+	getIrradianceAt( normal: Vector3, target: Vector3 ) {
 
 		// normal is assumed to be unit length
 
-		var x = normal.x, y = normal.y, z = normal.z;
+		var x = normal.x,
+			y = normal.y,
+			z = normal.z;
 
 		var coeff = this.coefficients;
 
@@ -110,9 +118,9 @@ Object.assign( SphericalHarmonics3.prototype, {
 
 		return target;
 
-	},
+	}
 
-	add: function ( sh ) {
+	add( sh: SphericalHarmonics3 ) {
 
 		for ( var i = 0; i < 9; i ++ ) {
 
@@ -122,10 +130,9 @@ Object.assign( SphericalHarmonics3.prototype, {
 
 		return this;
 
-	},
+	}
 
-
-	scale: function ( s ) {
+	scale( s: number ) {
 
 		for ( var i = 0; i < 9; i ++ ) {
 
@@ -135,9 +142,9 @@ Object.assign( SphericalHarmonics3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	lerp: function ( sh, alpha ) {
+	lerp( sh: SphericalHarmonics3, alpha: number ) {
 
 		for ( var i = 0; i < 9; i ++ ) {
 
@@ -147,9 +154,9 @@ Object.assign( SphericalHarmonics3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	equals: function ( sh ) {
+	equals( sh: SphericalHarmonics3 ) {
 
 		for ( var i = 0; i < 9; i ++ ) {
 
@@ -163,21 +170,21 @@ Object.assign( SphericalHarmonics3.prototype, {
 
 		return true;
 
-	},
+	}
 
-	copy: function ( sh ) {
+	copy( sh: SphericalHarmonics3 ) {
 
 		return this.set( sh.coefficients );
 
-	},
+	}
 
-	clone: function () {
+	clone() {
 
-		return new this.constructor().copy( this );
+		return new SphericalHarmonics3().copy( this );
 
-	},
+	}
 
-	fromArray: function ( array ) {
+	fromArray( array: number[] ) {
 
 		var coefficients = this.coefficients;
 
@@ -189,11 +196,11 @@ Object.assign( SphericalHarmonics3.prototype, {
 
 		return this;
 
-	},
+	}
 
-	toArray: function () {
+	toArray() {
 
-		var array = [];
+		var array: number[] = [];
 		var coefficients = this.coefficients;
 
 		for ( var i = 0; i < 9; i ++ ) {
@@ -206,17 +213,15 @@ Object.assign( SphericalHarmonics3.prototype, {
 
 	}
 
-} );
-
-Object.assign( SphericalHarmonics3, {
-
 	// evaluate the basis functions
 	// shBasis is an Array[ 9 ]
-	getBasisAt: function ( normal, shBasis ) {
+	static getBasisAt( normal: Vector3, shBasis: NineElementArray<number> ) {
 
 		// normal is assumed to be unit length
 
-		var x = normal.x, y = normal.y, z = normal.z;
+		var x = normal.x,
+			y = normal.y,
+			z = normal.z;
 
 		// band 0
 		shBasis[ 0 ] = 0.282095;
@@ -235,6 +240,4 @@ Object.assign( SphericalHarmonics3, {
 
 	}
 
-} );
-
-export { SphericalHarmonics3 };
+}

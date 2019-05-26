@@ -2,15 +2,14 @@
  * @author mrdoob / http://mrdoob.com/
  */
 
-var context;
+var context: AudioContext;
 
-var AudioContext = {
-
-	getContext: function () {
+const AudioContextObj = {
+	getContext(): AudioContext {
 
 		if ( context === undefined ) {
 
-			context = new ( window.AudioContext || window.webkitAudioContext )();
+			context = new ( AudioContext || ( window as any ).webkitAudioContext )();
 
 		}
 
@@ -18,12 +17,11 @@ var AudioContext = {
 
 	},
 
-	setContext: function ( value ) {
+	setContext: function ( value: AudioContext ): void {
 
 		context = value;
 
-	}
-
+	},
 };
 
-export { AudioContext };
+export { AudioContextObj as AudioContext };

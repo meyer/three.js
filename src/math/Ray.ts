@@ -1,43 +1,51 @@
-import { Vector3 } from './Vector3.js';
+import { Vector3 } from './Vector3';
+import { Sphere } from './Sphere';
+import { Plane } from './Plane';
+import { Box3 } from './Box3';
+import { Matrix4 } from './Matrix4';
 
 /**
  * @author bhouston / http://clara.io
  */
 
-function Ray( origin, direction ) {
+export class Ray {
 
-	this.origin = ( origin !== undefined ) ? origin : new Vector3();
-	this.direction = ( direction !== undefined ) ? direction : new Vector3();
+	constructor( origin?: Vector3, direction?: Vector3 ) {
 
-}
+		this.origin = origin !== undefined ? origin : new Vector3();
+		this.direction = direction !== undefined ? direction : new Vector3();
 
-Object.assign( Ray.prototype, {
+	}
 
-	set: function ( origin, direction ) {
+	origin: Vector3;
+
+	direction: Vector3;
+
+	set( origin: Vector3, direction: Vector3 ) {
 
 		this.origin.copy( origin );
 		this.direction.copy( direction );
 
 		return this;
 
-	},
+	}
 
-	clone: function () {
+	clone() {
 
-		return new this.constructor().copy( this );
+		return new Ray().copy( this );
 
-	},
+	}
 
-	copy: function ( ray ) {
+	copy( ray: Ray ) {
 
 		this.origin.copy( ray.origin );
 		this.direction.copy( ray.direction );
 
 		return this;
 
-	},
+	}
 
-	at: function ( t, target ) {
+	at( t: number, target: Vector3 ) {
 
 		if ( target === undefined ) {
 
@@ -46,23 +54,29 @@ Object.assign( Ray.prototype, {
 
 		}
 
-		return target.copy( this.direction ).multiplyScalar( t ).add( this.origin );
+		return target
+			.copy( this.direction )
+			.multiplyScalar( t )
+			.add( this.origin );
 
-	},
+	}
 
-	lookAt: function ( v ) {
+	lookAt( v: Vector3 ) {
 
-		this.direction.copy( v ).sub( this.origin ).normalize();
+		this.direction
+			.copy( v )
+			.sub( this.origin )
+			.normalize();
 
 		return this;
 
-	},
+	}
 
-	recast: function () {
+	recast = ( () => {
 
 		var v1 = new Vector3();
 
-		return function recast( t ) {
+		const recast = ( t: number ) => {
 
 			this.origin.copy( this.at( t, v1 ) );
 
@@ -70,9 +84,11 @@ Object.assign( Ray.prototype, {
 
 		};
 
-	}(),
+		return recast;
 
-	closestPointToPoint: function ( point, target ) {
+	} )();
+
+	closestPointToPoint( point: Vector3, target: Vector3 ) {
 
 		if ( target === undefined ) {
 
@@ -91,23 +107,28 @@ Object.assign( Ray.prototype, {
 
 		}
 
-		return target.copy( this.direction ).multiplyScalar( directionDistance ).add( this.origin );
+		return target
+			.copy( this.direction )
+			.multiplyScalar( directionDistance )
+			.add( this.origin );
 
-	},
+	}
 
-	distanceToPoint: function ( point ) {
+	distanceToPoint( point: Vector3 ) {
 
 		return Math.sqrt( this.distanceSqToPoint( point ) );
 
-	},
+	}
 
-	distanceSqToPoint: function () {
+	distanceSqToPoint = ( () => {
 
 		var v1 = new Vector3();
 
-		return function distanceSqToPoint( point ) {
+		const distanceSqToPoint = ( point: Vector3 ) => {
 
-			var directionDistance = v1.subVectors( point, this.origin ).dot( this.direction );
+			var directionDistance = v1
+				.subVectors( point, this.origin )
+				.dot( this.direction );
 
 			// point behind the ray
 
@@ -117,21 +138,30 @@ Object.assign( Ray.prototype, {
 
 			}
 
-			v1.copy( this.direction ).multiplyScalar( directionDistance ).add( this.origin );
+			v1.copy( this.direction )
+				.multiplyScalar( directionDistance )
+				.add( this.origin );
 
 			return v1.distanceToSquared( point );
 
 		};
 
-	}(),
+		return distanceSqToPoint;
 
-	distanceSqToSegment: function () {
+	} )();
+
+	distanceSqToSegment = ( () => {
 
 		var segCenter = new Vector3();
 		var segDir = new Vector3();
 		var diff = new Vector3();
 
-		return function distanceSqToSegment( v0, v1, optionalPointOnRay, optionalPointOnSegment ) {
+		const distanceSqToSegment = (
+			v0: Vector3,
+			v1: Vector3,
+			optionalPointOnRay?: Vector3,
+			optionalPointOnSegment?: Vector3
+		) => {
 
 			// from http://www.geometrictools.com/GTEngine/Include/Mathematics/GteDistRaySegment.h
 			// It returns the min distance between the ray and the segment
@@ -140,8 +170,14 @@ Object.assign( Ray.prototype, {
 			// - The closest point on the ray
 			// - The closest point on the segment
 
-			segCenter.copy( v0 ).add( v1 ).multiplyScalar( 0.5 );
-			segDir.copy( v1 ).sub( v0 ).normalize();
+			segCenter
+				.copy( v0 )
+				.add( v1 )
+				.multiplyScalar( 0.5 );
+			segDir
+				.copy( v1 )
+				.sub( v0 )
+				.normalize();
 			diff.copy( this.origin ).sub( segCenter );
 
 			var segExtent = v0.distanceTo( v1 ) * 0.5;
@@ -172,7 +208,10 @@ Object.assign( Ray.prototype, {
 							var invDet = 1 / det;
 							s0 *= invDet;
 							s1 *= invDet;
-							sqrDist = s0 * ( s0 + a01 * s1 + 2 * b0 ) + s1 * ( a01 * s0 + s1 + 2 * b1 ) + c;
+							sqrDist =
+								s0 * ( s0 + a01 * s1 + 2 * b0 ) +
+								s1 * ( a01 * s0 + s1 + 2 * b1 ) +
+								c;
 
 						} else {
 
@@ -201,7 +240,10 @@ Object.assign( Ray.prototype, {
 						// region 4
 
 						s0 = Math.max( 0, - ( - a01 * segExtent + b0 ) );
-						s1 = ( s0 > 0 ) ? - segExtent : Math.min( Math.max( - segExtent, - b1 ), segExtent );
+						s1 =
+							s0 > 0
+								? - segExtent
+								: Math.min( Math.max( - segExtent, - b1 ), segExtent );
 						sqrDist = - s0 * s0 + s1 * ( s1 + 2 * b1 ) + c;
 
 					} else if ( s1 <= extDet ) {
@@ -217,7 +259,10 @@ Object.assign( Ray.prototype, {
 						// region 2
 
 						s0 = Math.max( 0, - ( a01 * segExtent + b0 ) );
-						s1 = ( s0 > 0 ) ? segExtent : Math.min( Math.max( - segExtent, - b1 ), segExtent );
+						s1 =
+							s0 > 0
+								? segExtent
+								: Math.min( Math.max( - segExtent, - b1 ), segExtent );
 						sqrDist = - s0 * s0 + s1 * ( s1 + 2 * b1 ) + c;
 
 					}
@@ -228,7 +273,7 @@ Object.assign( Ray.prototype, {
 
 				// Ray and segment are parallel.
 
-				s1 = ( a01 > 0 ) ? - segExtent : segExtent;
+				s1 = a01 > 0 ? - segExtent : segExtent;
 				s0 = Math.max( 0, - ( a01 * s1 + b0 ) );
 				sqrDist = - s0 * s0 + s1 * ( s1 + 2 * b1 ) + c;
 
@@ -236,13 +281,19 @@ Object.assign( Ray.prototype, {
 
 			if ( optionalPointOnRay ) {
 
-				optionalPointOnRay.copy( this.direction ).multiplyScalar( s0 ).add( this.origin );
+				optionalPointOnRay
+					.copy( this.direction )
+					.multiplyScalar( s0 )
+					.add( this.origin );
 
 			}
 
 			if ( optionalPointOnSegment ) {
 
-				optionalPointOnSegment.copy( segDir ).multiplyScalar( s1 ).add( segCenter );
+				optionalPointOnSegment
+					.copy( segDir )
+					.multiplyScalar( s1 )
+					.add( segCenter );
 
 			}
 
@@ -250,13 +301,15 @@ Object.assign( Ray.prototype, {
 
 		};
 
-	}(),
+		return distanceSqToSegment;
 
-	intersectSphere: function () {
+	} )();
+
+	intersectSphere = ( () => {
 
 		var v1 = new Vector3();
 
-		return function intersectSphere( sphere, target ) {
+		const intersectSphere = ( sphere: Sphere, target: Vector3 ) => {
 
 			v1.subVectors( sphere.center, this.origin );
 			var tca = v1.dot( this.direction );
@@ -286,15 +339,19 @@ Object.assign( Ray.prototype, {
 
 		};
 
-	}(),
+		return intersectSphere;
 
-	intersectsSphere: function ( sphere ) {
+	} )();
 
-		return this.distanceSqToPoint( sphere.center ) <= ( sphere.radius * sphere.radius );
+	intersectsSphere( sphere: Sphere ) {
 
-	},
+		return (
+			this.distanceSqToPoint( sphere.center ) <= sphere.radius * sphere.radius
+		);
 
-	distanceToPlane: function ( plane ) {
+	}
+
+	distanceToPlane( plane: Plane ) {
 
 		var denominator = plane.normal.dot( this.direction );
 
@@ -319,9 +376,9 @@ Object.assign( Ray.prototype, {
 
 		return t >= 0 ? t : null;
 
-	},
+	}
 
-	intersectPlane: function ( plane, target ) {
+	intersectPlane( plane: Plane, target: Vector3 ) {
 
 		var t = this.distanceToPlane( plane );
 
@@ -333,9 +390,9 @@ Object.assign( Ray.prototype, {
 
 		return this.at( t, target );
 
-	},
+	}
 
-	intersectsPlane: function ( plane ) {
+	intersectsPlane( plane: Plane ) {
 
 		// check if the ray lies on the plane first
 
@@ -359,9 +416,9 @@ Object.assign( Ray.prototype, {
 
 		return false;
 
-	},
+	}
 
-	intersectBox: function ( box, target ) {
+	intersectBox( box: Box3, target: Vector3 ) {
 
 		var tmin, tmax, tymin, tymax, tzmin, tzmax;
 
@@ -395,7 +452,7 @@ Object.assign( Ray.prototype, {
 
 		}
 
-		if ( ( tmin > tymax ) || ( tymin > tmax ) ) return null;
+		if ( tmin > tymax || tymin > tmax ) return null;
 
 		// These lines also handle the case where tmin or tmax is NaN
 		// (result of 0 * Infinity). x !== x returns true if x is NaN
@@ -416,7 +473,7 @@ Object.assign( Ray.prototype, {
 
 		}
 
-		if ( ( tmin > tzmax ) || ( tzmin > tmax ) ) return null;
+		if ( tmin > tzmax || tzmin > tmax ) return null;
 
 		if ( tzmin > tmin || tmin !== tmin ) tmin = tzmin;
 
@@ -428,21 +485,23 @@ Object.assign( Ray.prototype, {
 
 		return this.at( tmin >= 0 ? tmin : tmax, target );
 
-	},
+	}
 
-	intersectsBox: ( function () {
+	intersectsBox = ( () => {
 
 		var v = new Vector3();
 
-		return function intersectsBox( box ) {
+		const intersectsBox = ( box: Box3 ) => {
 
 			return this.intersectBox( box, v ) !== null;
 
 		};
 
-	} )(),
+		return intersectsBox;
 
-	intersectTriangle: function () {
+	} )();
+
+	intersectTriangle = ( () => {
 
 		// Compute the offset origin, edges, and normal.
 		var diff = new Vector3();
@@ -450,7 +509,13 @@ Object.assign( Ray.prototype, {
 		var edge2 = new Vector3();
 		var normal = new Vector3();
 
-		return function intersectTriangle( a, b, c, backfaceCulling, target ) {
+		const intersectTriangle = (
+			a: Vector3,
+			b: Vector3,
+			c: Vector3,
+			backfaceCulling: boolean,
+			target: Vector3
+		) => {
 
 			// from http://www.geometrictools.com/GTEngine/Include/Mathematics/GteIntrRay3Triangle3.h
 
@@ -523,24 +588,25 @@ Object.assign( Ray.prototype, {
 
 		};
 
-	}(),
+		return intersectTriangle;
 
-	applyMatrix4: function ( matrix4 ) {
+	} )();
+
+	applyMatrix4( matrix4: Matrix4 ) {
 
 		this.origin.applyMatrix4( matrix4 );
 		this.direction.transformDirection( matrix4 );
 
 		return this;
 
-	},
+	}
 
-	equals: function ( ray ) {
+	equals( ray: Ray ) {
 
-		return ray.origin.equals( this.origin ) && ray.direction.equals( this.direction );
+		return (
+			ray.origin.equals( this.origin ) && ray.direction.equals( this.direction )
+		);
 
 	}
 
-} );
-
-
-export { Ray };
+}

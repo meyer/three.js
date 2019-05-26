@@ -1,4 +1,4 @@
-import { Ray } from '../math/Ray.js';
+import { Ray } from '../math/Ray';
 
 /**
  * @author mrdoob / http://mrdoob.com/

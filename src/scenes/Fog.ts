@@ -3,7 +3,7 @@
  * @author alteredq / http://alteredqualia.com/
  */
 
-import { Color } from '../math/Color.js';
+import { Color } from '../math/Color';
 
 function Fog( color, near, far ) {
 

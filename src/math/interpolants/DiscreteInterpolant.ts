@@ -1,4 +1,4 @@
-import { Interpolant } from '../Interpolant.js';
+import { Interpolant } from '../Interpolant';
 
 /**
  *
@@ -8,23 +8,23 @@ import { Interpolant } from '../Interpolant.js';
  * @author tschw
  */
 
-function DiscreteInterpolant( parameterPositions, sampleValues, sampleSize, resultBuffer ) {
+export class DiscreteInterpolant extends Interpolant {
 
-	Interpolant.call( this, parameterPositions, sampleValues, sampleSize, resultBuffer );
+	constructor(
+		parameterPositions: any,
+		sampleValues: any,
+		sampleSize: number,
+		resultBuffer: any
+	) {
 
-}
+		super( parameterPositions, sampleValues, sampleSize, resultBuffer );
 
-DiscreteInterpolant.prototype = Object.assign( Object.create( Interpolant.prototype ), {
+	}
 
-	constructor: DiscreteInterpolant,
-
-	interpolate_: function ( i1 /*, t0, t, t1 */ ) {
+	interpolate_( i1: number ) {
 
 		return this.copySampleValue_( i1 - 1 );
 
 	}
 
-} );
-
-
-export { DiscreteInterpolant };
+}

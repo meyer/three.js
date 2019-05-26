@@ -1,32 +1,38 @@
-import { Matrix4 } from '../math/Matrix4.js';
-import { _Math } from '../math/Math.js';
-import { PerspectiveCamera } from './PerspectiveCamera.js';
+import { Matrix4 } from '../math/Matrix4';
+import { _Math } from '../math/Math';
+import { PerspectiveCamera } from './PerspectiveCamera';
 
 /**
  * @author mrdoob / http://mrdoob.com/
  */
 
-function StereoCamera() {
+export class StereoCamera {
 
-	this.type = 'StereoCamera';
+	constructor() {
 
-	this.aspect = 1;
+		this.type = 'StereoCamera';
 
-	this.eyeSep = 0.064;
+		this.aspect = 1;
 
-	this.cameraL = new PerspectiveCamera();
-	this.cameraL.layers.enable( 1 );
-	this.cameraL.matrixAutoUpdate = false;
+		this.eyeSep = 0.064;
 
-	this.cameraR = new PerspectiveCamera();
-	this.cameraR.layers.enable( 2 );
-	this.cameraR.matrixAutoUpdate = false;
+		this.cameraL = new PerspectiveCamera();
+		this.cameraL.layers.enable( 1 );
+		this.cameraL.matrixAutoUpdate = false;
 
-}
+		this.cameraR = new PerspectiveCamera();
+		this.cameraR.layers.enable( 2 );
+		this.cameraR.matrixAutoUpdate = false;
 
-Object.assign( StereoCamera.prototype, {
+	}
 
-	update: ( function () {
+	type = 'StereoCamera' as const;
+	aspect: number;
+	eyeSep: number;
+	cameraL: PerspectiveCamera;
+	cameraR: PerspectiveCamera;
+
+	update = ( function () {
 
 		var instance, focus, fov, aspect, near, far, zoom, eyeSep;
 
@@ -35,9 +41,15 @@ Object.assign( StereoCamera.prototype, {
 
 		return function update( camera ) {
 
-			var needsUpdate = instance !== this || focus !== camera.focus || fov !== camera.fov ||
-												aspect !== camera.aspect * this.aspect || near !== camera.near ||
-												far !== camera.far || zoom !== camera.zoom || eyeSep !== this.eyeSep;
+			var needsUpdate =
+				instance !== this ||
+				focus !== camera.focus ||
+				fov !== camera.fov ||
+				aspect !== camera.aspect * this.aspect ||
+				near !== camera.near ||
+				far !== camera.far ||
+				zoom !== camera.zoom ||
+				eyeSep !== this.eyeSep;
 
 			if ( needsUpdate ) {
 
@@ -54,7 +66,7 @@ Object.assign( StereoCamera.prototype, {
 
 				var projectionMatrix = camera.projectionMatrix.clone();
 				eyeSep = this.eyeSep / 2;
-				var eyeSepOnProjection = eyeSep * near / focus;
+				var eyeSepOnProjection = ( eyeSep * near ) / focus;
 				var ymax = ( near * Math.tan( _Math.DEG2RAD * fov * 0.5 ) ) / zoom;
 				var xmin, xmax;
 
@@ -68,7 +80,7 @@ Object.assign( StereoCamera.prototype, {
 				xmin = - ymax * aspect + eyeSepOnProjection;
 				xmax = ymax * aspect + eyeSepOnProjection;
 
-				projectionMatrix.elements[ 0 ] = 2 * near / ( xmax - xmin );
+				projectionMatrix.elements[ 0 ] = ( 2 * near ) / ( xmax - xmin );
 				projectionMatrix.elements[ 8 ] = ( xmax + xmin ) / ( xmax - xmin );
 
 				this.cameraL.projectionMatrix.copy( projectionMatrix );
@@ -78,7 +90,7 @@ Object.assign( StereoCamera.prototype, {
 				xmin = - ymax * aspect - eyeSepOnProjection;
 				xmax = ymax * aspect - eyeSepOnProjection;
 
-				projectionMatrix.elements[ 0 ] = 2 * near / ( xmax - xmin );
+				projectionMatrix.elements[ 0 ] = ( 2 * near ) / ( xmax - xmin );
 				projectionMatrix.elements[ 8 ] = ( xmax + xmin ) / ( xmax - xmin );
 
 				this.cameraR.projectionMatrix.copy( projectionMatrix );
@@ -90,9 +102,6 @@ Object.assign( StereoCamera.prototype, {
 
 		};
 
-	} )()
+	} )();
 
-} );
-
-
-export { StereoCamera };
+}

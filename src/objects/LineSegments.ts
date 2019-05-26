@@ -1,6 +1,6 @@
-import { Line } from './Line.js';
-import { Vector3 } from '../math/Vector3.js';
-import { Float32BufferAttribute } from '../core/BufferAttribute.js';
+import { Line } from './Line';
+import { Vector3 } from '../math/Vector3';
+import { Float32BufferAttribute } from '../core/BufferAttribute';
 
 /**
  * @author mrdoob / http://mrdoob.com/

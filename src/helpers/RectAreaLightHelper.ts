@@ -6,13 +6,13 @@
  *  This helper must be added as a child of the light
  */
 
-import { Line } from '../objects/Line.js';
-import { Mesh } from '../objects/Mesh.js';
-import { LineBasicMaterial } from '../materials/LineBasicMaterial.js';
-import { MeshBasicMaterial } from '../materials/MeshBasicMaterial.js';
-import { Float32BufferAttribute } from '../core/BufferAttribute.js';
-import { BufferGeometry } from '../core/BufferGeometry.js';
-import { BackSide } from '../constants.js';
+import { Line } from '../objects/Line';
+import { Mesh } from '../objects/Mesh';
+import { LineBasicMaterial } from '../materials/LineBasicMaterial';
+import { MeshBasicMaterial } from '../materials/MeshBasicMaterial';
+import { Float32BufferAttribute } from '../core/BufferAttribute';
+import { BufferGeometry } from '../core/BufferGeometry';
+import { BackSide } from '../constants';
 
 function RectAreaLightHelper( light, color ) {
 

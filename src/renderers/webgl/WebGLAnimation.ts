@@ -1,56 +1,53 @@
+export type AnimationCallback = ( ...args: any[] ) => void;
+
 /**
  * @author mrdoob / http://mrdoob.com/
  */
 
-function WebGLAnimation() {
+export class WebGLAnimation {
 
-	var context = null;
-	var isAnimating = false;
-	var animationLoop = null;
+	private context: any | null = null;
+	private isAnimating = false;
+	private animationLoop: AnimationCallback | null = null;
 
-	function onAnimationFrame( time, frame ) {
+	private onAnimationFrame( time: number, frame: any ) {
 
-		if ( isAnimating === false ) return;
+		if ( this.isAnimating === false ) return;
+		if ( this.animationLoop === null ) return;
 
-		animationLoop( time, frame );
+		this.animationLoop( time, frame );
 
-		context.requestAnimationFrame( onAnimationFrame );
+		this.context.requestAnimationFrame( this.onAnimationFrame );
 
 	}
 
-	return {
+	public start() {
 
-		start: function () {
+		if ( this.isAnimating === true ) return;
+		if ( this.animationLoop === null ) return;
 
-			if ( isAnimating === true ) return;
-			if ( animationLoop === null ) return;
+		this.context.requestAnimationFrame( this.onAnimationFrame );
 
-			context.requestAnimationFrame( onAnimationFrame );
+		this.isAnimating = true;
 
-			isAnimating = true;
+	}
 
-		},
+	stop() {
 
-		stop: function () {
+		this.isAnimating = false;
 
-			isAnimating = false;
+	}
 
-		},
+	setAnimationLoop( callback: AnimationCallback ) {
 
-		setAnimationLoop: function ( callback ) {
+		this.animationLoop = callback;
 
-			animationLoop = callback;
+	}
 
-		},
+	setContext( value: any ) {
 
-		setContext: function ( value ) {
+		this.context = value;
 
-			context = value;
-
-		}
-
-	};
+	}
 
 }
-
-export { WebGLAnimation };

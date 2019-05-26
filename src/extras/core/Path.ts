@@ -1,10 +1,10 @@
-import { Vector2 } from '../../math/Vector2.js';
-import { CurvePath } from './CurvePath.js';
-import { EllipseCurve } from '../curves/EllipseCurve.js';
-import { SplineCurve } from '../curves/SplineCurve.js';
-import { CubicBezierCurve } from '../curves/CubicBezierCurve.js';
-import { QuadraticBezierCurve } from '../curves/QuadraticBezierCurve.js';
-import { LineCurve } from '../curves/LineCurve.js';
+import { Vector2 } from '../../math/Vector2';
+import { CurvePath } from './CurvePath';
+import { EllipseCurve } from '../curves/EllipseCurve';
+import { SplineCurve } from '../curves/SplineCurve';
+import { CubicBezierCurve } from '../curves/CubicBezierCurve';
+import { QuadraticBezierCurve } from '../curves/QuadraticBezierCurve';
+import { LineCurve } from '../curves/LineCurve';
 
 /**
  * @author zz85 / http://www.lab4games.net/zz85/blog

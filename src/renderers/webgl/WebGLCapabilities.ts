@@ -1,37 +1,122 @@
+export interface WebGLCapabilitiesParams {
+	precision?: 'lowp' | 'mediump' | 'highp';
+	logarithmicDepthBuffer?: boolean;
+}
+
 /**
  * @author mrdoob / http://mrdoob.com/
  */
 
-function WebGLCapabilities( gl, extensions, parameters ) {
+export class WebGLCapabilities {
 
-	var maxAnisotropy;
+	constructor(
+		gl: WebGLRenderingContext | WebGL2RenderingContext,
+		extensions: any,
+		parameters: WebGLCapabilitiesParams
+	) {
 
-	function getMaxAnisotropy() {
+		this.gl = gl;
+		this.extensions = extensions;
 
-		if ( maxAnisotropy !== undefined ) return maxAnisotropy;
+		this.isWebGL2 =
+			typeof WebGL2RenderingContext !== 'undefined' &&
+			this.gl instanceof WebGL2RenderingContext;
 
-		var extension = extensions.get( 'EXT_texture_filter_anisotropic' );
+		this.precision =
+			parameters.precision !== undefined ? parameters.precision : 'highp';
+		var maxPrecision = this.getMaxPrecision( this.precision );
 
-		if ( extension !== null ) {
+		if ( maxPrecision !== this.precision ) {
 
-			maxAnisotropy = gl.getParameter( extension.MAX_TEXTURE_MAX_ANISOTROPY_EXT );
-
-		} else {
-
-			maxAnisotropy = 0;
+			console.warn(
+				'THREE.WebGLRenderer:',
+				this.precision,
+				'not supported, using',
+				maxPrecision,
+				'instead.'
+			);
+			this.precision = maxPrecision;
 
 		}
 
-		return maxAnisotropy;
+		this.logarithmicDepthBuffer = parameters.logarithmicDepthBuffer === true;
+
+		this.maxTextures = gl.getParameter( gl.MAX_TEXTURE_IMAGE_UNITS );
+		this.maxVertexTextures = gl.getParameter( gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS );
+		this.maxTextureSize = gl.getParameter( gl.MAX_TEXTURE_SIZE );
+		this.maxCubemapSize = gl.getParameter( gl.MAX_CUBE_MAP_TEXTURE_SIZE );
+
+		this.maxAttributes = gl.getParameter( gl.MAX_VERTEX_ATTRIBS );
+		this.maxVertexUniforms = gl.getParameter( gl.MAX_VERTEX_UNIFORM_VECTORS );
+		this.maxVaryings = gl.getParameter( gl.MAX_VARYING_VECTORS );
+		this.maxFragmentUniforms = gl.getParameter( gl.MAX_FRAGMENT_UNIFORM_VECTORS );
+
+		this.vertexTextures = this.maxVertexTextures > 0;
+		this.floatFragmentTextures =
+			this.isWebGL2 || !! extensions.get( 'OES_texture_float' );
+		this.floatVertexTextures =
+			this.vertexTextures && this.floatFragmentTextures;
+
+		this.maxSamples = 'MAX_SAMPLES' in gl ? gl.getParameter( gl.MAX_SAMPLES ) : 0;
 
 	}
 
-	function getMaxPrecision( precision ) {
+	private maxAnisotropy: any;
+	private gl: WebGLRenderingContext | WebGL2RenderingContext;
+	private extensions: any;
+
+	public isWebGL2: boolean;
+	public precision: any;
+	public logarithmicDepthBuffer: boolean;
+	public maxTextures: any;
+	public maxVertexTextures: any;
+	public maxTextureSize: any;
+	public maxCubemapSize: any;
+	public maxAttributes: any;
+	public maxVertexUniforms: any;
+	public maxVaryings: any;
+	public maxFragmentUniforms: any;
+	public vertexTextures: any;
+	public floatFragmentTextures: any;
+	public floatVertexTextures: any;
+	public maxSamples: any;
+
+	getMaxAnisotropy() {
+
+		if ( this.maxAnisotropy !== undefined ) return this.maxAnisotropy;
+
+		var extension = this.extensions.get( 'EXT_texture_filter_anisotropic' );
+
+		if ( extension !== null ) {
+
+			this.maxAnisotropy = this.gl.getParameter(
+				extension.MAX_TEXTURE_MAX_ANISOTROPY_EXT
+			);
+
+		} else {
+
+			this.maxAnisotropy = 0;
+
+		}
+
+		return this.maxAnisotropy;
+
+	}
+
+	getMaxPrecision( precision?: any ): 'highp' | 'mediump' | 'lowp' {
 
 		if ( precision === 'highp' ) {
 
-			if ( gl.getShaderPrecisionFormat( gl.VERTEX_SHADER, gl.HIGH_FLOAT ).precision > 0 &&
-			     gl.getShaderPrecisionFormat( gl.FRAGMENT_SHADER, gl.HIGH_FLOAT ).precision > 0 ) {
+			if (
+				this.gl.getShaderPrecisionFormat(
+					this.gl.VERTEX_SHADER,
+					this.gl.HIGH_FLOAT
+				)!.precision > 0 &&
+				this.gl.getShaderPrecisionFormat(
+					this.gl.FRAGMENT_SHADER,
+					this.gl.HIGH_FLOAT
+				)!.precision > 0
+			) {
 
 				return 'highp';
 
@@ -43,8 +128,16 @@ function WebGLCapabilities( gl, extensions, parameters ) {
 
 		if ( precision === 'mediump' ) {
 
-			if ( gl.getShaderPrecisionFormat( gl.VERTEX_SHADER, gl.MEDIUM_FLOAT ).precision > 0 &&
-			     gl.getShaderPrecisionFormat( gl.FRAGMENT_SHADER, gl.MEDIUM_FLOAT ).precision > 0 ) {
+			if (
+				this.gl.getShaderPrecisionFormat(
+					this.gl.VERTEX_SHADER,
+					this.gl.MEDIUM_FLOAT
+				)!.precision > 0 &&
+				this.gl.getShaderPrecisionFormat(
+					this.gl.FRAGMENT_SHADER,
+					this.gl.MEDIUM_FLOAT
+				)!.precision > 0
+			) {
 
 				return 'mediump';
 
@@ -56,65 +149,4 @@ function WebGLCapabilities( gl, extensions, parameters ) {
 
 	}
 
-	var isWebGL2 = typeof WebGL2RenderingContext !== 'undefined' && gl instanceof WebGL2RenderingContext;
-
-	var precision = parameters.precision !== undefined ? parameters.precision : 'highp';
-	var maxPrecision = getMaxPrecision( precision );
-
-	if ( maxPrecision !== precision ) {
-
-		console.warn( 'THREE.WebGLRenderer:', precision, 'not supported, using', maxPrecision, 'instead.' );
-		precision = maxPrecision;
-
-	}
-
-	var logarithmicDepthBuffer = parameters.logarithmicDepthBuffer === true;
-
-	var maxTextures = gl.getParameter( gl.MAX_TEXTURE_IMAGE_UNITS );
-	var maxVertexTextures = gl.getParameter( gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS );
-	var maxTextureSize = gl.getParameter( gl.MAX_TEXTURE_SIZE );
-	var maxCubemapSize = gl.getParameter( gl.MAX_CUBE_MAP_TEXTURE_SIZE );
-
-	var maxAttributes = gl.getParameter( gl.MAX_VERTEX_ATTRIBS );
-	var maxVertexUniforms = gl.getParameter( gl.MAX_VERTEX_UNIFORM_VECTORS );
-	var maxVaryings = gl.getParameter( gl.MAX_VARYING_VECTORS );
-	var maxFragmentUniforms = gl.getParameter( gl.MAX_FRAGMENT_UNIFORM_VECTORS );
-
-	var vertexTextures = maxVertexTextures > 0;
-	var floatFragmentTextures = isWebGL2 || !! extensions.get( 'OES_texture_float' );
-	var floatVertexTextures = vertexTextures && floatFragmentTextures;
-
-	var maxSamples = isWebGL2 ? gl.getParameter( gl.MAX_SAMPLES ) : 0;
-
-	return {
-
-		isWebGL2: isWebGL2,
-
-		getMaxAnisotropy: getMaxAnisotropy,
-		getMaxPrecision: getMaxPrecision,
-
-		precision: precision,
-		logarithmicDepthBuffer: logarithmicDepthBuffer,
-
-		maxTextures: maxTextures,
-		maxVertexTextures: maxVertexTextures,
-		maxTextureSize: maxTextureSize,
-		maxCubemapSize: maxCubemapSize,
-
-		maxAttributes: maxAttributes,
-		maxVertexUniforms: maxVertexUniforms,
-		maxVaryings: maxVaryings,
-		maxFragmentUniforms: maxFragmentUniforms,
-
-		vertexTextures: vertexTextures,
-		floatFragmentTextures: floatFragmentTextures,
-		floatVertexTextures: floatVertexTextures,
-
-		maxSamples: maxSamples
-
-	};
-
 }
-
-
-export { WebGLCapabilities };

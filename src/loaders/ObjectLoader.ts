@@ -18,41 +18,41 @@ import {
 	LinearFilter,
 	LinearMipMapNearestFilter,
 	LinearMipMapLinearFilter
-} from '../constants.js';
-import { Color } from '../math/Color.js';
-import { Object3D } from '../core/Object3D.js';
-import { Group } from '../objects/Group.js';
-import { Sprite } from '../objects/Sprite.js';
-import { Points } from '../objects/Points.js';
-import { Line } from '../objects/Line.js';
-import { LineLoop } from '../objects/LineLoop.js';
-import { LineSegments } from '../objects/LineSegments.js';
-import { LOD } from '../objects/LOD.js';
-import { Mesh } from '../objects/Mesh.js';
-import { SkinnedMesh } from '../objects/SkinnedMesh.js';
-import { Shape } from '../extras/core/Shape.js';
-import { Fog } from '../scenes/Fog.js';
-import { FogExp2 } from '../scenes/FogExp2.js';
-import { HemisphereLight } from '../lights/HemisphereLight.js';
-import { SpotLight } from '../lights/SpotLight.js';
-import { PointLight } from '../lights/PointLight.js';
-import { DirectionalLight } from '../lights/DirectionalLight.js';
-import { AmbientLight } from '../lights/AmbientLight.js';
-import { RectAreaLight } from '../lights/RectAreaLight.js';
-import { OrthographicCamera } from '../cameras/OrthographicCamera.js';
-import { PerspectiveCamera } from '../cameras/PerspectiveCamera.js';
-import { Scene } from '../scenes/Scene.js';
-import { CubeTexture } from '../textures/CubeTexture.js';
-import { Texture } from '../textures/Texture.js';
-import { ImageLoader } from './ImageLoader.js';
-import { LoadingManager, DefaultLoadingManager } from './LoadingManager.js';
-import { AnimationClip } from '../animation/AnimationClip.js';
-import { MaterialLoader } from './MaterialLoader.js';
-import { LoaderUtils } from './LoaderUtils.js';
-import { BufferGeometryLoader } from './BufferGeometryLoader.js';
-import { FileLoader } from './FileLoader.js';
-import * as Geometries from '../geometries/Geometries.js';
-import * as Curves from '../extras/curves/Curves.js';
+} from '../constants';
+import { Color } from '../math/Color';
+import { Object3D } from '../core/Object3D';
+import { Group } from '../objects/Group';
+import { Sprite } from '../objects/Sprite';
+import { Points } from '../objects/Points';
+import { Line } from '../objects/Line';
+import { LineLoop } from '../objects/LineLoop';
+import { LineSegments } from '../objects/LineSegments';
+import { LOD } from '../objects/LOD';
+import { Mesh } from '../objects/Mesh';
+import { SkinnedMesh } from '../objects/SkinnedMesh';
+import { Shape } from '../extras/core/Shape';
+import { Fog } from '../scenes/Fog';
+import { FogExp2 } from '../scenes/FogExp2';
+import { HemisphereLight } from '../lights/HemisphereLight';
+import { SpotLight } from '../lights/SpotLight';
+import { PointLight } from '../lights/PointLight';
+import { DirectionalLight } from '../lights/DirectionalLight';
+import { AmbientLight } from '../lights/AmbientLight';
+import { RectAreaLight } from '../lights/RectAreaLight';
+import { OrthographicCamera } from '../cameras/OrthographicCamera';
+import { PerspectiveCamera } from '../cameras/PerspectiveCamera';
+import { Scene } from '../scenes/Scene';
+import { CubeTexture } from '../textures/CubeTexture';
+import { Texture } from '../textures/Texture';
+import { ImageLoader } from './ImageLoader';
+import { LoadingManager, DefaultLoadingManager } from './LoadingManager';
+import { AnimationClip } from '../animation/AnimationClip';
+import { MaterialLoader } from './MaterialLoader';
+import { LoaderUtils } from './LoaderUtils';
+import { BufferGeometryLoader } from './BufferGeometryLoader';
+import { FileLoader } from './FileLoader';
+import * as Geometries from '../geometries/Geometries';
+import * as Curves from '../extras/curves/Curves';
 
 /**
  * @author mrdoob / http://mrdoob.com/

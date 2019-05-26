@@ -1,12 +1,12 @@
-import { Color } from '../math/Color.js';
-import { Vector2 } from '../math/Vector2.js';
-import { Vector3 } from '../math/Vector3.js';
-import { Vector4 } from '../math/Vector4.js';
-import { Matrix3 } from '../math/Matrix3.js';
-import { Matrix4 } from '../math/Matrix4.js';
-import { FileLoader } from './FileLoader.js';
-import { DefaultLoadingManager } from './LoadingManager.js';
-import * as Materials from '../materials/Materials.js';
+import { Color } from '../math/Color';
+import { Vector2 } from '../math/Vector2';
+import { Vector3 } from '../math/Vector3';
+import { Vector4 } from '../math/Vector4';
+import { Matrix3 } from '../math/Matrix3';
+import { Matrix4 } from '../math/Matrix4';
+import { FileLoader } from './FileLoader';
+import { DefaultLoadingManager } from './LoadingManager';
+import * as Materials from '../materials/Materials';
 
 /**
  * @author mrdoob / http://mrdoob.com/

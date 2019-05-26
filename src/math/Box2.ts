@@ -1,28 +1,32 @@
-import { Vector2 } from './Vector2.js';
+import { Vector2 } from './Vector2';
 
 /**
  * @author bhouston / http://clara.io
  */
 
-function Box2( min, max ) {
+export class Box2 {
 
-	this.min = ( min !== undefined ) ? min : new Vector2( + Infinity, + Infinity );
-	this.max = ( max !== undefined ) ? max : new Vector2( - Infinity, - Infinity );
+	constructor( min?: Vector2, max?: Vector2 ) {
 
-}
+		this.min = min !== undefined ? min : new Vector2( + Infinity, + Infinity );
+		this.max = max !== undefined ? max : new Vector2( - Infinity, - Infinity );
 
-Object.assign( Box2.prototype, {
+	}
 
-	set: function ( min, max ) {
+	min: Vector2;
+
+	max: Vector2;
+
+	set( min: Vector2, max: Vector2 ) {
 
 		this.min.copy( min );
 		this.max.copy( max );
 
 		return this;
 
-	},
+	}
 
-	setFromPoints: function ( points ) {
+	setFromPoints( points: Vector2[] ) {
 
 		this.makeEmpty();
 
@@ -34,13 +38,13 @@ Object.assign( Box2.prototype, {
 
 		return this;
 
-	},
+	}
 
-	setFromCenterAndSize: function () {
+	setFromCenterAndSize = ( () => {
 
 		var v1 = new Vector2();
 
-		return function setFromCenterAndSize( center, size ) {
+		const setFromCenterAndSize = ( center: Vector2, size: Vector2 ) => {
 
 			var halfSize = v1.copy( size ).multiplyScalar( 0.5 );
 			this.min.copy( center ).sub( halfSize );
@@ -50,41 +54,43 @@ Object.assign( Box2.prototype, {
 
 		};
 
-	}(),
+		return setFromCenterAndSize;
 
-	clone: function () {
+	} )();
 
-		return new this.constructor().copy( this );
+	clone() {
 
-	},
+		return new Box2().copy( this );
 
-	copy: function ( box ) {
+	}
+
+	copy( box: Box2 ) {
 
 		this.min.copy( box.min );
 		this.max.copy( box.max );
 
 		return this;
 
-	},
+	}
 
-	makeEmpty: function () {
+	makeEmpty() {
 
 		this.min.x = this.min.y = + Infinity;
 		this.max.x = this.max.y = - Infinity;
 
 		return this;
 
-	},
+	}
 
-	isEmpty: function () {
+	isEmpty() {
 
 		// this is a more robust check for empty than ( volume <= 0 ) because volume can get positive with two negative axes
 
-		return ( this.max.x < this.min.x ) || ( this.max.y < this.min.y );
+		return this.max.x < this.min.x || this.max.y < this.min.y;
 
-	},
+	}
 
-	getCenter: function ( target ) {
+	getCenter( target: Vector2 ) {
 
 		if ( target === undefined ) {
 
@@ -93,11 +99,13 @@ Object.assign( Box2.prototype, {
 
 		}
 
-		return this.isEmpty() ? target.set( 0, 0 ) : target.addVectors( this.min, this.max ).multiplyScalar( 0.5 );
+		return this.isEmpty()
+			? target.set( 0, 0 )
+			: target.addVectors( this.min, this.max ).multiplyScalar( 0.5 );
 
-	},
+	}
 
-	getSize: function ( target ) {
+	getSize( target: Vector2 ) {
 
 		if ( target === undefined ) {
 
@@ -106,52 +114,62 @@ Object.assign( Box2.prototype, {
 
 		}
 
-		return this.isEmpty() ? target.set( 0, 0 ) : target.subVectors( this.max, this.min );
+		return this.isEmpty()
+			? target.set( 0, 0 )
+			: target.subVectors( this.max, this.min );
 
-	},
+	}
 
-	expandByPoint: function ( point ) {
+	expandByPoint( point: Vector2 ) {
 
 		this.min.min( point );
 		this.max.max( point );
 
 		return this;
 
-	},
+	}
 
-	expandByVector: function ( vector ) {
+	expandByVector( vector: Vector2 ) {
 
 		this.min.sub( vector );
 		this.max.add( vector );
 
 		return this;
 
-	},
+	}
 
-	expandByScalar: function ( scalar ) {
+	expandByScalar( scalar: number ) {
 
 		this.min.addScalar( - scalar );
 		this.max.addScalar( scalar );
 
 		return this;
 
-	},
+	}
 
-	containsPoint: function ( point ) {
+	containsPoint( point: Vector2 ) {
 
-		return point.x < this.min.x || point.x > this.max.x ||
-			point.y < this.min.y || point.y > this.max.y ? false : true;
+		return point.x < this.min.x ||
+			point.x > this.max.x ||
+			point.y < this.min.y ||
+			point.y > this.max.y
+			? false
+			: true;
 
-	},
+	}
 
-	containsBox: function ( box ) {
+	containsBox( box: Box2 ) {
 
-		return this.min.x <= box.min.x && box.max.x <= this.max.x &&
-			this.min.y <= box.min.y && box.max.y <= this.max.y;
+		return (
+			this.min.x <= box.min.x &&
+			box.max.x <= this.max.x &&
+			this.min.y <= box.min.y &&
+			box.max.y <= this.max.y
+		);
 
-	},
+	}
 
-	getParameter: function ( point, target ) {
+	getParameter( point: Vector2, target: Vector2 ) {
 
 		// This can potentially have a divide by zero if the box
 		// has a size dimension of 0.
@@ -168,18 +186,22 @@ Object.assign( Box2.prototype, {
 			( point.y - this.min.y ) / ( this.max.y - this.min.y )
 		);
 
-	},
+	}
 
-	intersectsBox: function ( box ) {
+	intersectsBox( box: Box2 ) {
 
 		// using 4 splitting planes to rule out intersections
 
-		return box.max.x < this.min.x || box.min.x > this.max.x ||
-			box.max.y < this.min.y || box.min.y > this.max.y ? false : true;
+		return box.max.x < this.min.x ||
+			box.min.x > this.max.x ||
+			box.max.y < this.min.y ||
+			box.min.y > this.max.y
+			? false
+			: true;
 
-	},
+	}
 
-	clampPoint: function ( point, target ) {
+	clampPoint( point: Vector2, target: Vector2 ) {
 
 		if ( target === undefined ) {
 
@@ -190,55 +212,54 @@ Object.assign( Box2.prototype, {
 
 		return target.copy( point ).clamp( this.min, this.max );
 
-	},
+	}
 
-	distanceToPoint: function () {
+	distanceToPoint = ( () => {
 
 		var v1 = new Vector2();
 
-		return function distanceToPoint( point ) {
+		const distanceToPoint = ( point: Vector2 ) => {
 
 			var clampedPoint = v1.copy( point ).clamp( this.min, this.max );
 			return clampedPoint.sub( point ).length();
 
 		};
 
-	}(),
+		return distanceToPoint;
 
-	intersect: function ( box ) {
+	} )();
+
+	intersect( box: Box2 ) {
 
 		this.min.max( box.min );
 		this.max.min( box.max );
 
 		return this;
 
-	},
+	}
 
-	union: function ( box ) {
+	union( box: Box2 ) {
 
 		this.min.min( box.min );
 		this.max.max( box.max );
 
 		return this;
 
-	},
+	}
 
-	translate: function ( offset ) {
+	translate( offset: Vector2 ) {
 
 		this.min.add( offset );
 		this.max.add( offset );
 
 		return this;
 
-	},
+	}
 
-	equals: function ( box ) {
+	equals( box: Box2 ) {
 
 		return box.min.equals( this.min ) && box.max.equals( this.max );
 
 	}
 
-} );
-
-
-export { Box2 };
+}

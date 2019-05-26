@@ -2,23 +2,21 @@
  * @author mrdoob / http://mrdoob.com/
  */
 
-import { PerspectiveCamera } from './PerspectiveCamera.js';
+import { PerspectiveCamera } from './PerspectiveCamera';
+import { Camera } from './Camera';
 
-function ArrayCamera( array ) {
+export class ArrayCamera<T extends Camera> extends PerspectiveCamera {
 
-	PerspectiveCamera.call( this );
+	constructor( array: T[] ) {
 
-	this.cameras = array || [];
+		super();
+
+		this.cameras = array || [];
+
+	}
+
+	cameras: T[];
+
+	isArrayCamera = true as const;
 
 }
-
-ArrayCamera.prototype = Object.assign( Object.create( PerspectiveCamera.prototype ), {
-
-	constructor: ArrayCamera,
-
-	isArrayCamera: true
-
-} );
-
-
-export { ArrayCamera };

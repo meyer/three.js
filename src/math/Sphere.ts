@@ -1,34 +1,38 @@
-import { Box3 } from './Box3.js';
-import { Vector3 } from './Vector3.js';
+import { Box3 } from './Box3';
+import { Vector3 } from './Vector3';
+import { Matrix4 } from './Matrix4';
+import { Plane } from './Plane';
 
 /**
  * @author bhouston / http://clara.io
  * @author mrdoob / http://mrdoob.com/
  */
 
-function Sphere( center, radius ) {
+export class Sphere {
 
-	this.center = ( center !== undefined ) ? center : new Vector3();
-	this.radius = ( radius !== undefined ) ? radius : 0;
+	constructor( center?: Vector3, radius?: number ) {
 
-}
+		this.center = center !== undefined ? center : new Vector3();
+		this.radius = radius !== undefined ? radius : 0;
 
-Object.assign( Sphere.prototype, {
+	}
+	center: Vector3;
+	radius: number;
 
-	set: function ( center, radius ) {
+	set( center: Vector3, radius: number ) {
 
 		this.center.copy( center );
 		this.radius = radius;
 
 		return this;
 
-	},
+	}
 
-	setFromPoints: function () {
+	setFromPoints = ( () => {
 
 		var box = new Box3();
 
-		return function setFromPoints( points, optionalCenter ) {
+		const setFromPoints = ( points: Vector3[], optionalCenter?: Vector3 ) => {
 
 			var center = this.center;
 
@@ -46,7 +50,10 @@ Object.assign( Sphere.prototype, {
 
 			for ( var i = 0, il = points.length; i < il; i ++ ) {
 
-				maxRadiusSq = Math.max( maxRadiusSq, center.distanceToSquared( points[ i ] ) );
+				maxRadiusSq = Math.max(
+					maxRadiusSq,
+					center.distanceToSquared( points[ i ] )
+				);
 
 			}
 
@@ -56,62 +63,66 @@ Object.assign( Sphere.prototype, {
 
 		};
 
-	}(),
+		return setFromPoints;
 
-	clone: function () {
+	} )();
 
-		return new this.constructor().copy( this );
+	clone() {
 
-	},
+		return new Sphere().copy( this );
 
-	copy: function ( sphere ) {
+	}
+
+	copy( sphere: Sphere ) {
 
 		this.center.copy( sphere.center );
 		this.radius = sphere.radius;
 
 		return this;
 
-	},
+	}
 
-	empty: function () {
+	empty() {
 
-		return ( this.radius <= 0 );
+		return this.radius <= 0;
 
-	},
+	}
 
-	containsPoint: function ( point ) {
+	containsPoint( point: Vector3 ) {
 
-		return ( point.distanceToSquared( this.center ) <= ( this.radius * this.radius ) );
+		return point.distanceToSquared( this.center ) <= this.radius * this.radius;
 
-	},
+	}
 
-	distanceToPoint: function ( point ) {
+	distanceToPoint( point: Vector3 ) {
 
-		return ( point.distanceTo( this.center ) - this.radius );
+		return point.distanceTo( this.center ) - this.radius;
 
-	},
+	}
 
-	intersectsSphere: function ( sphere ) {
+	intersectsSphere( sphere: Sphere ) {
 
 		var radiusSum = this.radius + sphere.radius;
 
-		return sphere.center.distanceToSquared( this.center ) <= ( radiusSum * radiusSum );
+		return (
+			sphere.center.distanceToSquared( this.center ) <= radiusSum * radiusSum
+		);
 
-	},
+	}
 
-	intersectsBox: function ( box ) {
+	intersectsBox( box: Box3 ) {
 
 		return box.intersectsSphere( this );
 
-	},
+	}
 
-	intersectsPlane: function ( plane ) {
+	intersectsPlane( plane: Plane ) {
 
 		return Math.abs( plane.distanceToPoint( this.center ) ) <= this.radius;
 
-	},
+	}
 
-	clampPoint: function ( point, target ) {
+	clampPoint( point: Vector3, target: Vector3 ) {
 
 		var deltaLengthSq = this.center.distanceToSquared( point );
 
@@ -124,7 +135,7 @@ Object.assign( Sphere.prototype, {
 
 		target.copy( point );
 
-		if ( deltaLengthSq > ( this.radius * this.radius ) ) {
+		if ( deltaLengthSq > this.radius * this.radius ) {
 
 			target.sub( this.center ).normalize();
 			target.multiplyScalar( this.radius ).add( this.center );
@@ -133,9 +144,9 @@ Object.assign( Sphere.prototype, {
 
 		return target;
 
-	},
+	}
 
-	getBoundingBox: function ( target ) {
+	getBoundingBox( target: Box3 ) {
 
 		if ( target === undefined ) {
 
@@ -149,32 +160,29 @@ Object.assign( Sphere.prototype, {
 
 		return target;
 
-	},
+	}
 
-	applyMatrix4: function ( matrix ) {
+	applyMatrix4( matrix: Matrix4 ) {
 
 		this.center.applyMatrix4( matrix );
 		this.radius = this.radius * matrix.getMaxScaleOnAxis();
 
 		return this;
 
-	},
+	}
 
-	translate: function ( offset ) {
+	translate( offset: Vector3 ) {
 
 		this.center.add( offset );
 
 		return this;
 
-	},
+	}
 
-	equals: function ( sphere ) {
+	equals( sphere: Sphere ) {
 
-		return sphere.center.equals( this.center ) && ( sphere.radius === this.radius );
+		return sphere.center.equals( this.center ) && sphere.radius === this.radius;
 
 	}
 
-} );
-
-
-export { Sphere };
+}

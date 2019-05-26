@@ -2,41 +2,61 @@
  * @author mrdoob / http://mrdoob.com/
  */
 
-import { Texture } from './Texture.js';
-import { CubeReflectionMapping, RGBFormat } from '../constants.js';
+import { Texture } from './Texture';
+import {
+	CubeReflectionMapping,
+	RGBFormat,
+	Wrapping,
+	TextureFilter,
+	PixelFormat,
+	TextureDataType,
+	TextureEncoding,
+} from '../constants';
 
-function CubeTexture( images, mapping, wrapS, wrapT, magFilter, minFilter, format, type, anisotropy, encoding ) {
+export class CubeTexture extends Texture {
 
-	images = images !== undefined ? images : [];
-	mapping = mapping !== undefined ? mapping : CubeReflectionMapping;
-	format = format !== undefined ? format : RGBFormat;
+	constructor(
+		images: any[],
+		mapping: any,
+		wrapS: Wrapping,
+		wrapT: Wrapping,
+		magFilter: TextureFilter,
+		minFilter: TextureFilter,
+		format: PixelFormat,
+		type: TextureDataType,
+		anisotropy: any,
+		encoding: TextureEncoding
+	) {
 
-	Texture.call( this, images, mapping, wrapS, wrapT, magFilter, minFilter, format, type, anisotropy, encoding );
+		super(
+			images !== undefined ? images : [],
+			( mapping = mapping !== undefined ? mapping : CubeReflectionMapping ),
+			wrapS,
+			wrapT,
+			magFilter,
+			minFilter,
+			( format = format !== undefined ? format : RGBFormat ),
+			type,
+			anisotropy,
+			encoding
+		);
 
-	this.flipY = false;
+		this.flipY = false;
 
-}
+	}
 
-CubeTexture.prototype = Object.create( Texture.prototype );
-CubeTexture.prototype.constructor = CubeTexture;
+	isCubeTexture = true as const;
 
-CubeTexture.prototype.isCubeTexture = true;
-
-Object.defineProperty( CubeTexture.prototype, 'images', {
-
-	get: function () {
+	get images() {
 
 		return this.image;
 
-	},
+	}
 
-	set: function ( value ) {
+	set images( value ) {
 
 		this.image = value;
 
 	}
 
-} );
-
-
-export { CubeTexture };
+}

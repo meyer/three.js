@@ -2,13 +2,102 @@
  * @author thespite / http://www.twitter.com/thespite
  */
 
-import { MaxEquation, MinEquation, RGBA_ASTC_4x4_Format, RGBA_ASTC_5x4_Format, RGBA_ASTC_5x5_Format, RGBA_ASTC_6x5_Format, RGBA_ASTC_6x6_Format, RGBA_ASTC_8x5_Format, RGBA_ASTC_8x6_Format, RGBA_ASTC_8x8_Format, RGBA_ASTC_10x5_Format, RGBA_ASTC_10x6_Format, RGBA_ASTC_10x8_Format, RGBA_ASTC_10x10_Format, RGBA_ASTC_12x10_Format, RGBA_ASTC_12x12_Format, RGB_ETC1_Format, RGBA_PVRTC_2BPPV1_Format, RGBA_PVRTC_4BPPV1_Format, RGB_PVRTC_2BPPV1_Format, RGB_PVRTC_4BPPV1_Format, RGBA_S3TC_DXT5_Format, RGBA_S3TC_DXT3_Format, RGBA_S3TC_DXT1_Format, RGB_S3TC_DXT1_Format, SrcAlphaSaturateFactor, OneMinusDstColorFactor, DstColorFactor, OneMinusDstAlphaFactor, DstAlphaFactor, OneMinusSrcAlphaFactor, SrcAlphaFactor, OneMinusSrcColorFactor, SrcColorFactor, OneFactor, ZeroFactor, ReverseSubtractEquation, SubtractEquation, AddEquation, DepthFormat, DepthStencilFormat, LuminanceAlphaFormat, LuminanceFormat, RedFormat, RGBAFormat, RGBFormat, AlphaFormat, HalfFloatType, FloatType, UnsignedIntType, IntType, UnsignedShortType, ShortType, ByteType, UnsignedInt248Type, UnsignedShort565Type, UnsignedShort5551Type, UnsignedShort4444Type, UnsignedByteType, LinearMipMapLinearFilter, LinearMipMapNearestFilter, LinearFilter, NearestMipMapLinearFilter, NearestMipMapNearestFilter, NearestFilter, MirroredRepeatWrapping, ClampToEdgeWrapping, RepeatWrapping } from '../../constants.js';
+import {
+	MaxEquation,
+	MinEquation,
+	RGBA_ASTC_4x4_Format,
+	RGBA_ASTC_5x4_Format,
+	RGBA_ASTC_5x5_Format,
+	RGBA_ASTC_6x5_Format,
+	RGBA_ASTC_6x6_Format,
+	RGBA_ASTC_8x5_Format,
+	RGBA_ASTC_8x6_Format,
+	RGBA_ASTC_8x8_Format,
+	RGBA_ASTC_10x5_Format,
+	RGBA_ASTC_10x6_Format,
+	RGBA_ASTC_10x8_Format,
+	RGBA_ASTC_10x10_Format,
+	RGBA_ASTC_12x10_Format,
+	RGBA_ASTC_12x12_Format,
+	RGB_ETC1_Format,
+	RGBA_PVRTC_2BPPV1_Format,
+	RGBA_PVRTC_4BPPV1_Format,
+	RGB_PVRTC_2BPPV1_Format,
+	RGB_PVRTC_4BPPV1_Format,
+	RGBA_S3TC_DXT5_Format,
+	RGBA_S3TC_DXT3_Format,
+	RGBA_S3TC_DXT1_Format,
+	RGB_S3TC_DXT1_Format,
+	SrcAlphaSaturateFactor,
+	OneMinusDstColorFactor,
+	DstColorFactor,
+	OneMinusDstAlphaFactor,
+	DstAlphaFactor,
+	OneMinusSrcAlphaFactor,
+	SrcAlphaFactor,
+	OneMinusSrcColorFactor,
+	SrcColorFactor,
+	OneFactor,
+	ZeroFactor,
+	ReverseSubtractEquation,
+	SubtractEquation,
+	AddEquation,
+	DepthFormat,
+	DepthStencilFormat,
+	LuminanceAlphaFormat,
+	LuminanceFormat,
+	RedFormat,
+	RGBAFormat,
+	RGBFormat,
+	AlphaFormat,
+	HalfFloatType,
+	FloatType,
+	UnsignedIntType,
+	IntType,
+	UnsignedShortType,
+	ShortType,
+	ByteType,
+	UnsignedInt248Type,
+	UnsignedShort565Type,
+	UnsignedShort5551Type,
+	UnsignedShort4444Type,
+	UnsignedByteType,
+	LinearMipMapLinearFilter,
+	LinearMipMapNearestFilter,
+	LinearFilter,
+	NearestMipMapLinearFilter,
+	NearestMipMapNearestFilter,
+	NearestFilter,
+	MirroredRepeatWrapping,
+	ClampToEdgeWrapping,
+	RepeatWrapping,
+} from '../../constants';
+import { WebGLExtensions } from './WebGLExtensions';
+import { WebGLCapabilities } from './WebGLCapabilities';
 
-function WebGLUtils( gl, extensions, capabilities ) {
+export class WebGLUtils {
 
-	function convert( p ) {
+	constructor(
+		gl: WebGLRenderingContext | WebGL2RenderingContext,
+		extensions: WebGLExtensions,
+		capabilities: WebGLCapabilities
+	) {
 
-		var extension;
+		this.gl = gl;
+		this.extensions = extensions;
+		this.capabilities = capabilities;
+
+	}
+
+	private gl: WebGLRenderingContext | WebGL2RenderingContext;
+	private extensions: WebGLExtensions;
+	private capabilities: WebGLCapabilities;
+
+	public convert( p: number | undefined ): number {
+
+		const { gl, extensions, capabilities } = this;
+
+		var extension: any;
 
 		if ( p === RepeatWrapping ) return gl.REPEAT;
 		if ( p === ClampToEdgeWrapping ) return gl.CLAMP_TO_EDGE;
@@ -36,7 +125,7 @@ function WebGLUtils( gl, extensions, capabilities ) {
 
 		if ( p === HalfFloatType ) {
 
-			if ( capabilities.isWebGL2 ) return gl.HALF_FLOAT;
+			if ( capabilities.isWebGL2 ) return ( gl as any ).HALF_FLOAT;
 
 			extension = extensions.get( 'OES_texture_half_float' );
 
@@ -51,7 +140,7 @@ function WebGLUtils( gl, extensions, capabilities ) {
 		if ( p === LuminanceAlphaFormat ) return gl.LUMINANCE_ALPHA;
 		if ( p === DepthFormat ) return gl.DEPTH_COMPONENT;
 		if ( p === DepthStencilFormat ) return gl.DEPTH_STENCIL;
-		if ( p === RedFormat ) return gl.RED;
+		if ( p === RedFormat ) return ( gl as any ).RED;
 
 		if ( p === AddEquation ) return gl.FUNC_ADD;
 		if ( p === SubtractEquation ) return gl.FUNC_SUBTRACT;
@@ -70,33 +159,49 @@ function WebGLUtils( gl, extensions, capabilities ) {
 		if ( p === OneMinusDstColorFactor ) return gl.ONE_MINUS_DST_COLOR;
 		if ( p === SrcAlphaSaturateFactor ) return gl.SRC_ALPHA_SATURATE;
 
-		if ( p === RGB_S3TC_DXT1_Format || p === RGBA_S3TC_DXT1_Format ||
-			p === RGBA_S3TC_DXT3_Format || p === RGBA_S3TC_DXT5_Format ) {
+		if (
+			p === RGB_S3TC_DXT1_Format ||
+			p === RGBA_S3TC_DXT1_Format ||
+			p === RGBA_S3TC_DXT3_Format ||
+			p === RGBA_S3TC_DXT5_Format
+		) {
 
 			extension = extensions.get( 'WEBGL_compressed_texture_s3tc' );
 
 			if ( extension !== null ) {
 
-				if ( p === RGB_S3TC_DXT1_Format ) return extension.COMPRESSED_RGB_S3TC_DXT1_EXT;
-				if ( p === RGBA_S3TC_DXT1_Format ) return extension.COMPRESSED_RGBA_S3TC_DXT1_EXT;
-				if ( p === RGBA_S3TC_DXT3_Format ) return extension.COMPRESSED_RGBA_S3TC_DXT3_EXT;
-				if ( p === RGBA_S3TC_DXT5_Format ) return extension.COMPRESSED_RGBA_S3TC_DXT5_EXT;
+				if ( p === RGB_S3TC_DXT1_Format )
+					return extension.COMPRESSED_RGB_S3TC_DXT1_EXT;
+				if ( p === RGBA_S3TC_DXT1_Format )
+					return extension.COMPRESSED_RGBA_S3TC_DXT1_EXT;
+				if ( p === RGBA_S3TC_DXT3_Format )
+					return extension.COMPRESSED_RGBA_S3TC_DXT3_EXT;
+				if ( p === RGBA_S3TC_DXT5_Format )
+					return extension.COMPRESSED_RGBA_S3TC_DXT5_EXT;
 
 			}
 
 		}
 
-		if ( p === RGB_PVRTC_4BPPV1_Format || p === RGB_PVRTC_2BPPV1_Format ||
-			p === RGBA_PVRTC_4BPPV1_Format || p === RGBA_PVRTC_2BPPV1_Format ) {
+		if (
+			p === RGB_PVRTC_4BPPV1_Format ||
+			p === RGB_PVRTC_2BPPV1_Format ||
+			p === RGBA_PVRTC_4BPPV1_Format ||
+			p === RGBA_PVRTC_2BPPV1_Format
+		) {
 
 			extension = extensions.get( 'WEBGL_compressed_texture_pvrtc' );
 
 			if ( extension !== null ) {
 
-				if ( p === RGB_PVRTC_4BPPV1_Format ) return extension.COMPRESSED_RGB_PVRTC_4BPPV1_IMG;
-				if ( p === RGB_PVRTC_2BPPV1_Format ) return extension.COMPRESSED_RGB_PVRTC_2BPPV1_IMG;
-				if ( p === RGBA_PVRTC_4BPPV1_Format ) return extension.COMPRESSED_RGBA_PVRTC_4BPPV1_IMG;
-				if ( p === RGBA_PVRTC_2BPPV1_Format ) return extension.COMPRESSED_RGBA_PVRTC_2BPPV1_IMG;
+				if ( p === RGB_PVRTC_4BPPV1_Format )
+					return extension.COMPRESSED_RGB_PVRTC_4BPPV1_IMG;
+				if ( p === RGB_PVRTC_2BPPV1_Format )
+					return extension.COMPRESSED_RGB_PVRTC_2BPPV1_IMG;
+				if ( p === RGBA_PVRTC_4BPPV1_Format )
+					return extension.COMPRESSED_RGBA_PVRTC_4BPPV1_IMG;
+				if ( p === RGBA_PVRTC_2BPPV1_Format )
+					return extension.COMPRESSED_RGBA_PVRTC_2BPPV1_IMG;
 
 			}
 
@@ -110,11 +215,22 @@ function WebGLUtils( gl, extensions, capabilities ) {
 
 		}
 
-		if ( p === RGBA_ASTC_4x4_Format || p === RGBA_ASTC_5x4_Format || p === RGBA_ASTC_5x5_Format ||
-			p === RGBA_ASTC_6x5_Format || p === RGBA_ASTC_6x6_Format || p === RGBA_ASTC_8x5_Format ||
-			p === RGBA_ASTC_8x6_Format || p === RGBA_ASTC_8x8_Format || p === RGBA_ASTC_10x5_Format ||
-			p === RGBA_ASTC_10x6_Format || p === RGBA_ASTC_10x8_Format || p === RGBA_ASTC_10x10_Format ||
-			p === RGBA_ASTC_12x10_Format || p === RGBA_ASTC_12x12_Format ) {
+		if (
+			p === RGBA_ASTC_4x4_Format ||
+			p === RGBA_ASTC_5x4_Format ||
+			p === RGBA_ASTC_5x5_Format ||
+			p === RGBA_ASTC_6x5_Format ||
+			p === RGBA_ASTC_6x6_Format ||
+			p === RGBA_ASTC_8x5_Format ||
+			p === RGBA_ASTC_8x6_Format ||
+			p === RGBA_ASTC_8x8_Format ||
+			p === RGBA_ASTC_10x5_Format ||
+			p === RGBA_ASTC_10x6_Format ||
+			p === RGBA_ASTC_10x8_Format ||
+			p === RGBA_ASTC_10x10_Format ||
+			p === RGBA_ASTC_12x10_Format ||
+			p === RGBA_ASTC_12x12_Format
+		) {
 
 			extension = extensions.get( 'WEBGL_compressed_texture_astc' );
 
@@ -130,8 +246,8 @@ function WebGLUtils( gl, extensions, capabilities ) {
 
 			if ( capabilities.isWebGL2 ) {
 
-				if ( p === MinEquation ) return gl.MIN;
-				if ( p === MaxEquation ) return gl.MAX;
+				if ( p === MinEquation ) return ( gl as any ).MIN;
+				if ( p === MaxEquation ) return ( gl as any ).MAX;
 
 			}
 
@@ -148,7 +264,7 @@ function WebGLUtils( gl, extensions, capabilities ) {
 
 		if ( p === UnsignedInt248Type ) {
 
-			if ( capabilities.isWebGL2 ) return gl.UNSIGNED_INT_24_8;
+			if ( capabilities.isWebGL2 ) return ( gl as any ).UNSIGNED_INT_24_8;
 
 			extension = extensions.get( 'WEBGL_depth_texture' );
 
@@ -160,9 +276,4 @@ function WebGLUtils( gl, extensions, capabilities ) {
 
 	}
 
-	return { convert: convert };
-
 }
-
-
-export { WebGLUtils };

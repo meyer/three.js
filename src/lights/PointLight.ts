@@ -1,6 +1,6 @@
-import { Light } from './Light.js';
-import { PerspectiveCamera } from '../cameras/PerspectiveCamera.js';
-import { LightShadow } from './LightShadow.js';
+import { Light } from './Light';
+import { PerspectiveCamera } from '../cameras/PerspectiveCamera';
+import { LightShadow } from './LightShadow';
 
 /**
  * @author mrdoob / http://mrdoob.com/

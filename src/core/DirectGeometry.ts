@@ -1,42 +1,76 @@
+interface MorphTargetsPosition {
+	name: string;
+	data: any[];
+}
+
+interface MorphTargetsNormal {
+	name: string;
+	data: Vector3[];
+}
+
 /**
  * @author mrdoob / http://mrdoob.com/
  */
 
-import { Vector2 } from '../math/Vector2.js';
+import { Vector2 } from '../math/Vector2';
+import { Geometry } from './Geometry';
+import { Vector3 } from '../math/Vector3';
 
-function DirectGeometry() {
+export class DirectGeometry {
 
-	this.vertices = [];
-	this.normals = [];
-	this.colors = [];
-	this.uvs = [];
-	this.uvs2 = [];
+	constructor() {
 
-	this.groups = [];
+		this.vertices = [];
+		this.normals = [];
+		this.colors = [];
+		this.uvs = [];
+		this.uvs2 = [];
 
-	this.morphTargets = {};
+		this.groups = [];
 
-	this.skinWeights = [];
-	this.skinIndices = [];
+		this.morphTargets = {};
 
-	// this.lineDistances = [];
+		this.skinWeights = [];
+		this.skinIndices = [];
 
-	this.boundingBox = null;
-	this.boundingSphere = null;
+		// this.lineDistances = [];
 
-	// update flags
+		this.boundingBox = null;
+		this.boundingSphere = null;
 
-	this.verticesNeedUpdate = false;
-	this.normalsNeedUpdate = false;
-	this.colorsNeedUpdate = false;
-	this.uvsNeedUpdate = false;
-	this.groupsNeedUpdate = false;
+		// update flags
 
-}
+		this.verticesNeedUpdate = false;
+		this.normalsNeedUpdate = false;
+		this.colorsNeedUpdate = false;
+		this.uvsNeedUpdate = false;
+		this.groupsNeedUpdate = false;
 
-Object.assign( DirectGeometry.prototype, {
+	}
 
-	computeGroups: function ( geometry ) {
+	vertices: any[];
+	normals: any[];
+	colors: any[];
+	uvs: any[];
+	uvs2: any[];
+
+	groups: any[];
+
+	morphTargets: Record<string, any[]>;
+
+	skinWeights: any[];
+	skinIndices: any[];
+
+	boundingBox: null | any;
+	boundingSphere: null | any;
+
+	verticesNeedUpdate: boolean;
+	normalsNeedUpdate: boolean;
+	colorsNeedUpdate: boolean;
+	uvsNeedUpdate: boolean;
+	groupsNeedUpdate: boolean;
+
+	computeGroups( geometry: Geometry ) {
 
 		var group;
 		var groups = [];
@@ -56,14 +90,15 @@ Object.assign( DirectGeometry.prototype, {
 
 				if ( group !== undefined ) {
 
-					group.count = ( i * 3 ) - group.start;
+					group.count = i * 3 - group.start;
 					groups.push( group );
 
 				}
 
 				group = {
 					start: i * 3,
-					materialIndex: materialIndex
+					materialIndex: materialIndex,
+					count: 0,
 				};
 
 			}
@@ -72,16 +107,16 @@ Object.assign( DirectGeometry.prototype, {
 
 		if ( group !== undefined ) {
 
-			group.count = ( i * 3 ) - group.start;
+			group.count = i * 3 - group.start;
 			groups.push( group );
 
 		}
 
 		this.groups = groups;
 
-	},
+	}
 
-	fromGeometry: function ( geometry ) {
+	fromGeometry( geometry: Geometry ) {
 
 		var faces = geometry.faces;
 		var vertices = geometry.vertices;
@@ -95,7 +130,7 @@ Object.assign( DirectGeometry.prototype, {
 		var morphTargets = geometry.morphTargets;
 		var morphTargetsLength = morphTargets.length;
 
-		var morphTargetsPosition;
+		let morphTargetsPosition: MorphTargetsPosition[] | undefined;
 
 		if ( morphTargetsLength > 0 ) {
 
@@ -105,7 +140,7 @@ Object.assign( DirectGeometry.prototype, {
 
 				morphTargetsPosition[ i ] = {
 					name: morphTargets[ i ].name,
-				 	data: []
+					data: [],
 				};
 
 			}
@@ -117,7 +152,7 @@ Object.assign( DirectGeometry.prototype, {
 		var morphNormals = geometry.morphNormals;
 		var morphNormalsLength = morphNormals.length;
 
-		var morphTargetsNormal;
+		var morphTargetsNormal: MorphTargetsNormal[] | undefined;
 
 		if ( morphNormalsLength > 0 ) {
 
@@ -127,7 +162,7 @@ Object.assign( DirectGeometry.prototype, {
 
 				morphTargetsNormal[ i ] = {
 					name: morphNormals[ i ].name,
-				 	data: []
+					data: [],
 				};
 
 			}
@@ -148,7 +183,9 @@ Object.assign( DirectGeometry.prototype, {
 
 		if ( vertices.length > 0 && faces.length === 0 ) {
 
-			console.error( 'THREE.DirectGeometry: Faceless geometries are not supported.' );
+			console.error(
+				'THREE.DirectGeometry: Faceless geometries are not supported.'
+			);
 
 		}
 
@@ -196,7 +233,10 @@ Object.assign( DirectGeometry.prototype, {
 
 				} else {
 
-					console.warn( 'THREE.DirectGeometry.fromGeometry(): Undefined vertexUv ', i );
+					console.warn(
+						'THREE.DirectGeometry.fromGeometry(): Undefined vertexUv ',
+						i
+					);
 
 					this.uvs.push( new Vector2(), new Vector2(), new Vector2() );
 
@@ -214,7 +254,10 @@ Object.assign( DirectGeometry.prototype, {
 
 				} else {
 
-					console.warn( 'THREE.DirectGeometry.fromGeometry(): Undefined vertexUv2 ', i );
+					console.warn(
+						'THREE.DirectGeometry.fromGeometry(): Undefined vertexUv2 ',
+						i
+					);
 
 					this.uvs2.push( new Vector2(), new Vector2(), new Vector2() );
 
@@ -228,7 +271,11 @@ Object.assign( DirectGeometry.prototype, {
 
 				var morphTarget = morphTargets[ j ].vertices;
 
-				morphTargetsPosition[ j ].data.push( morphTarget[ face.a ], morphTarget[ face.b ], morphTarget[ face.c ] );
+				morphTargetsPosition![ j ].data.push(
+					morphTarget[ face.a ],
+					morphTarget[ face.b ],
+					morphTarget[ face.c ]
+				);
 
 			}
 
@@ -236,7 +283,11 @@ Object.assign( DirectGeometry.prototype, {
 
 				var morphNormal = morphNormals[ j ].vertexNormals[ i ];
 
-				morphTargetsNormal[ j ].data.push( morphNormal.a, morphNormal.b, morphNormal.c );
+				morphTargetsNormal![ j ].data.push(
+					morphNormal.a,
+					morphNormal.b,
+					morphNormal.c
+				);
 
 			}
 
@@ -244,13 +295,21 @@ Object.assign( DirectGeometry.prototype, {
 
 			if ( hasSkinIndices ) {
 
-				this.skinIndices.push( skinIndices[ face.a ], skinIndices[ face.b ], skinIndices[ face.c ] );
+				this.skinIndices.push(
+					skinIndices[ face.a ],
+					skinIndices[ face.b ],
+					skinIndices[ face.c ]
+				);
 
 			}
 
 			if ( hasSkinWeights ) {
 
-				this.skinWeights.push( skinWeights[ face.a ], skinWeights[ face.b ], skinWeights[ face.c ] );
+				this.skinWeights.push(
+					skinWeights[ face.a ],
+					skinWeights[ face.b ],
+					skinWeights[ face.c ]
+				);
 
 			}
 
@@ -268,7 +327,4 @@ Object.assign( DirectGeometry.prototype, {
 
 	}
 
-} );
-
-
-export { DirectGeometry };
+}

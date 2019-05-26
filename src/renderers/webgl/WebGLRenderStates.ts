@@ -2,94 +2,90 @@
  * @author Mugen87 / https://github.com/Mugen87
  */
 
-import { WebGLLights } from './WebGLLights.js';
+import { WebGLLights } from './WebGLLights';
 
-function WebGLRenderState() {
+interface WebGLRenderStateObj {
+	lightsArray: any[];
+	shadowsArray: any[];
+	lights: WebGLLights;
+}
 
-	var lights = new WebGLLights();
+export class WebGLRenderState {
 
-	var lightsArray = [];
-	var shadowsArray = [];
+	public state: WebGLRenderStateObj = {
+		lightsArray: [],
+		shadowsArray: [],
 
-	function init() {
-
-		lightsArray.length = 0;
-		shadowsArray.length = 0;
-
-	}
-
-	function pushLight( light ) {
-
-		lightsArray.push( light );
-
-	}
-
-	function pushShadow( shadowLight ) {
-
-		shadowsArray.push( shadowLight );
-
-	}
-
-	function setupLights( camera ) {
-
-		lights.setup( lightsArray, shadowsArray, camera );
-
-	}
-
-	var state = {
-		lightsArray: lightsArray,
-		shadowsArray: shadowsArray,
-
-		lights: lights
+		lights: new WebGLLights(),
 	};
 
-	return {
-		init: init,
-		state: state,
-		setupLights: setupLights,
+	public init() {
 
-		pushLight: pushLight,
-		pushShadow: pushShadow
-	};
+		this.state.lightsArray.length = 0;
+		this.state.shadowsArray.length = 0;
+
+	}
+
+	public pushLight( light: any ) {
+
+		this.state.lightsArray.push( light );
+
+	}
+
+	public pushShadow( shadowLight: any ) {
+
+		this.state.shadowsArray.push( shadowLight );
+
+	}
+
+	public setupLights( camera: any ) {
+
+		this.state.lights.setup(
+			this.state.lightsArray,
+			this.state.shadowsArray,
+			camera
+		);
+
+	}
 
 }
 
-function WebGLRenderStates() {
+export class WebGLRenderStates {
 
-	var renderStates = {};
+	private renderStates: Record<string, any> = {};
 
-	function onSceneDispose( event ) {
+	private onSceneDispose( event: any ) {
 
 		var scene = event.target;
 
-		scene.removeEventListener( 'dispose', onSceneDispose );
+		scene.removeEventListener( 'dispose', this.onSceneDispose );
 
-		delete renderStates[ scene.id ];
+		delete this.renderStates[ scene.id ];
 
 	}
 
-	function get( scene, camera ) {
+	public get( scene: any, camera: any ) {
 
 		var renderState;
 
-		if ( renderStates[ scene.id ] === undefined ) {
+		if ( this.renderStates[ scene.id ] === undefined ) {
 
 			renderState = new WebGLRenderState();
-			renderStates[ scene.id ] = {};
-			renderStates[ scene.id ][ camera.id ] = renderState;
+			this.renderStates[ scene.id ] = {};
+			this.renderStates[ scene.id ][ camera.id ] = renderState;
 
-			scene.addEventListener( 'dispose', onSceneDispose );
+			scene.addEventListener( 'dispose', this.onSceneDispose );
 
 		} else {
 
-			if ( renderStates[ scene.id ][ camera.id ] === undefined ) {
+			if ( this.renderStates[ scene.id ][ camera.id ] === undefined ) {
 
 				renderState = new WebGLRenderState();
-				renderStates[ scene.id ][ camera.id ] = renderState;
+				this.renderStates[ scene.id ][ camera.id ] = renderState;
 
 			} else {
 
-				renderState = renderStates[ scene.id ][ camera.id ];
+				renderState = this.renderStates[ scene.id ][ camera.id ];
 
 			}
 
@@ -99,18 +95,10 @@ function WebGLRenderStates() {
 
 	}
 
-	function dispose() {
+	public dispose() {
 
-		renderStates = {};
+		this.renderStates = {};
 
 	}
 
-	return {
-		get: get,
-		dispose: dispose
-	};
-
 }
-
-
-export { WebGLRenderStates };

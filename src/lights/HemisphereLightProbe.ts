@@ -2,9 +2,9 @@
  * @author WestLangley / http://github.com/WestLangley
  */
 
-import { Color } from '../math/Color.js';
-import { Vector3 } from '../math/Vector3.js';
-import { LightProbe } from './LightProbe.js';
+import { Color } from '../math/Color';
+import { Vector3 } from '../math/Vector3';
+import { LightProbe } from './LightProbe';
 
 function HemisphereLightProbe( skyColor, groundColor, intensity ) {
 

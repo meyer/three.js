@@ -1,4 +1,4 @@
-import { Quaternion } from '../math/Quaternion.js';
+import { Quaternion } from '../math/Quaternion';
 
 /**
  *
@@ -10,56 +10,66 @@ import { Quaternion } from '../math/Quaternion.js';
  * @author tschw
  */
 
-function PropertyMixer( binding, typeName, valueSize ) {
+export class PropertyMixer {
 
-	this.binding = binding;
-	this.valueSize = valueSize;
+	constructor( binding, typeName: string, valueSize: number ) {
 
-	var bufferType = Float64Array,
-		mixFunction;
+		this.binding = binding;
+		this.valueSize = valueSize;
 
-	switch ( typeName ) {
+		var bufferType: ArrayConstructor | Float64ArrayConstructor = Float64Array,
+			mixFunction;
 
-		case 'quaternion':
-			mixFunction = this._slerp;
-			break;
+		switch ( typeName ) {
 
-		case 'string':
-		case 'bool':
-			bufferType = Array;
-			mixFunction = this._select;
-			break;
+			case 'quaternion':
+				mixFunction = this._slerp;
+				break;
 
-		default:
-			mixFunction = this._lerp;
+			case 'string':
+			case 'bool':
+				bufferType = Array;
+				mixFunction = this._select;
+				break;
+
+			default:
+				mixFunction = this._lerp;
+
+		}
+
+		this.buffer = new bufferType( valueSize * 4 );
+		// layout: [ incoming | accu0 | accu1 | orig ]
+		//
+		// interpolators can use .buffer as their .result
+		// the data then goes to 'incoming'
+		//
+		// 'accu0' and 'accu1' are used frame-interleaved for
+		// the cumulative result and are compared to detect
+		// changes
+		//
+		// 'orig' stores the original state of the property
+
+		this._mixBufferRegion = mixFunction;
+
+		this.cumulativeWeight = 0;
+
+		this.useCount = 0;
+		this.referenceCount = 0;
 
 	}
 
-	this.buffer = new bufferType( valueSize * 4 );
-	// layout: [ incoming | accu0 | accu1 | orig ]
-	//
-	// interpolators can use .buffer as their .result
-	// the data then goes to 'incoming'
-	//
-	// 'accu0' and 'accu1' are used frame-interleaved for
-	// the cumulative result and are compared to detect
-	// changes
-	//
-	// 'orig' stores the original state of the property
+	buffer: Array<any> | Float64Array;
+	valueSize: number;
+	binding: any;
 
-	this._mixBufferRegion = mixFunction;
-
-	this.cumulativeWeight = 0;
-
-	this.useCount = 0;
-	this.referenceCount = 0;
-
-}
-
-Object.assign( PropertyMixer.prototype, {
+	_mixBufferRegion: any;
+	cumulativeWeight: number;
+	useCount: number;
+	referenceCount: number;
+	_cacheIndex: null;
 
 	// accumulate data in the 'incoming' region into 'accu<i>'
-	accumulate: function ( accuIndex, weight ) {
+	accumulate( accuIndex, weight ) {
 
 		// note: happily accumulating nothing when weight = 0, the caller knows
 		// the weight and shouldn't have made the call in the first place
@@ -67,7 +77,6 @@ Object.assign( PropertyMixer.prototype, {
 		var buffer = this.buffer,
 			stride = this.valueSize,
 			offset = accuIndex * stride + stride,
-
 			currentWeight = this.cumulativeWeight;
 
 		if ( currentWeight === 0 ) {
@@ -94,17 +103,15 @@ Object.assign( PropertyMixer.prototype, {
 
 		this.cumulativeWeight = currentWeight;
 
-	},
+	}
 
 	// apply the state of 'accu<i>' to the binding when accus differ
-	apply: function ( accuIndex ) {
+	apply( accuIndex ) {
 
 		var stride = this.valueSize,
 			buffer = this.buffer,
 			offset = accuIndex * stride + stride,
-
 			weight = this.cumulativeWeight,
-
 			binding = this.binding;
 
 		this.cumulativeWeight = 0;
@@ -116,7 +123,12 @@ Object.assign( PropertyMixer.prototype, {
 			var originalValueOffset = stride * 3;
 
 			this._mixBufferRegion(
-				buffer, offset, originalValueOffset, 1 - weight, stride );
+				buffer,
+				offset,
+				originalValueOffset,
+				1 - weight,
+				stride
+			);
 
 		}
 
@@ -133,16 +145,15 @@ Object.assign( PropertyMixer.prototype, {
 
 		}
 
-	},
+	}
 
 	// remember the state of the bound property and copy it to both accus
-	saveOriginalState: function () {
+	saveOriginalState() {
 
 		var binding = this.binding;
 
 		var buffer = this.buffer,
 			stride = this.valueSize,
-
 			originalValueOffset = stride * 3;
 
 		binding.getValue( buffer, originalValueOffset );
@@ -156,20 +167,19 @@ Object.assign( PropertyMixer.prototype, {
 
 		this.cumulativeWeight = 0;
 
-	},
+	}
 
 	// apply the state previously taken via 'saveOriginalState' to the binding
-	restoreOriginalState: function () {
+	restoreOriginalState() {
 
 		var originalValueOffset = this.valueSize * 3;
 		this.binding.setValue( this.buffer, originalValueOffset );
 
-	},
-
+	}
 
 	// mix functions
 
-	_select: function ( buffer, dstOffset, srcOffset, t, stride ) {
+	_select( buffer, dstOffset, srcOffset, t, stride ) {
 
 		if ( t >= 0.5 ) {
 
@@ -181,15 +191,23 @@ Object.assign( PropertyMixer.prototype, {
 
 		}
 
-	},
+	}
 
-	_slerp: function ( buffer, dstOffset, srcOffset, t ) {
+	_slerp( buffer, dstOffset, srcOffset, t ) {
 
-		Quaternion.slerpFlat( buffer, dstOffset, buffer, dstOffset, buffer, srcOffset, t );
+		Quaternion.slerpFlat(
+			buffer,
+			dstOffset,
+			buffer,
+			dstOffset,
+			buffer,
+			srcOffset,
+			t
+		);
 
-	},
+	}
 
-	_lerp: function ( buffer, dstOffset, srcOffset, t, stride ) {
+	_lerp( buffer, dstOffset, srcOffset, t, stride ) {
 
 		var s = 1 - t;
 
@@ -203,7 +221,4 @@ Object.assign( PropertyMixer.prototype, {
 
 	}
 
-} );
-
-
-export { PropertyMixer };
+}

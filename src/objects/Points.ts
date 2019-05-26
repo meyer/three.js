@@ -1,18 +1,20 @@
-import { Sphere } from '../math/Sphere.js';
-import { Ray } from '../math/Ray.js';
-import { Matrix4 } from '../math/Matrix4.js';
-import { Object3D } from '../core/Object3D.js';
-import { Vector3 } from '../math/Vector3.js';
-import { PointsMaterial } from '../materials/PointsMaterial.js';
-import { BufferGeometry } from '../core/BufferGeometry.js';
+import { Sphere } from '../math/Sphere';
+import { Ray } from '../math/Ray';
+import { Matrix4 } from '../math/Matrix4';
+import { Object3D } from '../core/Object3D';
+import { Vector3 } from '../math/Vector3';
+import { PointsMaterial } from '../materials/PointsMaterial';
+import { BufferGeometry } from '../core/BufferGeometry';
 
 /**
  * @author alteredq / http://alteredqualia.com/
  */
 
-function Points( geometry, material ) {
+export class Points extends Object3D { 
+	
+	constructor( geometry: BufferGeometry, material: PointsMaterial ) {
 
-	Object3D.call( this );
+	super();
 
 	this.type = 'Points';
 
@@ -21,19 +23,19 @@ function Points( geometry, material ) {
 
 }
 
-Points.prototype = Object.assign( Object.create( Object3D.prototype ), {
+geometry: BufferGeometry;
+material: PointsMaterial;
 
-	constructor: Points,
 
-	isPoints: true,
+	isPoints = true;
 
-	raycast: ( function () {
+	raycast = (  () => {
 
 		var inverseMatrix = new Matrix4();
 		var ray = new Ray();
 		var sphere = new Sphere();
 
-		return function raycast( raycaster, intersects ) {
+		return  ( raycaster, intersects ) => {
 
 			var object = this;
 			var geometry = this.geometry;
@@ -60,7 +62,7 @@ Points.prototype = Object.assign( Object.create( Object3D.prototype ), {
 			var position = new Vector3();
 			var intersectPoint = new Vector3();
 
-			function testPoint( point, index ) {
+			function testPoint( point: Vector3, index: number ) {
 
 				var rayPointDistanceSq = ray.distanceSqToPoint( point );
 
@@ -134,15 +136,12 @@ Points.prototype = Object.assign( Object.create( Object3D.prototype ), {
 
 		};
 
-	}() ),
+	}() );
 
-	clone: function () {
+	clone () {
 
 		return new this.constructor( this.geometry, this.material ).copy( this );
 
 	}
 
-} );
-
-
-export { Points };
+}

@@ -1,4 +1,4 @@
-import { EllipseCurve } from './EllipseCurve.js';
+import { EllipseCurve } from './EllipseCurve';
 
 
 function ArcCurve( aX, aY, aRadius, aStartAngle, aEndAngle, aClockwise ) {

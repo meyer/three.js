@@ -1,14 +1,36 @@
-import { EventDispatcher } from './EventDispatcher.js';
-import { Face3 } from './Face3.js';
-import { Matrix3 } from '../math/Matrix3.js';
-import { Sphere } from '../math/Sphere.js';
-import { Box3 } from '../math/Box3.js';
-import { Vector3 } from '../math/Vector3.js';
-import { Matrix4 } from '../math/Matrix4.js';
-import { Vector2 } from '../math/Vector2.js';
-import { Color } from '../math/Color.js';
-import { Object3D } from './Object3D.js';
-import { _Math } from '../math/Math.js';
+import { EventDispatcher } from './EventDispatcher';
+import { Face3 } from './Face3';
+import { Matrix3 } from '../math/Matrix3';
+import { Sphere } from '../math/Sphere';
+import { Box3 } from '../math/Box3';
+import { Vector3 } from '../math/Vector3';
+import { Matrix4 } from '../math/Matrix4';
+import { Vector2 } from '../math/Vector2';
+import { Color } from '../math/Color';
+import { Object3D } from './Object3D';
+import { _Math } from '../math/Math';
+import { BufferGeometry } from './BufferGeometry';
+import { Mesh } from '../objects/Mesh';
+
+type FaceNormal = Vector3;
+type VertexNormals = Record<'a' | 'b' | 'c', Vector3>;
+
+type Vector3WithNormals = Vector3 & {
+	name: string;
+	faceNormals: FaceNormal[];
+	vertexNormals: VertexNormals[];
+};
+
+interface GeometryData {
+	metadata: {
+		version: number;
+		type: 'Geometry';
+		generator: 'Geometry.toJSON';
+	};
+	uuid: string;
+	type: string;
+	name?: string;
+}
 
 /**
  * @author mrdoob / http://mrdoob.com/
@@ -21,50 +43,76 @@ import { _Math } from '../math/Math.js';
 
 var geometryId = 0; // Geometry uses even numbers as Id
 
-function Geometry() {
+export class Geometry extends EventDispatcher {
 
-	Object.defineProperty( this, 'id', { value: geometryId += 2 } );
+	constructor() {
 
-	this.uuid = _Math.generateUUID();
+		super();
 
-	this.name = '';
-	this.type = 'Geometry';
+		Object.defineProperty( this, 'id', { value: geometryId += 2 } );
 
-	this.vertices = [];
-	this.colors = [];
-	this.faces = [];
-	this.faceVertexUvs = [[]];
+		this.uuid = _Math.generateUUID();
 
-	this.morphTargets = [];
-	this.morphNormals = [];
+		this.name = '';
+		this.type = 'Geometry';
 
-	this.skinWeights = [];
-	this.skinIndices = [];
+		this.vertices = [];
+		this.colors = [];
+		this.faces = [];
+		this.faceVertexUvs = [[]];
 
-	this.lineDistances = [];
+		this.morphTargets = [];
+		this.morphNormals = [];
 
-	this.boundingBox = null;
-	this.boundingSphere = null;
+		this.skinWeights = [];
+		this.skinIndices = [];
 
-	// update flags
+		this.lineDistances = [];
 
-	this.elementsNeedUpdate = false;
-	this.verticesNeedUpdate = false;
-	this.uvsNeedUpdate = false;
-	this.normalsNeedUpdate = false;
-	this.colorsNeedUpdate = false;
-	this.lineDistancesNeedUpdate = false;
-	this.groupsNeedUpdate = false;
+		this.boundingBox = null;
+		this.boundingSphere = null;
 
-}
+		// update flags
 
-Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), {
+		this.elementsNeedUpdate = false;
+		this.verticesNeedUpdate = false;
+		this.uvsNeedUpdate = false;
+		this.normalsNeedUpdate = false;
+		this.colorsNeedUpdate = false;
+		this.lineDistancesNeedUpdate = false;
+		this.groupsNeedUpdate = false;
 
-	constructor: Geometry,
+	}
 
-	isGeometry: true,
+	readonly id!: number;
+	readonly uuid: string;
+	name: string;
+	type: string;
+	vertices: Vector3[];
+	colors: Color[];
+	faces: Face3[];
+	faceVertexUvs: any[];
+	morphTargets: any[];
+	morphNormals: Vector3WithNormals[];
+	skinWeights: any[];
+	skinIndices: any[];
+	lineDistances: any[];
+	boundingBox: null | Box3;
+	boundingSphere: null | Sphere;
+	elementsNeedUpdate: boolean;
+	verticesNeedUpdate: boolean;
+	uvsNeedUpdate: boolean;
+	normalsNeedUpdate: boolean;
+	colorsNeedUpdate: boolean;
+	lineDistancesNeedUpdate: boolean;
+	groupsNeedUpdate: boolean;
 
-	applyMatrix: function ( matrix ) {
+	isGeometry = true;
+
+	__directGeometry?: any;
+	parameters?: any;
+
+	applyMatrix( matrix: Matrix4 ) {
 
 		var normalMatrix = new Matrix3().getNormalMatrix( matrix );
 
@@ -105,15 +153,15 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 		return this;
 
-	},
+	}
 
-	rotateX: function () {
+	rotateX = ( () => {
 
 		// rotate geometry around world x-axis
 
 		var m1 = new Matrix4();
 
-		return function rotateX( angle ) {
+		const rotateX = ( angle: number ) => {
 
 			m1.makeRotationX( angle );
 
@@ -123,15 +171,17 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 		};
 
-	}(),
+		return rotateX;
 
-	rotateY: function () {
+	} )();
+
+	rotateY = ( () => {
 
 		// rotate geometry around world y-axis
 
 		var m1 = new Matrix4();
 
-		return function rotateY( angle ) {
+		const rotateY = ( angle: number ) => {
 
 			m1.makeRotationY( angle );
 
@@ -141,15 +191,17 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 		};
 
-	}(),
+		return rotateY;
 
-	rotateZ: function () {
+	} )();
+
+	rotateZ = ( () => {
 
 		// rotate geometry around world z-axis
 
 		var m1 = new Matrix4();
 
-		return function rotateZ( angle ) {
+		const rotateZ = ( angle: number ) => {
 
 			m1.makeRotationZ( angle );
 
@@ -159,15 +211,17 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 		};
 
-	}(),
+		return rotateZ;
 
-	translate: function () {
+	} )();
+
+	translate = ( () => {
 
 		// translate geometry
 
 		var m1 = new Matrix4();
 
-		return function translate( x, y, z ) {
+		const translate = ( x: number, y: number, z: number ) => {
 
 			m1.makeTranslation( x, y, z );
 
@@ -177,15 +231,17 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 		};
 
-	}(),
+		return translate;
 
-	scale: function () {
+	} )();
+
+	scale = ( () => {
 
 		// scale geometry
 
 		var m1 = new Matrix4();
 
-		return function scale( x, y, z ) {
+		const scale = ( x: number, y: number, z: number ) => {
 
 			m1.makeScale( x, y, z );
 
@@ -195,13 +251,15 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 		};
 
-	}(),
+		return scale;
 
-	lookAt: function () {
+	} )();
+
+	lookAt = ( () => {
 
 		var obj = new Object3D();
 
-		return function lookAt( vector ) {
+		const lookAt = ( vector: number | Vector3 ) => {
 
 			obj.lookAt( vector );
 
@@ -211,9 +269,11 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 		};
 
-	}(),
+		return lookAt;
 
-	fromBufferGeometry: function ( geometry ) {
+	} )();
+
+	fromBufferGeometry( geometry: BufferGeometry ) {
 
 		var scope = this;
 
@@ -221,8 +281,10 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 		var attributes = geometry.attributes;
 
 		var positions = attributes.position.array;
-		var normals = attributes.normal !== undefined ? attributes.normal.array : undefined;
-		var colors = attributes.color !== undefined ? attributes.color.array : undefined;
+		var normals =
+			attributes.normal !== undefined ? attributes.normal.array : undefined;
+		var colors =
+			attributes.color !== undefined ? attributes.color.array : undefined;
 		var uvs = attributes.uv !== undefined ? attributes.uv.array : undefined;
 		var uvs2 = attributes.uv2 !== undefined ? attributes.uv2.array : undefined;
 
@@ -234,25 +296,33 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 			if ( colors !== undefined ) {
 
-				scope.colors.push( new Color().fromArray( colors, i ) );
+				scope.colors.push( new Color( 0 ).fromArray( colors, i ) );
 
 			}
 
 		}
 
-		function addFace( a, b, c, materialIndex ) {
+		function addFace( a: number, b: number, c: number, materialIndex?: number ) {
 
-			var vertexColors = ( colors === undefined ) ? [] : [
-				scope.colors[ a ].clone(),
-				scope.colors[ b ].clone(),
-				scope.colors[ c ].clone() ];
+			var vertexColors =
+				colors === undefined
+					? []
+					: [
+						scope.colors[ a ].clone(),
+						scope.colors[ b ].clone(),
+						scope.colors[ c ].clone(),
+					  ];
 
-			var vertexNormals = ( normals === undefined ) ? [] : [
-				new Vector3().fromArray( normals, a * 3 ),
-				new Vector3().fromArray( normals, b * 3 ),
-				new Vector3().fromArray( normals, c * 3 )
-			];
+			var vertexNormals =
+				normals === undefined
+					? []
+					: [
+						new Vector3().fromArray( normals, a * 3 ),
+						new Vector3().fromArray( normals, b * 3 ),
+						new Vector3().fromArray( normals, c * 3 ),
+					  ];
 
+			// TODO(meyer) Face3 expects a single Vector3, not an array of Vector3s
 			var face = new Face3( a, b, c, vertexNormals, vertexColors, materialIndex );
 
 			scope.faces.push( face );
@@ -262,7 +332,7 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 				scope.faceVertexUvs[ 0 ].push( [
 					new Vector2().fromArray( uvs, a * 2 ),
 					new Vector2().fromArray( uvs, b * 2 ),
-					new Vector2().fromArray( uvs, c * 2 )
+					new Vector2().fromArray( uvs, c * 2 ),
 				] );
 
 			}
@@ -272,7 +342,7 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 				scope.faceVertexUvs[ 1 ].push( [
 					new Vector2().fromArray( uvs2, a * 2 ),
 					new Vector2().fromArray( uvs2, b * 2 ),
-					new Vector2().fromArray( uvs2, c * 2 )
+					new Vector2().fromArray( uvs2, c * 2 ),
 				] );
 
 			}
@@ -294,7 +364,12 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 					if ( indices !== undefined ) {
 
-						addFace( indices[ j ], indices[ j + 1 ], indices[ j + 2 ], group.materialIndex );
+						addFace(
+							indices[ j ],
+							indices[ j + 1 ],
+							indices[ j + 2 ],
+							group.materialIndex
+						);
 
 					} else {
 
@@ -344,15 +419,22 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 		return this;
 
-	},
+	}
 
-	center: function () {
+	center = ( () => {
 
 		var offset = new Vector3();
 
-		return function center() {
+		const center = () => {
 
 			this.computeBoundingBox();
+
+			// TODO(meyer) is this case ever encountered?
+			if ( this.boundingBox === null ) {
+
+				throw new Error( 'boundingBox is null' );
+
+			}
 
 			this.boundingBox.getCenter( offset ).negate();
 
@@ -362,11 +444,20 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 		};
 
-	}(),
+		return center;
 
-	normalize: function () {
+	} )();
+
+	normalize() {
 
 		this.computeBoundingSphere();
+
+		// TODO(meyer) is this case ever encountered?
+		if ( this.boundingSphere === null ) {
+
+			throw new Error( 'boundingSphere is null' );
+
+		}
 
 		var center = this.boundingSphere.center;
 		var radius = this.boundingSphere.radius;
@@ -375,21 +466,34 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 		var matrix = new Matrix4();
 		matrix.set(
-			s, 0, 0, - s * center.x,
-			0, s, 0, - s * center.y,
-			0, 0, s, - s * center.z,
-			0, 0, 0, 1
+			s,
+			0,
+			0,
+			- s * center.x,
+			0,
+			s,
+			0,
+			- s * center.y,
+			0,
+			0,
+			s,
+			- s * center.z,
+			0,
+			0,
+			0,
+			1
 		);
 
 		this.applyMatrix( matrix );
 
 		return this;
 
-	},
+	}
 
-	computeFaceNormals: function () {
+	computeFaceNormals() {
 
-		var cb = new Vector3(), ab = new Vector3();
+		var cb = new Vector3(),
+			ab = new Vector3();
 
 		for ( var f = 0, fl = this.faces.length; f < fl; f ++ ) {
 
@@ -409,9 +513,9 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 		}
 
-	},
+	}
 
-	computeVertexNormals: function ( areaWeighted ) {
+	computeVertexNormals( areaWeighted?: boolean ) {
 
 		if ( areaWeighted === undefined ) areaWeighted = true;
 
@@ -431,7 +535,8 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 			// http://www.iquilezles.org/www/articles/normals/normals.htm
 
 			var vA, vB, vC;
-			var cb = new Vector3(), ab = new Vector3();
+			var cb = new Vector3(),
+				ab = new Vector3();
 
 			for ( f = 0, fl = this.faces.length; f < fl; f ++ ) {
 
@@ -501,9 +606,9 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 		}
 
-	},
+	}
 
-	computeFlatVertexNormals: function () {
+	computeFlatVertexNormals() {
 
 		var f, fl, face;
 
@@ -537,9 +642,9 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 		}
 
-	},
+	}
 
-	computeMorphNormals: function () {
+	computeMorphNormals() {
 
 		var i, il, f, fl, face;
 
@@ -590,19 +695,23 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 			if ( ! this.morphNormals[ i ] ) {
 
-				this.morphNormals[ i ] = {};
+				this.morphNormals[ i ] = {} as Vector3WithNormals;
 				this.morphNormals[ i ].faceNormals = [];
 				this.morphNormals[ i ].vertexNormals = [];
 
 				var dstNormalsFace = this.morphNormals[ i ].faceNormals;
 				var dstNormalsVertex = this.morphNormals[ i ].vertexNormals;
 
-				var faceNormal, vertexNormals;
+				var faceNormal: FaceNormal, vertexNormals: VertexNormals;
 
 				for ( f = 0, fl = this.faces.length; f < fl; f ++ ) {
 
 					faceNormal = new Vector3();
-					vertexNormals = { a: new Vector3(), b: new Vector3(), c: new Vector3() };
+					vertexNormals = {
+						a: new Vector3(),
+						b: new Vector3(),
+						c: new Vector3(),
+					};
 
 					dstNormalsFace.push( faceNormal );
 					dstNormalsVertex.push( vertexNormals );
@@ -624,7 +733,7 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 			// store morph normals
 
-			var faceNormal, vertexNormals;
+			var faceNormal: FaceNormal, vertexNormals: VertexNormals;
 
 			for ( f = 0, fl = this.faces.length; f < fl; f ++ ) {
 
@@ -649,14 +758,14 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 			face = this.faces[ f ];
 
-			face.normal = face.__originalFaceNormal;
-			face.vertexNormals = face.__originalVertexNormals;
+			face.normal = face.__originalFaceNormal!;
+			face.vertexNormals = face.__originalVertexNormals!;
 
 		}
 
-	},
+	}
 
-	computeBoundingBox: function () {
+	computeBoundingBox() {
 
 		if ( this.boundingBox === null ) {
 
@@ -666,9 +775,9 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 		this.boundingBox.setFromPoints( this.vertices );
 
-	},
+	}
 
-	computeBoundingSphere: function () {
+	computeBoundingSphere() {
 
 		if ( this.boundingSphere === null ) {
 
@@ -678,13 +787,16 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 		this.boundingSphere.setFromPoints( this.vertices );
 
-	},
+	}
 
-	merge: function ( geometry, matrix, materialIndexOffset ) {
+	merge( geometry: Geometry, matrix?: Matrix4, materialIndexOffset?: number ) {
 
 		if ( ! ( geometry && geometry.isGeometry ) ) {
 
-			console.error( 'THREE.Geometry.merge(): geometry not an instance of THREE.Geometry.', geometry );
+			console.error(
+				'THREE.Geometry.merge(): geometry not an instance of THREE.Geometry.',
+				geometry
+			);
 			return;
 
 		}
@@ -734,11 +846,18 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 		for ( i = 0, il = faces2.length; i < il; i ++ ) {
 
-			var face = faces2[ i ], faceCopy, normal, color,
+			var face = faces2[ i ],
+				faceCopy,
+				normal,
+				color,
 				faceVertexNormals = face.vertexNormals,
 				faceVertexColors = face.vertexColors;
 
-			faceCopy = new Face3( face.a + vertexOffset, face.b + vertexOffset, face.c + vertexOffset );
+			faceCopy = new Face3(
+				face.a + vertexOffset,
+				face.b + vertexOffset,
+				face.c + vertexOffset
+			);
 			faceCopy.normal.copy( face.normal );
 
 			if ( normalMatrix !== undefined ) {
@@ -763,7 +882,7 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 			faceCopy.color.copy( face.color );
 
-			for ( var j = 0, jl = faceVertexColors.length; j < jl; j ++ ) {
+			for ( let j = 0, jl = faceVertexColors.length; j < jl; j ++ ) {
 
 				color = faceVertexColors[ j ];
 				faceCopy.vertexColors.push( color.clone() );
@@ -780,7 +899,8 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 		for ( i = 0, il = uvs2.length; i < il; i ++ ) {
 
-			var uv = uvs2[ i ], uvCopy = [];
+			var uv = uvs2[ i ],
+				uvCopy = [];
 
 			if ( uv === undefined ) {
 
@@ -788,7 +908,7 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 			}
 
-			for ( var j = 0, jl = uv.length; j < jl; j ++ ) {
+			for ( let j = 0, jl = uv.length; j < jl; j ++ ) {
 
 				uvCopy.push( uv[ j ].clone() );
 
@@ -798,22 +918,26 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 		}
 
-	},
+	}
 
-	mergeMesh: function ( mesh ) {
+	mergeMesh( mesh: Mesh ) {
 
 		if ( ! ( mesh && mesh.isMesh ) ) {
 
-			console.error( 'THREE.Geometry.mergeMesh(): mesh not an instance of THREE.Mesh.', mesh );
+			console.error(
+				'THREE.Geometry.mergeMesh(): mesh not an instance of THREE.Mesh.',
+				mesh
+			);
 			return;
 
 		}
 
 		if ( mesh.matrixAutoUpdate ) mesh.updateMatrix();
 
+		// TODO(meyer) hmmmm
 		this.merge( mesh.geometry, mesh.matrix );
 
-	},
+	}
 
 	/*
 	 * Checks for duplicate vertices with hashmap.
@@ -821,10 +945,11 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 	 * and faces' vertices are updated.
 	 */
 
-	mergeVertices: function () {
+	mergeVertices() {
 
-		var verticesMap = {}; // Hashmap for looking up vertices by position coordinates (and making sure they are unique)
-		var unique = [], changes = [];
+		var verticesMap: Record<string, number> = {}; // Hashmap for looking up vertices by position coordinates (and making sure they are unique)
+		var unique = [],
+			changes: number[] = [];
 
 		var v, key;
 		var precisionPoints = 4; // number of decimal points, e.g. 4 for epsilon of 0.0001
@@ -835,7 +960,12 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 		for ( i = 0, il = this.vertices.length; i < il; i ++ ) {
 
 			v = this.vertices[ i ];
-			key = Math.round( v.x * precision ) + '_' + Math.round( v.y * precision ) + '_' + Math.round( v.z * precision );
+			key =
+				Math.round( v.x * precision ) +
+				'_' +
+				Math.round( v.y * precision ) +
+				'_' +
+				Math.round( v.z * precision );
 
 			if ( verticesMap[ key ] === undefined ) {
 
@@ -851,7 +981,6 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 			}
 
 		}
-
 
 		// if faces are completely degenerate after merging vertices, we
 		// have to remove them from the geometry.
@@ -902,9 +1031,9 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 		this.vertices = unique;
 		return diff;
 
-	},
+	}
 
-	setFromPoints: function ( points ) {
+	setFromPoints( points ) {
 
 		this.vertices = [];
 
@@ -917,9 +1046,9 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 		return this;
 
-	},
+	}
 
-	sortFacesByMaterialIndex: function () {
+	sortFacesByMaterialIndex() {
 
 		var faces = this.faces;
 		var length = faces.length;
@@ -964,17 +1093,17 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 		if ( newUvs1 ) this.faceVertexUvs[ 0 ] = newUvs1;
 		if ( newUvs2 ) this.faceVertexUvs[ 1 ] = newUvs2;
 
-	},
+	}
 
-	toJSON: function () {
+	toJSON() {
 
-		var data = {
+		var data: GeometryData = {
 			metadata: {
 				version: 4.5,
 				type: 'Geometry',
-				generator: 'Geometry.toJSON'
-			}
-		};
+				generator: 'Geometry.toJSON',
+			},
+		} as any;
 
 		// standard Geometry serialization
 
@@ -1005,7 +1134,7 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 		}
 
-		var faces = [];
+		var faces: number[] = [];
 		var normals = [];
 		var normalsHash = {};
 		var colors = [];
@@ -1022,7 +1151,8 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 			var hasFaceVertexUv = this.faceVertexUvs[ 0 ][ i ] !== undefined;
 			var hasFaceNormal = face.normal.length() > 0;
 			var hasFaceVertexNormal = face.vertexNormals.length > 0;
-			var hasFaceColor = face.color.r !== 1 || face.color.g !== 1 || face.color.b !== 1;
+			var hasFaceColor =
+				face.color.r !== 1 || face.color.g !== 1 || face.color.b !== 1;
 			var hasFaceVertexColor = face.vertexColors.length > 0;
 
 			var faceType = 0;
@@ -1092,13 +1222,14 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 		function setBit( value, position, enabled ) {
 
-			return enabled ? value | ( 1 << position ) : value & ( ~ ( 1 << position ) );
+			return enabled ? value | ( 1 << position ) : value & ~ ( 1 << position );
 
 		}
 
 		function getNormalIndex( normal ) {
 
-			var hash = normal.x.toString() + normal.y.toString() + normal.z.toString();
+			var hash =
+				normal.x.toString() + normal.y.toString() + normal.z.toString();
 
 			if ( normalsHash[ hash ] !== undefined ) {
 
@@ -1157,9 +1288,9 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 		return data;
 
-	},
+	}
 
-	clone: function () {
+	clone() {
 
 		/*
 		 // Handle primitives
@@ -1187,9 +1318,9 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 		return new Geometry().copy( this );
 
-	},
+	}
 
-	copy: function ( source ) {
+	copy( source: Geometry ) {
 
 		var i, il, j, jl, k, kl;
 
@@ -1255,7 +1386,8 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 			for ( j = 0, jl = faceVertexUvs.length; j < jl; j ++ ) {
 
-				var uvs = faceVertexUvs[ j ], uvsCopy = [];
+				var uvs = faceVertexUvs[ j ],
+					uvsCopy = [];
 
 				for ( k = 0, kl = uvs.length; k < kl; k ++ ) {
 
@@ -1421,15 +1553,12 @@ Geometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), 
 
 		return this;
 
-	},
+	}
 
-	dispose: function () {
+	dispose() {
 
 		this.dispatchEvent( { type: 'dispose' } );
 
 	}
 
-} );
-
-
-export { Geometry };
+}

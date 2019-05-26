@@ -3,10 +3,10 @@
  * minimal class for proxing functions to Path. Replaces old "extractSubpaths()"
  **/
 
-import { Color } from '../../math/Color.js';
-import { Path } from './Path.js';
-import { Shape } from './Shape.js';
-import { ShapeUtils } from '../ShapeUtils.js';
+import { Color } from '../../math/Color';
+import { Path } from './Path';
+import { Shape } from './Shape';
+import { ShapeUtils } from '../ShapeUtils';
 
 function ShapePath() {
 

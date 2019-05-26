@@ -2,54 +2,111 @@
  * @author abelnation / http://github.com/abelnation
  */
 
-import { CylinderGeometry } from './CylinderGeometry.js';
-import { CylinderBufferGeometry } from './CylinderGeometry.js';
+import { CylinderGeometry } from './CylinderGeometry';
+import { CylinderBufferGeometry } from './CylinderGeometry';
 
 // ConeGeometry
 
-function ConeGeometry( radius, height, radialSegments, heightSegments, openEnded, thetaStart, thetaLength ) {
+export class ConeGeometry extends CylinderGeometry {
 
-	CylinderGeometry.call( this, 0, radius, height, radialSegments, heightSegments, openEnded, thetaStart, thetaLength );
+	constructor(
+		radius: number,
+		height: number,
+		radialSegments: any,
+		heightSegments: any,
+		openEnded: any,
+		thetaStart: any,
+		thetaLength: any
+	) {
 
-	this.type = 'ConeGeometry';
+		super(
+			0,
+			radius,
+			height,
+			radialSegments,
+			heightSegments,
+			openEnded,
+			thetaStart,
+			thetaLength
+		);
 
-	this.parameters = {
-		radius: radius,
-		height: height,
-		radialSegments: radialSegments,
-		heightSegments: heightSegments,
-		openEnded: openEnded,
-		thetaStart: thetaStart,
-		thetaLength: thetaLength
+		this.type = 'ConeGeometry';
+
+		this.parameters = {
+			radius: radius,
+			height: height,
+			radialSegments: radialSegments,
+			heightSegments: heightSegments,
+			openEnded: openEnded,
+			thetaStart: thetaStart,
+			thetaLength: thetaLength,
+		};
+
+	}
+
+	type: 'ConeGeometry';
+
+	parameters: {
+		radius: any;
+		height: any;
+		radialSegments: any;
+		heightSegments: any;
+		openEnded: any;
+		thetaStart: any;
+		thetaLength: any;
 	};
 
 }
-
-ConeGeometry.prototype = Object.create( CylinderGeometry.prototype );
-ConeGeometry.prototype.constructor = ConeGeometry;
 
 // ConeBufferGeometry
 
-function ConeBufferGeometry( radius, height, radialSegments, heightSegments, openEnded, thetaStart, thetaLength ) {
+export class ConeBufferGeometry extends CylinderBufferGeometry {
 
-	CylinderBufferGeometry.call( this, 0, radius, height, radialSegments, heightSegments, openEnded, thetaStart, thetaLength );
+	constructor(
+		radius: number,
+		height: number,
+		radialSegments: any,
+		heightSegments: any,
+		openEnded: any,
+		thetaStart: any,
+		thetaLength: any
+	) {
 
-	this.type = 'ConeBufferGeometry';
+		super(
+			0,
+			radius,
+			height,
+			radialSegments,
+			heightSegments,
+			openEnded,
+			thetaStart,
+			thetaLength
+		);
 
-	this.parameters = {
-		radius: radius,
-		height: height,
-		radialSegments: radialSegments,
-		heightSegments: heightSegments,
-		openEnded: openEnded,
-		thetaStart: thetaStart,
-		thetaLength: thetaLength
+		this.type = 'ConeBufferGeometry';
+
+		this.parameters = {
+			radius: radius,
+			height: height,
+			radialSegments: radialSegments,
+			heightSegments: heightSegments,
+			openEnded: openEnded,
+			thetaStart: thetaStart,
+			thetaLength: thetaLength,
+		};
+
+	}
+
+	type: 'ConeBufferGeometry';
+
+	parameters: {
+		radius: any;
+		height: any;
+		radialSegments: any;
+		heightSegments: any;
+		openEnded: any;
+		thetaStart: any;
+		thetaLength: any;
 	};
 
 }
-
-ConeBufferGeometry.prototype = Object.create( CylinderBufferGeometry.prototype );
-ConeBufferGeometry.prototype.constructor = ConeBufferGeometry;
-
-
-export { ConeGeometry, ConeBufferGeometry };

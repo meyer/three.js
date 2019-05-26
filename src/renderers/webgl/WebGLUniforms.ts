@@ -45,10 +45,10 @@
  *
  */
 
-import { CubeTexture } from '../../textures/CubeTexture.js';
-import { Texture } from '../../textures/Texture.js';
-import { DataTexture2DArray } from '../../textures/DataTexture2DArray.js';
-import { DataTexture3D } from '../../textures/DataTexture3D.js';
+import { CubeTexture } from '../../textures/CubeTexture';
+import { Texture } from '../../textures/Texture';
+import { DataTexture2DArray } from '../../textures/DataTexture2DArray';
+import { DataTexture3D } from '../../textures/DataTexture3D';
 
 var emptyTexture = new Texture();
 var emptyTexture2dArray = new DataTexture2DArray();

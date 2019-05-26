@@ -2,24 +2,31 @@
  * @author mrdoob / http://mrdoob.com/
  */
 
-function absNumericalSort( a, b ) {
+function absNumericalSort( a: any[], b: any[] ): number {
 
 	return Math.abs( b[ 1 ] ) - Math.abs( a[ 1 ] );
 
 }
 
-function WebGLMorphtargets( gl ) {
+export class WebGLMorphtargets {
 
-	var influencesList = {};
-	var morphInfluences = new Float32Array( 8 );
+	constructor( gl: WebGLRenderingContext | WebGL2RenderingContext ) {
 
-	function update( object, geometry, material, program ) {
+		this.gl = gl;
+
+	}
+
+	private gl: WebGLRenderingContext | WebGL2RenderingContext;
+	private influencesList: Record<string, any> = {};
+	private morphInfluences = new Float32Array( 8 );
+
+	public update( object: any, geometry: any, material: any, program: any ) {
 
 		var objectInfluences = object.morphTargetInfluences;
 
 		var length = objectInfluences.length;
 
-		var influences = influencesList[ geometry.id ];
+		var influences = this.influencesList[ geometry.id ];
 
 		if ( influences === undefined ) {
 
@@ -33,11 +40,12 @@ function WebGLMorphtargets( gl ) {
 
 			}
 
-			influencesList[ geometry.id ] = influences;
+			this.influencesList[ geometry.id ] = influences;
 
 		}
 
-		var morphTargets = material.morphTargets && geometry.morphAttributes.position;
+		var morphTargets =
+			material.morphTargets && geometry.morphAttributes.position;
 		var morphNormals = material.morphNormals && geometry.morphAttributes.normal;
 
 		// Remove current morphAttributes
@@ -81,31 +89,26 @@ function WebGLMorphtargets( gl ) {
 
 				if ( value ) {
 
-					if ( morphTargets ) geometry.addAttribute( 'morphTarget' + i, morphTargets[ index ] );
-					if ( morphNormals ) geometry.addAttribute( 'morphNormal' + i, morphNormals[ index ] );
+					if ( morphTargets )
+						geometry.addAttribute( 'morphTarget' + i, morphTargets[ index ] );
+					if ( morphNormals )
+						geometry.addAttribute( 'morphNormal' + i, morphNormals[ index ] );
 
-					morphInfluences[ i ] = value;
+					this.morphInfluences[ i ] = value;
 					continue;
 
 				}
 
 			}
 
-			morphInfluences[ i ] = 0;
+			this.morphInfluences[ i ] = 0;
 
 		}
 
-		program.getUniforms().setValue( gl, 'morphTargetInfluences', morphInfluences );
+		program
+			.getUniforms()
+			.setValue( this.gl, 'morphTargetInfluences', this.morphInfluences );
 
 	}
 
-	return {
-
-		update: update
-
-	};
-
 }
-
-
-export { WebGLMorphtargets };

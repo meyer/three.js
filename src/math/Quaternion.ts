@@ -5,26 +5,42 @@
  * @author bhouston / http://clara.io
  */
 
-import { _Math } from './Math.js';
+import { _Math } from './Math';
+import { Euler } from './Euler';
+import { Vector3 } from './Vector3';
+import { Matrix4 } from './Matrix4';
 
-function Quaternion( x, y, z, w ) {
+export class Quaternion {
 
-	this._x = x || 0;
-	this._y = y || 0;
-	this._z = z || 0;
-	this._w = ( w !== undefined ) ? w : 1;
+	constructor( x?: number, y?: number, z?: number, w?: number ) {
 
-}
+		this._x = x || 0;
+		this._y = y || 0;
+		this._z = z || 0;
+		this._w = w !== undefined ? w : 1;
 
-Object.assign( Quaternion, {
+	}
 
-	slerp: function ( qa, qb, qm, t ) {
+	_x: number;
+	_y: number;
+	_z: number;
+	_w: number;
+
+	static slerp( qa: Quaternion, qb: Quaternion, qm: Quaternion, t: number ) {
 
 		return qm.copy( qa ).slerp( qb, t );
 
-	},
+	}
 
-	slerpFlat: function ( dst, dstOffset, src0, srcOffset0, src1, srcOffset1, t ) {
+	static slerpFlat(
+		dst: number[],
+		dstOffset: number,
+		src0: number[],
+		srcOffset0: number,
+		src1: number[],
+		srcOffset1: number,
+		t: number
+	) {
 
 		// fuzz-free, array-based Quaternion SLERP operation
 
@@ -32,7 +48,6 @@ Object.assign( Quaternion, {
 			y0 = src0[ srcOffset0 + 1 ],
 			z0 = src0[ srcOffset0 + 2 ],
 			w0 = src0[ srcOffset0 + 3 ],
-
 			x1 = src1[ srcOffset1 + 0 ],
 			y1 = src1[ srcOffset1 + 1 ],
 			z1 = src1[ srcOffset1 + 2 ],
@@ -41,10 +56,8 @@ Object.assign( Quaternion, {
 		if ( w0 !== w1 || x0 !== x1 || y0 !== y1 || z0 !== z1 ) {
 
 			var s = 1 - t,
-
 				cos = x0 * x1 + y0 * y1 + z0 * z1 + w0 * w1,
-
-				dir = ( cos >= 0 ? 1 : - 1 ),
+				dir = cos >= 0 ? 1 : - 1,
 				sqrSin = 1 - cos * cos;
 
 			// Skip the Slerp for tiny steps to avoid numeric problems:
@@ -86,85 +99,61 @@ Object.assign( Quaternion, {
 
 	}
 
-} );
+	get x() {
 
-Object.defineProperties( Quaternion.prototype, {
-
-	x: {
-
-		get: function () {
-
-			return this._x;
-
-		},
-
-		set: function ( value ) {
-
-			this._x = value;
-			this.onChangeCallback();
-
-		}
-
-	},
-
-	y: {
-
-		get: function () {
-
-			return this._y;
-
-		},
-
-		set: function ( value ) {
-
-			this._y = value;
-			this.onChangeCallback();
-
-		}
-
-	},
-
-	z: {
-
-		get: function () {
-
-			return this._z;
-
-		},
-
-		set: function ( value ) {
-
-			this._z = value;
-			this.onChangeCallback();
-
-		}
-
-	},
-
-	w: {
-
-		get: function () {
-
-			return this._w;
-
-		},
-
-		set: function ( value ) {
-
-			this._w = value;
-			this.onChangeCallback();
-
-		}
+		return this._x;
 
 	}
 
-} );
+	set x( value: number ) {
 
-Object.assign( Quaternion.prototype, {
+		this._x = value;
+		this.onChangeCallback();
 
-	isQuaternion: true,
+	}
 
-	set: function ( x, y, z, w ) {
+	get y() {
+
+		return this._y;
+
+	}
+
+	set y( value: number ) {
+
+		this._y = value;
+		this.onChangeCallback();
+
+	}
+
+	get z() {
+
+		return this._z;
+
+	}
+
+	set z( value: number ) {
+
+		this._z = value;
+		this.onChangeCallback();
+
+	}
+
+	get w() {
+
+		return this._w;
+
+	}
+
+	set w( value: number ) {
+
+		this._w = value;
+		this.onChangeCallback();
+
+	}
+
+	isQuaternion = true;
+
+	set( x: number, y: number, z: number, w: number ) {
 
 		this._x = x;
 		this._y = y;
@@ -175,15 +164,15 @@ Object.assign( Quaternion.prototype, {
 
 		return this;
 
-	},
+	}
 
-	clone: function () {
+	clone() {
 
-		return new this.constructor( this._x, this._y, this._z, this._w );
+		return new Quaternion( this._x, this._y, this._z, this._w );
 
-	},
+	}
 
-	copy: function ( quaternion ) {
+	copy( quaternion: Quaternion ) {
 
 		this._x = quaternion.x;
 		this._y = quaternion.y;
@@ -194,17 +183,22 @@ Object.assign( Quaternion.prototype, {
 
 		return this;
 
-	},
+	}
 
-	setFromEuler: function ( euler, update ) {
+	setFromEuler( euler: Euler, update?: boolean ) {
 
-		if ( ! ( euler && euler.isEuler ) ) {
+		if ( ! ( euler && 'isEuler' in euler ) ) {
 
-			throw new Error( 'THREE.Quaternion: .setFromEuler() now expects an Euler rotation rather than a Vector3 and order.' );
+			throw new Error(
+				'THREE.Quaternion: .setFromEuler() now expects an Euler rotation rather than a Vector3 and order.'
+			);
 
 		}
 
-		var x = euler._x, y = euler._y, z = euler._z, order = euler.order;
+		var x = euler._x,
+			y = euler._y,
+			z = euler._z,
+			order = euler.order;
 
 		// http://www.mathworks.com/matlabcentral/fileexchange/
 		// 	20696-function-to-convert-between-dcm-euler-angles-quaternions-and-euler-vectors/
@@ -269,15 +263,16 @@ Object.assign( Quaternion.prototype, {
 
 		return this;
 
-	},
+	}
 
-	setFromAxisAngle: function ( axis, angle ) {
+	setFromAxisAngle( axis: Vector3, angle: number ) {
 
 		// http://www.euclideanspace.com/maths/geometry/rotations/conversions/angleToQuaternion/index.htm
 
 		// assumes axis is normalized
 
-		var halfAngle = angle / 2, s = Math.sin( halfAngle );
+		var halfAngle = angle / 2,
+			s = Math.sin( halfAngle );
 
 		this._x = axis.x * s;
 		this._y = axis.y * s;
@@ -288,20 +283,24 @@ Object.assign( Quaternion.prototype, {
 
 		return this;
 
-	},
+	}
 
-	setFromRotationMatrix: function ( m ) {
+	setFromRotationMatrix( m: Matrix4 ) {
 
 		// http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/index.htm
 
 		// assumes the upper 3x3 of m is a pure rotation matrix (i.e, unscaled)
 
 		var te = m.elements,
-
-			m11 = te[ 0 ], m12 = te[ 4 ], m13 = te[ 8 ],
-			m21 = te[ 1 ], m22 = te[ 5 ], m23 = te[ 9 ],
-			m31 = te[ 2 ], m32 = te[ 6 ], m33 = te[ 10 ],
-
+			m11 = te[ 0 ],
+			m12 = te[ 4 ],
+			m13 = te[ 8 ],
+			m21 = te[ 1 ],
+			m22 = te[ 5 ],
+			m23 = te[ 9 ],
+			m31 = te[ 2 ],
+			m32 = te[ 6 ],
+			m33 = te[ 10 ],
 			trace = m11 + m22 + m33,
 			s;
 
@@ -347,9 +346,9 @@ Object.assign( Quaternion.prototype, {
 
 		return this;
 
-	},
+	}
 
-	setFromUnitVectors: function ( vFrom, vTo ) {
+	setFromUnitVectors( vFrom: Vector3, vTo: Vector3 ) {
 
 		// assumes direction vectors vFrom and vTo are normalized
 
@@ -390,15 +389,15 @@ Object.assign( Quaternion.prototype, {
 
 		return this.normalize();
 
-	},
+	}
 
-	angleTo: function ( q ) {
+	angleTo( q: Quaternion ) {
 
 		return 2 * Math.acos( Math.abs( _Math.clamp( this.dot( q ), - 1, 1 ) ) );
 
-	},
+	}
 
-	rotateTowards: function ( q, step ) {
+	rotateTowards( q: Quaternion, step: number ) {
 
 		var angle = this.angleTo( q );
 
@@ -410,17 +409,17 @@ Object.assign( Quaternion.prototype, {
 
 		return this;
 
-	},
+	}
 
-	inverse: function () {
+	inverse() {
 
 		// quaternion is assumed to have unit length
 
 		return this.conjugate();
 
-	},
+	}
 
-	conjugate: function () {
+	conjugate() {
 
 		this._x *= - 1;
 		this._y *= - 1;
@@ -430,27 +429,37 @@ Object.assign( Quaternion.prototype, {
 
 		return this;
 
-	},
+	}
 
-	dot: function ( v ) {
+	dot( v: Quaternion ) {
 
 		return this._x * v._x + this._y * v._y + this._z * v._z + this._w * v._w;
 
-	},
+	}
 
-	lengthSq: function () {
+	lengthSq() {
 
-		return this._x * this._x + this._y * this._y + this._z * this._z + this._w * this._w;
+		return (
+			this._x * this._x +
+			this._y * this._y +
+			this._z * this._z +
+			this._w * this._w
+		);
 
-	},
+	}
 
-	length: function () {
+	length() {
 
-		return Math.sqrt( this._x * this._x + this._y * this._y + this._z * this._z + this._w * this._w );
+		return Math.sqrt(
+			this._x * this._x +
+				this._y * this._y +
+				this._z * this._z +
+				this._w * this._w
+		);
 
-	},
+	}
 
-	normalize: function () {
+	normalize() {
 
 		var l = this.length();
 
@@ -476,33 +485,41 @@ Object.assign( Quaternion.prototype, {
 
 		return this;
 
-	},
+	}
 
-	multiply: function ( q, p ) {
+	multiply( q: Quaternion, p?: Quaternion ) {
 
 		if ( p !== undefined ) {
 
-			console.warn( 'THREE.Quaternion: .multiply() now only accepts one argument. Use .multiplyQuaternions( a, b ) instead.' );
+			console.warn(
+				'THREE.Quaternion: .multiply() now only accepts one argument. Use .multiplyQuaternions( a, b ) instead.'
+			);
 			return this.multiplyQuaternions( q, p );
 
 		}
 
 		return this.multiplyQuaternions( this, q );
 
-	},
+	}
 
-	premultiply: function ( q ) {
+	premultiply( q: Quaternion ) {
 
 		return this.multiplyQuaternions( q, this );
 
-	},
+	}
 
-	multiplyQuaternions: function ( a, b ) {
+	multiplyQuaternions( a: Quaternion, b: Quaternion ) {
 
 		// from http://www.euclideanspace.com/maths/algebra/realNormedAlgebra/quaternions/code/index.htm
 
-		var qax = a._x, qay = a._y, qaz = a._z, qaw = a._w;
-		var qbx = b._x, qby = b._y, qbz = b._z, qbw = b._w;
+		var qax = a._x,
+			qay = a._y,
+			qaz = a._z,
+			qaw = a._w;
+		var qbx = b._x,
+			qby = b._y,
+			qbz = b._z,
+			qbw = b._w;
 
 		this._x = qax * qbw + qaw * qbx + qay * qbz - qaz * qby;
 		this._y = qay * qbw + qaw * qby + qaz * qbx - qax * qbz;
@@ -513,14 +530,17 @@ Object.assign( Quaternion.prototype, {
 
 		return this;
 
-	},
+	}
 
-	slerp: function ( qb, t ) {
+	slerp( qb: Quaternion, t: number ) {
 
 		if ( t === 0 ) return this;
 		if ( t === 1 ) return this.copy( qb );
 
-		var x = this._x, y = this._y, z = this._z, w = this._w;
+		var x = this._x,
+			y = this._y,
+			z = this._z,
+			w = this._w;
 
 		// http://www.euclideanspace.com/maths/algebra/realNormedAlgebra/quaternions/slerp/
 
@@ -571,24 +591,29 @@ Object.assign( Quaternion.prototype, {
 		var ratioA = Math.sin( ( 1 - t ) * halfTheta ) / sinHalfTheta,
 			ratioB = Math.sin( t * halfTheta ) / sinHalfTheta;
 
-		this._w = ( w * ratioA + this._w * ratioB );
-		this._x = ( x * ratioA + this._x * ratioB );
-		this._y = ( y * ratioA + this._y * ratioB );
-		this._z = ( z * ratioA + this._z * ratioB );
+		this._w = w * ratioA + this._w * ratioB;
+		this._x = x * ratioA + this._x * ratioB;
+		this._y = y * ratioA + this._y * ratioB;
+		this._z = z * ratioA + this._z * ratioB;
 
 		this.onChangeCallback();
 
 		return this;
 
-	},
+	}
 
-	equals: function ( quaternion ) {
+	equals( quaternion: Quaternion ) {
 
-		return ( quaternion._x === this._x ) && ( quaternion._y === this._y ) && ( quaternion._z === this._z ) && ( quaternion._w === this._w );
+		return (
+			quaternion._x === this._x &&
+			quaternion._y === this._y &&
+			quaternion._z === this._z &&
+			quaternion._w === this._w
+		);
 
-	},
+	}
 
-	fromArray: function ( array, offset ) {
+	fromArray( array: number[], offset?: number ) {
 
 		if ( offset === undefined ) offset = 0;
 
@@ -601,9 +626,9 @@ Object.assign( Quaternion.prototype, {
 
 		return this;
 
-	},
+	}
 
-	toArray: function ( array, offset ) {
+	toArray( array?: number[], offset?: number ) {
 
 		if ( array === undefined ) array = [];
 		if ( offset === undefined ) offset = 0;
@@ -615,19 +640,16 @@ Object.assign( Quaternion.prototype, {
 
 		return array;
 
-	},
+	}
 
-	onChange: function ( callback ) {
+	onChange( callback: () => void ) {
 
 		this.onChangeCallback = callback;
 
 		return this;
 
-	},
+	}
 
-	onChangeCallback: function () {}
+	onChangeCallback() {}
 
-} );
-
-
-export { Quaternion };
+}

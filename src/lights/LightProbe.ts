@@ -4,8 +4,8 @@
  * A LightProbe is a source of indirect-diffuse light
  */
 
-import { SphericalHarmonics3 } from '../math/SphericalHarmonics3.js';
-import { Light } from './Light.js';
+import { SphericalHarmonics3 } from '../math/SphericalHarmonics3';
+import { Light } from './Light';
 
 function LightProbe( sh, intensity ) {
 

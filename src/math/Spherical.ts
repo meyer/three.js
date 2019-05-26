@@ -1,4 +1,5 @@
-import { _Math } from './Math.js';
+import { _Math } from './Math';
+import { Vector3 } from './Vector3';
 
 /**
  * @author bhouston / http://clara.io
@@ -10,19 +11,23 @@ import { _Math } from './Math.js';
  * The azimuthal angle (theta) is measured from the positive z-axiz.
  */
 
-function Spherical( radius, phi, theta ) {
+export class Spherical {
 
-	this.radius = ( radius !== undefined ) ? radius : 1.0;
-	this.phi = ( phi !== undefined ) ? phi : 0; // polar angle
-	this.theta = ( theta !== undefined ) ? theta : 0; // azimuthal angle
+	constructor( radius?: number, phi?: number, theta?: number ) {
 
-	return this;
+		this.radius = radius !== undefined ? radius : 1.0;
+		this.phi = phi !== undefined ? phi : 0; // polar angle
+		this.theta = theta !== undefined ? theta : 0; // azimuthal angle
 
-}
+		return this;
 
-Object.assign( Spherical.prototype, {
+	}
 
-	set: function ( radius, phi, theta ) {
+	radius: number;
+	phi: number;
+	theta: number;
+
+	set( radius: number, phi: number, theta: number ) {
 
 		this.radius = radius;
 		this.phi = phi;
@@ -30,15 +35,15 @@ Object.assign( Spherical.prototype, {
 
 		return this;
 
-	},
+	}
 
-	clone: function () {
+	clone(): Spherical {
 
-		return new this.constructor().copy( this );
+		return new ( this as any ).constructor().copy( this );
 
-	},
+	}
 
-	copy: function ( other ) {
+	copy( other: Spherical ): Spherical {
 
 		this.radius = other.radius;
 		this.phi = other.phi;
@@ -46,25 +51,25 @@ Object.assign( Spherical.prototype, {
 
 		return this;
 
-	},
+	}
 
 	// restrict phi to be betwee EPS and PI-EPS
-	makeSafe: function () {
+	makeSafe() {
 
 		var EPS = 0.000001;
 		this.phi = Math.max( EPS, Math.min( Math.PI - EPS, this.phi ) );
 
 		return this;
 
-	},
+	}
 
-	setFromVector3: function ( v ) {
+	setFromVector3( v: Vector3 ) {
 
 		return this.setFromCartesianCoords( v.x, v.y, v.z );
 
-	},
+	}
 
-	setFromCartesianCoords: function ( x, y, z ) {
+	setFromCartesianCoords( x: number, y: number, z: number ) {
 
 		this.radius = Math.sqrt( x * x + y * y + z * z );
 
@@ -84,7 +89,4 @@ Object.assign( Spherical.prototype, {
 
 	}
 
-} );
-
-
-export { Spherical };
+}

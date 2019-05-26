@@ -1,5 +1,5 @@
-import { Material } from './Material.js';
-import { Color } from '../math/Color.js';
+import { Material } from './Material';
+import { Color } from '../math/Color';
 
 /**
  * @author mrdoob / http://mrdoob.com/
@@ -17,48 +17,62 @@ import { Color } from '../math/Color.js';
  * }
  */
 
-function PointsMaterial( parameters ) {
+export class PointsMaterial extends Material {
 
-	Material.call( this );
+	constructor( parameters: Partial<Material> ) {
 
-	this.type = 'PointsMaterial';
+		super();
 
-	this.color = new Color( 0xffffff );
+		this.color = new Color( 0xffffff );
 
-	this.map = null;
+		this.map = null;
 
-	this.size = 1;
-	this.sizeAttenuation = true;
+		this.size = 1;
+		this.sizeAttenuation = true;
 
-	this.morphTargets = false;
+		this.morphTargets = false;
 
-	this.lights = false;
+		this.lights = false;
 
-	this.setValues( parameters );
+		this.setValues( parameters );
+
+	}
+
+	type = 'PointsMaterial' as const;
+	color: Color;
+	map: null | any;
+	size: number;
+	sizeAttenuation: boolean;
+	morphTargets: boolean;
+	lights: boolean;
+
+	isPointsMaterial = true;
+
+	setValues<K extends Extract<keyof PointsMaterial, string>>(
+		values?: Pick<PointsMaterial, K>
+	): void;
+
+	setValues( ...args: any[] ): void {
+
+		return super.setValues( ...args );
+
+	}
+
+	copy( source: Material ) {
+
+		Material.prototype.copy.call( this, source );
+
+		this.color.copy( source.color! );
+
+		this.map = source.map;
+
+		this.size = source.size;
+		this.sizeAttenuation = source.sizeAttenuation;
+
+		this.morphTargets = source.morphTargets;
+
+		return this;
+
+	}
 
 }
-
-PointsMaterial.prototype = Object.create( Material.prototype );
-PointsMaterial.prototype.constructor = PointsMaterial;
-
-PointsMaterial.prototype.isPointsMaterial = true;
-
-PointsMaterial.prototype.copy = function ( source ) {
-
-	Material.prototype.copy.call( this, source );
-
-	this.color.copy( source.color );
-
-	this.map = source.map;
-
-	this.size = source.size;
-	this.sizeAttenuation = source.sizeAttenuation;
-
-	this.morphTargets = source.morphTargets;
-
-	return this;
-
-};
-
-
-export { PointsMaterial };

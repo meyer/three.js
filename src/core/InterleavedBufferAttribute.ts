@@ -1,103 +1,105 @@
+interface InterleavedBufferAttributeData {
+	count: number;
+	array: any[];
+	stride: number;
+}
 
 /**
  * @author benaadams / https://twitter.com/ben_a_adams
  */
 
-function InterleavedBufferAttribute( interleavedBuffer, itemSize, offset, normalized ) {
+export class InterleavedBufferAttribute {
 
-	this.data = interleavedBuffer;
-	this.itemSize = itemSize;
-	this.offset = offset;
+	constructor(
+		interleavedBuffer: InterleavedBufferAttributeData,
+		itemSize: number,
+		offset: number,
+		normalized?: boolean
+	) {
 
-	this.normalized = normalized === true;
+		this.data = interleavedBuffer;
+		this.itemSize = itemSize;
+		this.offset = offset;
 
-}
+		this.normalized = normalized === true;
 
-Object.defineProperties( InterleavedBufferAttribute.prototype, {
+	}
+	data: InterleavedBufferAttributeData;
+	itemSize: number;
+	offset: number;
+	normalized: boolean;
 
-	count: {
+	get count(): number {
 
-		get: function () {
-
-			return this.data.count;
-
-		}
-
-	},
-
-	array: {
-
-		get: function () {
-
-			return this.data.array;
-
-		}
+		return this.data.count;
 
 	}
 
-} );
+	get array(): any[] {
 
-Object.assign( InterleavedBufferAttribute.prototype, {
+		return this.data.array;
 
-	isInterleavedBufferAttribute: true,
+	}
 
-	setX: function ( index, x ) {
+	isInterleavedBufferAttribute = true;
+
+	setX( index: number, x: number ) {
 
 		this.data.array[ index * this.data.stride + this.offset ] = x;
 
 		return this;
 
-	},
+	}
 
-	setY: function ( index, y ) {
+	setY( index: number, y: number ) {
 
 		this.data.array[ index * this.data.stride + this.offset + 1 ] = y;
 
 		return this;
 
-	},
+	}
 
-	setZ: function ( index, z ) {
+	setZ( index: number, z: number ) {
 
 		this.data.array[ index * this.data.stride + this.offset + 2 ] = z;
 
 		return this;
 
-	},
+	}
 
-	setW: function ( index, w ) {
+	setW( index: number, w: number ) {
 
 		this.data.array[ index * this.data.stride + this.offset + 3 ] = w;
 
 		return this;
 
-	},
+	}
 
-	getX: function ( index ) {
+	getX( index: number ) {
 
 		return this.data.array[ index * this.data.stride + this.offset ];
 
-	},
+	}
 
-	getY: function ( index ) {
+	getY( index: number ) {
 
 		return this.data.array[ index * this.data.stride + this.offset + 1 ];
 
-	},
+	}
 
-	getZ: function ( index ) {
+	getZ( index: number ) {
 
 		return this.data.array[ index * this.data.stride + this.offset + 2 ];
 
-	},
+	}
 
-	getW: function ( index ) {
+	getW( index: number ) {
 
 		return this.data.array[ index * this.data.stride + this.offset + 3 ];
 
-	},
+	}
 
-	setXY: function ( index, x, y ) {
+	setXY( index: number, x: number, y: number ) {
 
 		index = index * this.data.stride + this.offset;
 
@@ -106,9 +108,9 @@ Object.assign( InterleavedBufferAttribute.prototype, {
 
 		return this;
 
-	},
+	}
 
-	setXYZ: function ( index, x, y, z ) {
+	setXYZ( index: number, x: number, y: number, z: number ) {
 
 		index = index * this.data.stride + this.offset;
 
@@ -118,9 +120,9 @@ Object.assign( InterleavedBufferAttribute.prototype, {
 
 		return this;
 
-	},
+	}
 
-	setXYZW: function ( index, x, y, z, w ) {
+	setXYZW( index: number, x: number, y: number, z: number, w: number ) {
 
 		index = index * this.data.stride + this.offset;
 
@@ -133,7 +135,4 @@ Object.assign( InterleavedBufferAttribute.prototype, {
 
 	}
 
-} );
-
-
-export { InterleavedBufferAttribute };
+}

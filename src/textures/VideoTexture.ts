@@ -2,29 +2,54 @@
  * @author mrdoob / http://mrdoob.com/
  */
 
-import { RGBFormat, LinearFilter } from '../constants.js';
-import { Texture } from './Texture.js';
+import {
+	RGBFormat,
+	LinearFilter,
+	Wrapping,
+	TextureFilter,
+	PixelFormat,
+	TextureDataType,
+} from '../constants';
+import { Texture } from './Texture';
 
-function VideoTexture( video, mapping, wrapS, wrapT, magFilter, minFilter, format, type, anisotropy ) {
+export class VideoTexture extends Texture {
 
-	Texture.call( this, video, mapping, wrapS, wrapT, magFilter, minFilter, format, type, anisotropy );
+	constructor(
+		video: any,
+		mapping: any,
+		wrapS: Wrapping,
+		wrapT: Wrapping,
+		magFilter: TextureFilter,
+		minFilter: TextureFilter,
+		format: PixelFormat,
+		type: TextureDataType,
+		anisotropy: any
+	) {
 
-	this.format = format !== undefined ? format : RGBFormat;
+		super(
+			video,
+			mapping,
+			wrapS,
+			wrapT,
+			magFilter,
+			minFilter,
+			format,
+			type,
+			anisotropy
+		);
 
-	this.minFilter = minFilter !== undefined ? minFilter : LinearFilter;
-	this.magFilter = magFilter !== undefined ? magFilter : LinearFilter;
+		this.format = format !== undefined ? format : RGBFormat;
 
-	this.generateMipmaps = false;
+		this.minFilter = minFilter !== undefined ? minFilter : LinearFilter;
+		this.magFilter = magFilter !== undefined ? magFilter : LinearFilter;
 
-}
+		this.generateMipmaps = false;
 
-VideoTexture.prototype = Object.assign( Object.create( Texture.prototype ), {
+	}
 
-	constructor: VideoTexture,
+	isVideoTexture = true as const;
 
-	isVideoTexture: true,
-
-	update: function () {
+	update() {
 
 		var video = this.image;
 
@@ -36,7 +61,4 @@ VideoTexture.prototype = Object.assign( Object.create( Texture.prototype ), {
 
 	}
 
-} );
-
-
-export { VideoTexture };
+}

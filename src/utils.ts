@@ -2,7 +2,7 @@
  * @author mrdoob / http://mrdoob.com/
  */
 
-function arrayMin( array ) {
+function arrayMin( array: number[] ): number {
 
 	if ( array.length === 0 ) return Infinity;
 
@@ -18,7 +18,7 @@ function arrayMin( array ) {
 
 }
 
-function arrayMax( array ) {
+function arrayMax( array: number[] ): number {
 
 	if ( array.length === 0 ) return - Infinity;
 

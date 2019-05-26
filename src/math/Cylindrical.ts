@@ -1,3 +1,5 @@
+import { Vector3 } from './Vector3';
+
 /**
  * @author Mugen87 / https://github.com/Mugen87
  *
@@ -5,19 +7,23 @@
  *
  */
 
-function Cylindrical( radius, theta, y ) {
+export class Cylindrical {
 
-	this.radius = ( radius !== undefined ) ? radius : 1.0; // distance from the origin to a point in the x-z plane
-	this.theta = ( theta !== undefined ) ? theta : 0; // counterclockwise angle in the x-z plane measured in radians from the positive z-axis
-	this.y = ( y !== undefined ) ? y : 0; // height above the x-z plane
+	constructor( radius?: number, theta?: number, y?: number ) {
 
-	return this;
+		this.radius = radius !== undefined ? radius : 1.0; // distance from the origin to a point in the x-z plane
+		this.theta = theta !== undefined ? theta : 0; // counterclockwise angle in the x-z plane measured in radians from the positive z-axis
+		this.y = y !== undefined ? y : 0; // height above the x-z plane
 
-}
+		return this;
 
-Object.assign( Cylindrical.prototype, {
+	}
 
-	set: function ( radius, theta, y ) {
+	radius: number;
+	theta: number;
+	y: number;
+
+	set( radius: number, theta: number, y: number ) {
 
 		this.radius = radius;
 		this.theta = theta;
@@ -25,15 +31,15 @@ Object.assign( Cylindrical.prototype, {
 
 		return this;
 
-	},
+	}
 
-	clone: function () {
+	clone() {
 
-		return new this.constructor().copy( this );
+		return new Cylindrical().copy( this );
 
-	},
+	}
 
-	copy: function ( other ) {
+	copy( other: Cylindrical ) {
 
 		this.radius = other.radius;
 		this.theta = other.theta;
@@ -41,15 +47,15 @@ Object.assign( Cylindrical.prototype, {
 
 		return this;
 
-	},
+	}
 
-	setFromVector3: function ( v ) {
+	setFromVector3( v: Vector3 ) {
 
 		return this.setFromCartesianCoords( v.x, v.y, v.z );
 
-	},
+	}
 
-	setFromCartesianCoords: function ( x, y, z ) {
+	setFromCartesianCoords( x: number, y: number, z: number ) {
 
 		this.radius = Math.sqrt( x * x + z * z );
 		this.theta = Math.atan2( x, z );
@@ -59,7 +65,4 @@ Object.assign( Cylindrical.prototype, {
 
 	}
 
-} );
-
-
-export { Cylindrical };
+}

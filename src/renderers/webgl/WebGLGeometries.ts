@@ -2,58 +2,78 @@
  * @author mrdoob / http://mrdoob.com/
  */
 
-import { Uint16BufferAttribute, Uint32BufferAttribute } from '../../core/BufferAttribute.js';
-import { BufferGeometry } from '../../core/BufferGeometry.js';
-import { arrayMax } from '../../utils.js';
+import {
+	Uint16BufferAttribute,
+	Uint32BufferAttribute,
+} from '../../core/BufferAttribute';
+import { BufferGeometry } from '../../core/BufferGeometry';
+import { arrayMax } from '../../utils';
+import { WebGLAttributes } from './WebGLAttributes';
 
-function WebGLGeometries( gl, attributes, info ) {
+export class WebGLGeometries {
 
-	var geometries = {};
-	var wireframeAttributes = {};
+	constructor(
+		gl: WebGLRenderingContext | WebGL2RenderingContext,
+		attributes: WebGLAttributes,
+		info: any
+	) {
 
-	function onGeometryDispose( event ) {
+		this.gl = gl;
+		this.attributes = attributes;
+		this.info = info;
+
+	}
+
+	private geometries: Record<string, any> = {};
+	private wireframeAttributes: Record<string, any> = {};
+
+	private gl: WebGLRenderingContext | WebGL2RenderingContext;
+	private attributes: WebGLAttributes;
+	private info: any;
+
+	private onGeometryDispose( event: any ) {
 
 		var geometry = event.target;
-		var buffergeometry = geometries[ geometry.id ];
+		var buffergeometry = this.geometries[ geometry.id ];
 
 		if ( buffergeometry.index !== null ) {
 
-			attributes.remove( buffergeometry.index );
+			this.attributes.remove( buffergeometry.index );
 
 		}
 
 		for ( var name in buffergeometry.attributes ) {
 
-			attributes.remove( buffergeometry.attributes[ name ] );
+			this.attributes.remove( buffergeometry.attributes[ name ] );
 
 		}
 
-		geometry.removeEventListener( 'dispose', onGeometryDispose );
+		geometry.removeEventListener( 'dispose', this.onGeometryDispose );
 
-		delete geometries[ geometry.id ];
+		delete this.geometries[ geometry.id ];
 
-		var attribute = wireframeAttributes[ buffergeometry.id ];
+		var attribute = this.wireframeAttributes[ buffergeometry.id ];
 
 		if ( attribute ) {
 
-			attributes.remove( attribute );
-			delete wireframeAttributes[ buffergeometry.id ];
+			this.attributes.remove( attribute );
+			delete this.wireframeAttributes[ buffergeometry.id ];
 
 		}
 
 		//
 
-		info.memory.geometries --;
+		this.info.memory.geometries --;
 
 	}
 
-	function get( object, geometry ) {
+	public get( object: any, geometry: any ) {
 
-		var buffergeometry = geometries[ geometry.id ];
+		var buffergeometry = this.geometries[ geometry.id ];
 
 		if ( buffergeometry ) return buffergeometry;
 
-		geometry.addEventListener( 'dispose', onGeometryDispose );
+		geometry.addEventListener( 'dispose', this.onGeometryDispose );
 
 		if ( geometry.isBufferGeometry ) {
 
@@ -71,28 +91,28 @@ function WebGLGeometries( gl, attributes, info ) {
 
 		}
 
-		geometries[ geometry.id ] = buffergeometry;
+		this.geometries[ geometry.id ] = buffergeometry;
 
-		info.memory.geometries ++;
+		this.info.memory.geometries ++;
 
 		return buffergeometry;
 
 	}
 
-	function update( geometry ) {
+	public update( geometry: any ) {
 
 		var index = geometry.index;
 		var geometryAttributes = geometry.attributes;
 
 		if ( index !== null ) {
 
-			attributes.update( index, gl.ELEMENT_ARRAY_BUFFER );
+			this.attributes.update( index, this.gl.ELEMENT_ARRAY_BUFFER );
 
 		}
 
 		for ( var name in geometryAttributes ) {
 
-			attributes.update( geometryAttributes[ name ], gl.ARRAY_BUFFER );
+			this.attributes.update( geometryAttributes[ name ], this.gl.ARRAY_BUFFER );
 
 		}
 
@@ -106,7 +126,7 @@ function WebGLGeometries( gl, attributes, info ) {
 
 			for ( var i = 0, l = array.length; i < l; i ++ ) {
 
-				attributes.update( array[ i ], gl.ARRAY_BUFFER );
+				this.attributes.update( array[ i ], this.gl.ARRAY_BUFFER );
 
 			}
 
@@ -114,9 +134,9 @@ function WebGLGeometries( gl, attributes, info ) {
 
 	}
 
-	function getWireframeAttribute( geometry ) {
+	public getWireframeAttribute( geometry: any ) {
 
-		var attribute = wireframeAttributes[ geometry.id ];
+		var attribute = this.wireframeAttributes[ geometry.id ];
 
 		if ( attribute ) return attribute;
 
@@ -129,13 +149,13 @@ function WebGLGeometries( gl, attributes, info ) {
 
 		if ( geometryIndex !== null ) {
 
-			var array = geometryIndex.array;
+			const array = geometryIndex.array;
 
-			for ( var i = 0, l = array.length; i < l; i += 3 ) {
+			for ( let i = 0, l = array.length; i < l; i += 3 ) {
 
-				var a = array[ i + 0 ];
-				var b = array[ i + 1 ];
-				var c = array[ i + 2 ];
+				const a = array[ i + 0 ];
+				const b = array[ i + 1 ];
+				const c = array[ i + 2 ];
 
 				indices.push( a, b, b, c, c, a );
 
@@ -143,13 +163,13 @@ function WebGLGeometries( gl, attributes, info ) {
 
 		} else {
 
-			var array = geometryAttributes.position.array;
+			const array: any[] = geometryAttributes.position.array;
 
-			for ( var i = 0, l = ( array.length / 3 ) - 1; i < l; i += 3 ) {
+			for ( let i = 0, l = array.length / 3 - 1; i < l; i += 3 ) {
 
-				var a = i + 0;
-				var b = i + 1;
-				var c = i + 2;
+				const a = i + 0;
+				const b = i + 1;
+				const c = i + 2;
 
 				indices.push( a, b, b, c, c, a );
 
@@ -159,26 +179,16 @@ function WebGLGeometries( gl, attributes, info ) {
 
 		// console.timeEnd( 'wireframe' );
 
-		attribute = new ( arrayMax( indices ) > 65535 ? Uint32BufferAttribute : Uint16BufferAttribute )( indices, 1 );
+		attribute = new ( arrayMax( indices ) > 65535
+			? Uint32BufferAttribute
+			: Uint16BufferAttribute )( indices, 1 );
 
-		attributes.update( attribute, gl.ELEMENT_ARRAY_BUFFER );
+		this.attributes.update( attribute, this.gl.ELEMENT_ARRAY_BUFFER );
 
-		wireframeAttributes[ geometry.id ] = attribute;
+		this.wireframeAttributes[ geometry.id ] = attribute;
 
 		return attribute;
 
 	}
 
-	return {
-
-		get: get,
-		update: update,
-
-		getWireframeAttribute: getWireframeAttribute
-
-	};
-
 }
-
-
-export { WebGLGeometries };

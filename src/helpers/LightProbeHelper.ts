@@ -1,6 +1,6 @@
-import { Mesh } from '../objects/Mesh.js';
-import { ShaderMaterial } from '../materials/ShaderMaterial.js';
-import { SphereBufferGeometry } from '../geometries/SphereGeometry.js';
+import { Mesh } from '../objects/Mesh';
+import { ShaderMaterial } from '../materials/ShaderMaterial';
+import { SphereBufferGeometry } from '../geometries/SphereGeometry';
 
 /**
  * @author WestLangley / http://github.com/WestLangley

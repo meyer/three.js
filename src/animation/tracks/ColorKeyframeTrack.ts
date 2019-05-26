@@ -1,4 +1,5 @@
-import { KeyframeTrack } from '../KeyframeTrack.js';
+import { KeyframeTrack } from '../KeyframeTrack';
+import { InterpolationModes } from '../../constants';
 
 /**
  *
@@ -10,17 +11,9 @@ import { KeyframeTrack } from '../KeyframeTrack.js';
  * @author tschw
  */
 
-function ColorKeyframeTrack( name, times, values, interpolation ) {
+export class ColorKeyframeTrack extends KeyframeTrack {
 
-	KeyframeTrack.call( this, name, times, values, interpolation );
-
-}
-
-ColorKeyframeTrack.prototype = Object.assign( Object.create( KeyframeTrack.prototype ), {
-
-	constructor: ColorKeyframeTrack,
-
-	ValueTypeName: 'color'
+	ValueTypeName = 'color' as const;
 
 	// ValueBufferType is inherited
 
@@ -29,6 +22,4 @@ ColorKeyframeTrack.prototype = Object.assign( Object.create( KeyframeTrack.proto
 	// Note: Very basic implementation and nothing special yet.
 	// However, this is the place for color space parameterization.
 
-} );
-
-export { ColorKeyframeTrack };
+}

@@ -2,105 +2,138 @@
  * @author mrdoob / http://mrdoob.com/
  */
 
-import { Group } from '../../objects/Group.js';
-import { Matrix4 } from '../../math/Matrix4.js';
-import { Vector2 } from '../../math/Vector2.js';
-import { Vector3 } from '../../math/Vector3.js';
-import { Vector4 } from '../../math/Vector4.js';
-import { Quaternion } from '../../math/Quaternion.js';
-import { ArrayCamera } from '../../cameras/ArrayCamera.js';
-import { PerspectiveCamera } from '../../cameras/PerspectiveCamera.js';
-import { WebGLAnimation } from '../webgl/WebGLAnimation.js';
-import { setProjectionFromUnion } from './WebVRUtils.js';
+import { Group } from '../../objects/Group';
+import { Matrix4 } from '../../math/Matrix4';
+import { Vector2 } from '../../math/Vector2';
+import { Vector3 } from '../../math/Vector3';
+import { Vector4 } from '../../math/Vector4';
+import { Quaternion } from '../../math/Quaternion';
+import { ArrayCamera } from '../../cameras/ArrayCamera';
+import { PerspectiveCamera } from '../../cameras/PerspectiveCamera';
+import { WebGLAnimation } from '../webgl/WebGLAnimation';
+import { setProjectionFromUnion } from './WebVRUtils';
 
-function WebVRManager( renderer ) {
+interface PerspectiveCameraWithViewport extends PerspectiveCamera {
+	viewport: Vector4;
+}
 
-	var renderWidth, renderHeight;
-	var scope = this;
+export class WebVRManager {
 
-	var device = null;
-	var frameData = null;
+	renderWidth: number | undefined;
+	renderHeight: number | undefined;
 
-	var poseTarget = null;
+	device: any = null;
+	frameData: any = null;
 
-	var controllers = [];
-	var standingMatrix = new Matrix4();
-	var standingMatrixInverse = new Matrix4();
+	poseTarget: any = null;
 
-	var framebufferScaleFactor = 1.0;
+	controllers: any[] = [];
+	standingMatrix = new Matrix4();
+	standingMatrixInverse = new Matrix4();
 
-	var frameOfReferenceType = 'stage';
+	framebufferScaleFactor = 1.0;
 
-	if ( typeof window !== 'undefined' && 'VRFrameData' in window ) {
+	frameOfReferenceType = 'stage';
 
-		frameData = new window.VRFrameData();
-		window.addEventListener( 'vrdisplaypresentchange', onVRDisplayPresentChange, false );
+	cameraR: PerspectiveCameraWithViewport;
+	cameraL: PerspectiveCameraWithViewport;
+	cameraVR: ArrayCamera<PerspectiveCameraWithViewport>;
+
+	currentSize: Vector2;
+	currentPixelRatio: number = 1;
+	triggers: boolean[] = [];
+	enabled = false;
+	renderer: any;
+
+	matrixWorldInverse = new Matrix4();
+	private tempQuaternion = new Quaternion();
+	private tempPosition = new Vector3();
+
+	constructor( renderer: any ) {
+
+		if ( typeof window !== 'undefined' && 'VRFrameData' in window ) {
+
+			this.frameData = new window.VRFrameData();
+			window.addEventListener(
+				'vrdisplaypresentchange',
+				onVRDisplayPresentChange,
+				false
+			);
+
+		}
+
+		this.renderer = renderer;
+
+		this.cameraL = new PerspectiveCamera() as PerspectiveCameraWithViewport;
+		this.cameraL.viewport = new Vector4();
+		this.cameraL.layers.enable( 1 );
+
+		this.cameraR = new PerspectiveCamera() as PerspectiveCameraWithViewport;
+		this.cameraR.viewport = new Vector4();
+		this.cameraR.layers.enable( 2 );
+
+		this.cameraVR = new ArrayCamera( [ this.cameraL, this.cameraR ] );
+		this.cameraVR.layers.enable( 1 );
+		this.cameraVR.layers.enable( 2 );
+
+		this.currentSize = new Vector2();
 
 	}
 
-	var matrixWorldInverse = new Matrix4();
-	var tempQuaternion = new Quaternion();
-	var tempPosition = new Vector3();
+	isPresenting() {
 
-	var cameraL = new PerspectiveCamera();
-	cameraL.viewport = new Vector4();
-	cameraL.layers.enable( 1 );
-
-	var cameraR = new PerspectiveCamera();
-	cameraR.viewport = new Vector4();
-	cameraR.layers.enable( 2 );
-
-	var cameraVR = new ArrayCamera( [ cameraL, cameraR ] );
-	cameraVR.layers.enable( 1 );
-	cameraVR.layers.enable( 2 );
-
-	//
-
-	function isPresenting() {
-
-		return device !== null && device.isPresenting === true;
+		return this.device !== null && this.device.isPresenting === true;
 
 	}
 
-	var currentSize = new Vector2(), currentPixelRatio;
+	onVRDisplayPresentChange() {
 
-	function onVRDisplayPresentChange() {
+		if ( this.isPresenting() ) {
 
-		if ( isPresenting() ) {
+			var eyeParameters = this.device.getEyeParameters( 'left' );
+			this.renderWidth =
+				eyeParameters.this.renderWidth * this.framebufferScaleFactor;
+			this.renderHeight =
+				eyeParameters.renderHeight * this.framebufferScaleFactor;
 
-			var eyeParameters = device.getEyeParameters( 'left' );
-			renderWidth = eyeParameters.renderWidth * framebufferScaleFactor;
-			renderHeight = eyeParameters.renderHeight * framebufferScaleFactor;
+			this.currentPixelRatio = renderer.getPixelRatio();
+			this.renderer.getSize( this.currentSize );
 
-			currentPixelRatio = renderer.getPixelRatio();
-			renderer.getSize( currentSize );
+			this.renderer.setDrawingBufferSize(
+				this.renderWidth * 2,
+				this.renderHeight,
+				1
+			);
 
-			renderer.setDrawingBufferSize( renderWidth * 2, renderHeight, 1 );
+			this.cameraL.viewport.set( 0, 0, this.renderWidth, this.renderHeight );
+			this.cameraR.viewport.set(
+				this.renderWidth,
+				0,
+				this.renderWidth,
+				this.renderHeight
+			);
 
-			cameraL.viewport.set( 0, 0, renderWidth, renderHeight );
-			cameraR.viewport.set( renderWidth, 0, renderWidth, renderHeight );
-
-			animation.start();
+			this.animation.start();
 
 		} else {
 
-			if ( scope.enabled ) {
+			if ( this.enabled ) {
 
-				renderer.setDrawingBufferSize( currentSize.width, currentSize.height, currentPixelRatio );
+				this.renderer.setDrawingBufferSize(
+					this.currentSize.width,
+					this.currentSize.height,
+					this.currentPixelRatio
+				);
 
 			}
 
-			animation.stop();
+			this.animation.stop();
 
 		}
 
 	}
 
-	//
-
-	var triggers = [];
-
-	function findGamepad( id ) {
+	findGamepad( id: number ) {
 
 		var gamepads = navigator.getGamepads && navigator.getGamepads();
 
@@ -108,10 +141,15 @@ function WebVRManager( renderer ) {
 
 			var gamepad = gamepads[ i ];
 
-			if ( gamepad && ( gamepad.id === 'Daydream Controller' ||
-				gamepad.id === 'Gear VR Controller' || gamepad.id === 'Oculus Go Controller' ||
-				gamepad.id === 'OpenVR Gamepad' || gamepad.id.startsWith( 'Oculus Touch' ) ||
-				gamepad.id.startsWith( 'Spatial Controller' ) ) ) {
+			if (
+				gamepad &&
+				( gamepad.id === 'Daydream Controller' ||
+					gamepad.id === 'Gear VR Controller' ||
+					gamepad.id === 'Oculus Go Controller' ||
+					gamepad.id === 'OpenVR Gamepad' ||
+					gamepad.id.startsWith( 'Oculus Touch' ) ||
+					gamepad.id.startsWith( 'Spatial Controller' ) )
+			) {
 
 				if ( j === id ) return gamepad;
 
@@ -123,13 +161,13 @@ function WebVRManager( renderer ) {
 
 	}
 
-	function updateControllers() {
+	updateControllers() {
 
-		for ( var i = 0; i < controllers.length; i ++ ) {
+		for ( var i = 0; i < this.controllers.length; i ++ ) {
 
-			var controller = controllers[ i ];
+			var controller = this.controllers[ i ];
 
-			var gamepad = findGamepad( i );
+			var gamepad = this.findGamepad( i );
 
 			if ( gamepad !== undefined && gamepad.pose !== undefined ) {
 
@@ -139,13 +177,24 @@ function WebVRManager( renderer ) {
 
 				var pose = gamepad.pose;
 
-				if ( pose.hasPosition === false ) controller.position.set( 0.2, - 0.6, - 0.05 );
+				if ( pose.hasPosition === false )
+					controller.position.set( 0.2, - 0.6, - 0.05 );
 
-				if ( pose.position !== null ) controller.position.fromArray( pose.position );
-				if ( pose.orientation !== null ) controller.quaternion.fromArray( pose.orientation );
-				controller.matrix.compose( controller.position, controller.quaternion, controller.scale );
+				if ( pose.position !== null )
+					controller.position.fromArray( pose.position );
+				if ( pose.orientation !== null )
+					controller.quaternion.fromArray( pose.orientation );
+				controller.matrix.compose(
+					controller.position,
+					controller.quaternion,
+					controller.scale
+				);
 				controller.matrix.premultiply( standingMatrix );
-				controller.matrix.decompose( controller.position, controller.quaternion, controller.scale );
+				controller.matrix.decompose(
+					controller.position,
+					controller.quaternion,
+					controller.scale
+				);
 				controller.matrixWorldNeedsUpdate = true;
 				controller.visible = true;
 
@@ -153,13 +202,13 @@ function WebVRManager( renderer ) {
 
 				var buttonId = gamepad.id === 'Daydream Controller' ? 0 : 1;
 
-				if ( triggers[ i ] === undefined ) triggers[ i ] = false;
+				if ( this.triggers[ i ] === undefined ) this.triggers[ i ] = false;
 
-				if ( triggers[ i ] !== gamepad.buttons[ buttonId ].pressed ) {
+				if ( this.triggers[ i ] !== gamepad.buttons[ buttonId ].pressed ) {
 
-					triggers[ i ] = gamepad.buttons[ buttonId ].pressed;
+					this.triggers[ i ] = gamepad.buttons[ buttonId ].pressed;
 
-					if ( triggers[ i ] === true ) {
+					if ( this.triggers[ i ] === true ) {
 
 						controller.dispatchEvent( { type: 'selectstart' } );
 
@@ -182,23 +231,24 @@ function WebVRManager( renderer ) {
 
 	}
 
-	function updateViewportFromBounds( viewport, bounds ) {
+	updateViewportFromBounds( viewport: Vector4, bounds: number[] ) {
 
 		if ( bounds !== null && bounds.length === 4 ) {
 
-			viewport.set( bounds[ 0 ] * renderWidth, bounds[ 1 ] * renderHeight, bounds[ 2 ] * renderWidth, bounds[ 3 ] * renderHeight );
+			viewport.set(
+				bounds[ 0 ] * this.renderWidth,
+				bounds[ 1 ] * this.renderHeight,
+				bounds[ 2 ] * this.renderWidth,
+				bounds[ 3 ] * this.renderHeight
+			);
 
 		}
 
 	}
 
-	//
+	getController( id: number ) {
 
-	this.enabled = false;
-
-	this.getController = function ( id ) {
-
-		var controller = controllers[ id ];
+		var controller = this.controllers[ id ];
 
 		if ( controller === undefined ) {
 
@@ -206,49 +256,49 @@ function WebVRManager( renderer ) {
 			controller.matrixAutoUpdate = false;
 			controller.visible = false;
 
-			controllers[ id ] = controller;
+			this.controllers[ id ] = controller;
 
 		}
 
 		return controller;
 
+	}
+
+	getDevice = function () {
+
+		return this.device;
+
 	};
 
-	this.getDevice = function () {
-
-		return device;
-
-	};
-
-	this.setDevice = function ( value ) {
+	setDevice( value?: any ) {
 
 		if ( value !== undefined ) device = value;
 
-		animation.setContext( value );
+		this.animation.setContext( value );
 
-	};
+	}
 
-	this.setFramebufferScaleFactor = function ( value ) {
+	setFramebufferScaleFactor( value: number ) {
 
-		framebufferScaleFactor = value;
+		this.framebufferScaleFactor = value;
 
-	};
+	}
 
-	this.setFrameOfReferenceType = function ( value ) {
+	setFrameOfReferenceType( value: string ) {
 
-		frameOfReferenceType = value;
+		this.frameOfReferenceType = value;
 
-	};
+	}
 
-	this.setPoseTarget = function ( object ) {
+	setPoseTarget( object?: Vector4 ) {
 
-		if ( object !== undefined ) poseTarget = object;
+		if ( object !== undefined ) this.poseTarget = object;
 
-	};
+	}
 
-	this.getCamera = function ( camera ) {
+	getCamera<T extends PerspectiveCamera>( camera: T ) {
 
-		var userHeight = frameOfReferenceType === 'stage' ? 1.6 : 0;
+		var userHeight = this.frameOfReferenceType === 'stage' ? 1.6 : 0;
 
 		if ( isPresenting() === false ) {
 
@@ -259,50 +309,55 @@ function WebVRManager( renderer ) {
 
 		}
 
-		device.depthNear = camera.near;
-		device.depthFar = camera.far;
+		this.device.depthNear = camera.near;
+		this.device.depthFar = camera.far;
 
-		device.getFrameData( frameData );
+		this.device.getFrameData( frameData );
 
 		//
 
-		if ( frameOfReferenceType === 'stage' ) {
+		if ( this.frameOfReferenceType === 'stage' ) {
 
-			var stageParameters = device.stageParameters;
+			var stageParameters = this.device.stageParameters;
 
 			if ( stageParameters ) {
 
-				standingMatrix.fromArray( stageParameters.sittingToStandingTransform );
+				this.standingMatrix.fromArray(
+					stageParameters.sittingToStandingTransform
+				);
 
 			} else {
 
-				standingMatrix.makeTranslation( 0, userHeight, 0 );
+				this.standingMatrix.makeTranslation( 0, userHeight, 0 );
 
 			}
 
 		}
 
-
-		var pose = frameData.pose;
-		var poseObject = poseTarget !== null ? poseTarget : camera;
+		const pose = this.frameData.pose;
+		const poseObject = this.poseTarget !== null ? this.poseTarget : camera;
 
 		// We want to manipulate poseObject by its position and quaternion components since users may rely on them.
 		poseObject.matrix.copy( standingMatrix );
-		poseObject.matrix.decompose( poseObject.position, poseObject.quaternion, poseObject.scale );
+		poseObject.matrix.decompose(
+			poseObject.position,
+			poseObject.quaternion,
+			poseObject.scale
+		);
 
 		if ( pose.orientation !== null ) {
 
-			tempQuaternion.fromArray( pose.orientation );
+			this.tempQuaternion.fromArray( pose.orientation );
 			poseObject.quaternion.multiply( tempQuaternion );
 
 		}
 
 		if ( pose.position !== null ) {
 
-			tempQuaternion.setFromRotationMatrix( standingMatrix );
-			tempPosition.fromArray( pose.position );
-			tempPosition.applyQuaternion( tempQuaternion );
-			poseObject.position.add( tempPosition );
+			this.tempQuaternion.setFromRotationMatrix( standingMatrix );
+			this.tempPosition.fromArray( pose.position );
+			this.tempPosition.applyQuaternion( this.tempQuaternion );
+			poseObject.position.add( this.tempPosition );
 
 		}
 
@@ -310,23 +365,23 @@ function WebVRManager( renderer ) {
 
 		//
 
-		cameraL.near = camera.near;
-		cameraR.near = camera.near;
+		this.cameraL.near = camera.near;
+		this.cameraR.near = camera.near;
 
-		cameraL.far = camera.far;
-		cameraR.far = camera.far;
+		this.cameraL.far = camera.far;
+		this.cameraR.far = camera.far;
 
-		cameraL.matrixWorldInverse.fromArray( frameData.leftViewMatrix );
-		cameraR.matrixWorldInverse.fromArray( frameData.rightViewMatrix );
+		this.cameraL.matrixWorldInverse.fromArray( this.frameData.leftViewMatrix );
+		this.cameraR.matrixWorldInverse.fromArray( this.frameData.rightViewMatrix );
 
 		// TODO (mrdoob) Double check this code
 
-		standingMatrixInverse.getInverse( standingMatrix );
+		this.standingMatrixInverse.getInverse( standingMatrix );
 
-		if ( frameOfReferenceType === 'stage' ) {
+		if ( this.frameOfReferenceType === 'stage' ) {
 
-			cameraL.matrixWorldInverse.multiply( standingMatrixInverse );
-			cameraR.matrixWorldInverse.multiply( standingMatrixInverse );
+			this.cameraL.matrixWorldInverse.multiply( this.standingMatrixInverse );
+			this.cameraR.matrixWorldInverse.multiply( this.standingMatrixInverse );
 
 		}
 
@@ -334,78 +389,81 @@ function WebVRManager( renderer ) {
 
 		if ( parent !== null ) {
 
-			matrixWorldInverse.getInverse( parent.matrixWorld );
+			this.matrixWorldInverse.getInverse( parent.matrixWorld );
 
-			cameraL.matrixWorldInverse.multiply( matrixWorldInverse );
-			cameraR.matrixWorldInverse.multiply( matrixWorldInverse );
+			this.cameraL.matrixWorldInverse.multiply( this.matrixWorldInverse );
+			this.cameraR.matrixWorldInverse.multiply( this.matrixWorldInverse );
 
 		}
 
 		// envMap and Mirror needs camera.matrixWorld
 
-		cameraL.matrixWorld.getInverse( cameraL.matrixWorldInverse );
-		cameraR.matrixWorld.getInverse( cameraR.matrixWorldInverse );
+		this.cameraL.matrixWorld.getInverse( this.cameraL.matrixWorldInverse );
+		this.cameraR.matrixWorld.getInverse( this.cameraR.matrixWorldInverse );
 
-		cameraL.projectionMatrix.fromArray( frameData.leftProjectionMatrix );
-		cameraR.projectionMatrix.fromArray( frameData.rightProjectionMatrix );
+		this.cameraL.projectionMatrix.fromArray(
+			this.frameData.leftProjectionMatrix
+		);
+		this.cameraR.projectionMatrix.fromArray(
+			this.frameData.rightProjectionMatrix
+		);
 
-		setProjectionFromUnion( cameraVR, cameraL, cameraR );
+		setProjectionFromUnion( this.cameraVR, this.cameraL, this.cameraR );
 
 		//
 
-		var layers = device.getLayers();
+		var layers = this.device.getLayers();
 
 		if ( layers.length ) {
 
 			var layer = layers[ 0 ];
 
-			updateViewportFromBounds( cameraL.viewport, layer.leftBounds );
-			updateViewportFromBounds( cameraR.viewport, layer.rightBounds );
+			this.updateViewportFromBounds( this.cameraL.viewport, layer.leftBounds );
+			this.updateViewportFromBounds( this.cameraR.viewport, layer.rightBounds );
 
 		}
 
-		updateControllers();
+		this.updateControllers();
 
-		return cameraVR;
+		return this.cameraVR;
 
-	};
+	}
 
-	this.getStandingMatrix = function () {
+	getStandingMatrix() {
 
-		return standingMatrix;
+		return this.standingMatrix;
 
-	};
-
-	this.isPresenting = isPresenting;
+	}
 
 	// Animation Loop
 
-	var animation = new WebGLAnimation();
+	animation = new WebGLAnimation();
 
-	this.setAnimationLoop = function ( callback ) {
+	setAnimationLoop( callback: ( time: number ) => void ) {
 
-		animation.setAnimationLoop( callback );
+		this.animation.setAnimationLoop( callback );
 
-		if ( isPresenting() ) animation.start();
+		if ( this.isPresenting() ) this.animation.start();
 
-	};
+	}
 
-	this.submitFrame = function () {
+	submitFrame() {
 
-		if ( isPresenting() ) device.submitFrame();
+		if ( this.isPresenting() ) this.device.submitFrame();
 
-	};
+	}
 
-	this.dispose = function () {
+	dispose() {
 
 		if ( typeof window !== 'undefined' ) {
 
-			window.removeEventListener( 'vrdisplaypresentchange', onVRDisplayPresentChange );
+			window.removeEventListener(
+				'vrdisplaypresentchange',
+				this.onVRDisplayPresentChange
+			);
 
 		}
 
-	};
+	}
 
 }
-
-export { WebVRManager };

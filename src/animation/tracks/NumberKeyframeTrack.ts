@@ -1,4 +1,4 @@
-import { KeyframeTrack } from '../KeyframeTrack.js';
+import { KeyframeTrack } from '../KeyframeTrack';
 
 /**
  *
@@ -9,22 +9,12 @@ import { KeyframeTrack } from '../KeyframeTrack.js';
  * @author tschw
  */
 
-function NumberKeyframeTrack( name, times, values, interpolation ) {
+export class NumberKeyframeTrack extends KeyframeTrack {
 
-	KeyframeTrack.call( this, name, times, values, interpolation );
-
-}
-
-NumberKeyframeTrack.prototype = Object.assign( Object.create( KeyframeTrack.prototype ), {
-
-	constructor: NumberKeyframeTrack,
-
-	ValueTypeName: 'number'
+	ValueTypeName = 'number' as const;
 
 	// ValueBufferType is inherited
 
 	// DefaultInterpolation is inherited
 
-} );
-
-export { NumberKeyframeTrack };
+}

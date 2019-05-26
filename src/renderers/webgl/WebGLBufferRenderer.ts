@@ -1,59 +1,83 @@
+import { Geometry } from '../../core/Geometry';
+import { WebGLCapabilities } from './WebGLCapabilities';
+
 /**
  * @author mrdoob / http://mrdoob.com/
  */
 
-function WebGLBufferRenderer( gl, extensions, info, capabilities ) {
+export class WebGLBufferRenderer {
 
-	var mode;
+	gl: WebGLRenderingContext | WebGL2RenderingContext;
+	mode: number;
+	info: any;
+	capabilities: WebGLCapabilities;
+	extensions: Map<
+		| 'drawArraysInstanced'
+		| 'drawArraysInstancedANGLE'
+		| 'ANGLE_instanced_arrays',
+		any
+	>;
 
-	function setMode( value ) {
+	constructor(
+		gl: WebGLRenderingContext | WebGL2RenderingContext,
+		extensions: any,
+		info: any,
+		capabilities: WebGLCapabilities
+	) {
 
-		mode = value;
+		this.gl = gl;
+		this.mode = 0;
+		this.info = info;
+		this.capabilities = capabilities;
+		this.extensions = extensions;
 
 	}
 
-	function render( start, count ) {
+	setMode( value: any ): void {
 
-		gl.drawArrays( mode, start, count );
-
-		info.update( count, mode );
+		this.mode = value;
 
 	}
 
-	function renderInstances( geometry, start, count ) {
+	render( start: number, count: number ) {
+
+		this.gl.drawArrays( this.mode, start, count );
+
+		this.info.update( count, this.mode );
+
+	}
+
+	renderInstances( geometry: Geometry, start: number, count: number ) {
 
 		var extension;
 
-		if ( capabilities.isWebGL2 ) {
+		if ( this.capabilities.isWebGL2 ) {
 
-			extension = gl;
+			extension = this.gl;
 
 		} else {
 
-			extension = extensions.get( 'ANGLE_instanced_arrays' );
+			extension = this.extensions.get( 'ANGLE_instanced_arrays' );
 
 			if ( extension === null ) {
 
-				console.error( 'THREE.WebGLBufferRenderer: using THREE.InstancedBufferGeometry but hardware does not support extension ANGLE_instanced_arrays.' );
+				console.error(
+					'THREE.WebGLBufferRenderer: using THREE.InstancedBufferGeometry but hardware does not support extension ANGLE_instanced_arrays.'
+				);
 				return;
 
 			}
 
 		}
 
-		extension[ capabilities.isWebGL2 ? 'drawArraysInstanced' : 'drawArraysInstancedANGLE' ]( mode, start, count, geometry.maxInstancedCount );
+		extension[
+			this.capabilities.isWebGL2
+				? 'drawArraysInstanced'
+				: 'drawArraysInstancedANGLE'
+		]( this.mode, start, count, geometry.maxInstancedCount );
 
-		info.update( count, mode, geometry.maxInstancedCount );
+		this.info.update( count, this.mode, geometry.maxInstancedCount );
 
 	}
 
-	//
-
-	this.setMode = setMode;
-	this.render = render;
-	this.renderInstances = renderInstances;
-
 }
-
-
-export { WebGLBufferRenderer };

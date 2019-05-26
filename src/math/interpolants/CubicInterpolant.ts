@@ -1,6 +1,6 @@
-import { ZeroCurvatureEnding } from '../../constants.js';
-import { Interpolant } from '../Interpolant.js';
-import { WrapAroundEnding, ZeroSlopeEnding } from '../../constants.js';
+import { ZeroCurvatureEnding } from '../../constants';
+import { Interpolant } from '../Interpolant';
+import { WrapAroundEnding, ZeroSlopeEnding } from '../../constants';
 
 /**
  * Fast and simple cubic spline interpolant.
@@ -12,34 +12,39 @@ import { WrapAroundEnding, ZeroSlopeEnding } from '../../constants.js';
  * @author tschw
  */
 
-function CubicInterpolant( parameterPositions, sampleValues, sampleSize, resultBuffer ) {
+export class CubicInterpolant extends Interpolant {
 
-	Interpolant.call( this, parameterPositions, sampleValues, sampleSize, resultBuffer );
+	constructor(
+		parameterPositions: any,
+		sampleValues: any,
+		sampleSize: number,
+		resultBuffer: any
+	) {
 
-	this._weightPrev = - 0;
-	this._offsetPrev = - 0;
-	this._weightNext = - 0;
-	this._offsetNext = - 0;
+		super( parameterPositions, sampleValues, sampleSize, resultBuffer );
 
-}
+		this._weightPrev = - 0;
+		this._offsetPrev = - 0;
+		this._weightNext = - 0;
+		this._offsetNext = - 0;
 
-CubicInterpolant.prototype = Object.assign( Object.create( Interpolant.prototype ), {
+	}
 
-	constructor: CubicInterpolant,
+	_weightPrev: number;
+	_offsetPrev: number;
+	_weightNext: number;
+	_offsetNext: number;
 
-	DefaultSettings_: {
-
+	DefaultSettings_ = {
 		endingStart: ZeroCurvatureEnding,
-		endingEnd: ZeroCurvatureEnding
+		endingEnd: ZeroCurvatureEnding,
+	};
 
-	},
-
-	intervalChanged_: function ( i1, t0, t1 ) {
+	intervalChanged_( i1: number, t0: number, t1: number ) {
 
 		var pp = this.parameterPositions,
 			iPrev = i1 - 2,
 			iNext = i1 + 1,
-
 			tPrev = pp[ iPrev ],
 			tNext = pp[ iNext ];
 
@@ -48,7 +53,6 @@ CubicInterpolant.prototype = Object.assign( Object.create( Interpolant.prototype
 			switch ( this.getSettings_().endingStart ) {
 
 				case ZeroSlopeEnding:
-
 					// f'(t0) = 0
 					iPrev = i1;
 					tPrev = 2 * t0 - t1;
@@ -56,14 +60,14 @@ CubicInterpolant.prototype = Object.assign( Object.create( Interpolant.prototype
 					break;
 
 				case WrapAroundEnding:
-
 					// use the other end of the curve
 					iPrev = pp.length - 2;
 					tPrev = t0 + pp[ iPrev ] - pp[ iPrev + 1 ];
 
 					break;
 
-				default: // ZeroCurvatureEnding
+				default:
+					// ZeroCurvatureEnding
 
 					// f''(t0) = 0 a.k.a. Natural Spline
 					iPrev = i1;
@@ -78,7 +82,6 @@ CubicInterpolant.prototype = Object.assign( Object.create( Interpolant.prototype
 			switch ( this.getSettings_().endingEnd ) {
 
 				case ZeroSlopeEnding:
-
 					// f'(tN) = 0
 					iNext = i1;
 					tNext = 2 * t1 - t0;
@@ -86,14 +89,14 @@ CubicInterpolant.prototype = Object.assign( Object.create( Interpolant.prototype
 					break;
 
 				case WrapAroundEnding:
-
 					// use the other end of the curve
 					iNext = 1;
 					tNext = t1 + pp[ 1 ] - pp[ 0 ];
 
 					break;
 
-				default: // ZeroCurvatureEnding
+				default:
+					// ZeroCurvatureEnding
 
 					// f''(tN) = 0, a.k.a. Natural Spline
 					iNext = i1 - 1;
@@ -111,18 +114,19 @@ CubicInterpolant.prototype = Object.assign( Object.create( Interpolant.prototype
 		this._offsetPrev = iPrev * stride;
 		this._offsetNext = iNext * stride;
 
-	},
+	}
 
-	interpolate_: function ( i1, t0, t, t1 ) {
+	interpolate_( i1: number, t0: number, t: number, t1: number ) {
 
 		var result = this.resultBuffer,
 			values = this.sampleValues,
 			stride = this.valueSize,
-
-			o1 = i1 * stride,		o0 = o1 - stride,
-			oP = this._offsetPrev, 	oN = this._offsetNext,
-			wP = this._weightPrev,	wN = this._weightNext,
-
+			o1 = i1 * stride,
+			o0 = o1 - stride,
+			oP = this._offsetPrev,
+			oN = this._offsetNext,
+			wP = this._weightPrev,
+			wN = this._weightNext,
 			p = ( t - t0 ) / ( t1 - t0 ),
 			pp = p * p,
 			ppp = pp * p;
@@ -139,10 +143,10 @@ CubicInterpolant.prototype = Object.assign( Object.create( Interpolant.prototype
 		for ( var i = 0; i !== stride; ++ i ) {
 
 			result[ i ] =
-					sP * values[ oP + i ] +
-					s0 * values[ o0 + i ] +
-					s1 * values[ o1 + i ] +
-					sN * values[ oN + i ];
+				sP * values[ oP + i ] +
+				s0 * values[ o0 + i ] +
+				s1 * values[ o1 + i ] +
+				sN * values[ oN + i ];
 
 		}
 
@@ -150,7 +154,4 @@ CubicInterpolant.prototype = Object.assign( Object.create( Interpolant.prototype
 
 	}
 
-} );
-
-
-export { CubicInterpolant };
+}

@@ -1,5 +1,5 @@
-import { Material } from './Material.js';
-import { Vector3 } from '../math/Vector3.js';
+import { Material } from './Material';
+import { Vector3 } from '../math/Vector3';
 
 /**
  * @author WestLangley / http://github.com/WestLangley

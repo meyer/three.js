@@ -1,4 +1,4 @@
-import { WebGLRenderTarget } from './WebGLRenderTarget.js';
+import { WebGLRenderTarget } from './WebGLRenderTarget';
 
 /**
  * @author Mugen87 / https://github.com/Mugen87

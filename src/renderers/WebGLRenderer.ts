@@ -9,40 +9,42 @@ import {
 	TrianglesDrawMode,
 	LinearToneMapping,
 	BackSide
-} from '../constants.js';
-import { _Math } from '../math/Math.js';
-import { DataTexture } from '../textures/DataTexture.js';
-import { Frustum } from '../math/Frustum.js';
-import { Matrix4 } from '../math/Matrix4.js';
-import { ShaderLib } from './shaders/ShaderLib.js';
-import { UniformsLib } from './shaders/UniformsLib.js';
-import { cloneUniforms } from './shaders/UniformsUtils.js';
-import { Vector2 } from '../math/Vector2.js';
-import { Vector3 } from '../math/Vector3.js';
-import { Vector4 } from '../math/Vector4.js';
-import { WebGLAnimation } from './webgl/WebGLAnimation.js';
-import { WebGLAttributes } from './webgl/WebGLAttributes.js';
-import { WebGLBackground } from './webgl/WebGLBackground.js';
-import { WebGLBufferRenderer } from './webgl/WebGLBufferRenderer.js';
-import { WebGLCapabilities } from './webgl/WebGLCapabilities.js';
-import { WebGLClipping } from './webgl/WebGLClipping.js';
-import { WebGLExtensions } from './webgl/WebGLExtensions.js';
-import { WebGLGeometries } from './webgl/WebGLGeometries.js';
-import { WebGLIndexedBufferRenderer } from './webgl/WebGLIndexedBufferRenderer.js';
-import { WebGLInfo } from './webgl/WebGLInfo.js';
-import { WebGLMorphtargets } from './webgl/WebGLMorphtargets.js';
-import { WebGLObjects } from './webgl/WebGLObjects.js';
-import { WebGLPrograms } from './webgl/WebGLPrograms.js';
-import { WebGLProperties } from './webgl/WebGLProperties.js';
-import { WebGLRenderLists } from './webgl/WebGLRenderLists.js';
-import { WebGLRenderStates } from './webgl/WebGLRenderStates.js';
-import { WebGLShadowMap } from './webgl/WebGLShadowMap.js';
-import { WebGLState } from './webgl/WebGLState.js';
-import { WebGLTextures } from './webgl/WebGLTextures.js';
-import { WebGLUniforms } from './webgl/WebGLUniforms.js';
-import { WebGLUtils } from './webgl/WebGLUtils.js';
-import { WebVRManager } from './webvr/WebVRManager.js';
-import { WebXRManager } from './webvr/WebXRManager.js';
+} from '../constants';
+import { _Math } from '../math/Math';
+import { DataTexture } from '../textures/DataTexture';
+import { Frustum } from '../math/Frustum';
+import { Matrix4 } from '../math/Matrix4';
+import { ShaderLib } from './shaders/ShaderLib';
+import { UniformsLib } from './shaders/UniformsLib';
+import { cloneUniforms } from './shaders/UniformsUtils';
+import { Vector2 } from '../math/Vector2';
+import { Vector3 } from '../math/Vector3';
+import { Vector4 } from '../math/Vector4';
+import { WebGLAnimation } from './webgl/WebGLAnimation';
+import { WebGLAttributes } from './webgl/WebGLAttributes';
+import { WebGLBackground } from './webgl/WebGLBackground';
+import { WebGLBufferRenderer } from './webgl/WebGLBufferRenderer';
+import { WebGLCapabilities, WebGLCapabilitiesParams } from './webgl/WebGLCapabilities';
+import { WebGLClipping } from './webgl/WebGLClipping';
+import { WebGLExtensions } from './webgl/WebGLExtensions';
+import { WebGLGeometries } from './webgl/WebGLGeometries';
+import { WebGLIndexedBufferRenderer } from './webgl/WebGLIndexedBufferRenderer';
+import { WebGLInfo } from './webgl/WebGLInfo';
+import { WebGLMorphtargets } from './webgl/WebGLMorphtargets';
+import { WebGLObjects } from './webgl/WebGLObjects';
+import { WebGLPrograms } from './webgl/WebGLPrograms';
+import { WebGLProperties } from './webgl/WebGLProperties';
+import { WebGLRenderLists } from './webgl/WebGLRenderLists';
+import { WebGLRenderStates } from './webgl/WebGLRenderStates';
+import { WebGLShadowMap } from './webgl/WebGLShadowMap';
+import { WebGLState } from './webgl/WebGLState';
+import { WebGLTextures } from './webgl/WebGLTextures';
+import { WebGLUniforms } from './webgl/WebGLUniforms';
+import { WebGLUtils } from './webgl/WebGLUtils';
+import { WebVRManager } from './webvr/WebVRManager';
+import { WebXRManager } from './webvr/WebXRManager';
+import { Material } from '../materials/Material';
+import { Camera } from '../cameras/Camera';
 
 /**
  * @author supereggbert / http://www.paulbrunt.co.uk/
@@ -52,30 +54,29 @@ import { WebXRManager } from './webvr/WebXRManager.js';
  * @author tschw
  */
 
-function WebGLRenderer( parameters ) {
+export class WebGLRenderer {
+	constructor( parameters: any ) {
 
 	console.log( 'THREE.WebGLRenderer', REVISION );
 
 	parameters = parameters || {};
 
-	var _canvas = parameters.canvas !== undefined ? parameters.canvas : document.createElementNS( 'http://www.w3.org/1999/xhtml', 'canvas' ),
-		_context = parameters.context !== undefined ? parameters.context : null,
+		this._canvas = parameters.canvas !== undefined ? parameters.canvas : document.createElementNS( 'http://www.w3.org/1999/xhtml', 'canvas' ),
+		this._context = parameters.context !== undefined ? parameters.context : null,
 
-		_alpha = parameters.alpha !== undefined ? parameters.alpha : false,
-		_depth = parameters.depth !== undefined ? parameters.depth : true,
-		_stencil = parameters.stencil !== undefined ? parameters.stencil : true,
-		_antialias = parameters.antialias !== undefined ? parameters.antialias : false,
-		_premultipliedAlpha = parameters.premultipliedAlpha !== undefined ? parameters.premultipliedAlpha : true,
-		_preserveDrawingBuffer = parameters.preserveDrawingBuffer !== undefined ? parameters.preserveDrawingBuffer : false,
-		_powerPreference = parameters.powerPreference !== undefined ? parameters.powerPreference : 'default',
-		_failIfMajorPerformanceCaveat = parameters.failIfMajorPerformanceCaveat !== undefined ? parameters.failIfMajorPerformanceCaveat : false;
+		this._alpha = parameters.alpha !== undefined ? parameters.alpha : false,
+		this._depth = parameters.depth !== undefined ? parameters.depth : true,
+		this._stencil = parameters.stencil !== undefined ? parameters.stencil : true,
+		this._antialias = parameters.antialias !== undefined ? parameters.antialias : false,
+		this._premultipliedAlpha = parameters.premultipliedAlpha !== undefined ? parameters.premultipliedAlpha : true,
+		this._preserveDrawingBuffer = parameters.preserveDrawingBuffer !== undefined ? parameters.preserveDrawingBuffer : false,
+		this._powerPreference = parameters.powerPreference !== undefined ? parameters.powerPreference : 'default',
+		this._failIfMajorPerformanceCaveat = parameters.failIfMajorPerformanceCaveat !== undefined ? parameters.failIfMajorPerformanceCaveat : false;
 
-	var currentRenderList = null;
-	var currentRenderState = null;
 
 	// public properties
 
-	this.domElement = _canvas;
+	this.domElement = this._canvas;
 	this.context = null;
 
 	// Debug configuration container
@@ -127,93 +128,84 @@ function WebGLRenderer( parameters ) {
 
 	// internal properties
 
-	var _this = this,
-
-		_isContextLost = false,
+		this._isContextLost = false;
 
 		// internal state cache
 
-		_framebuffer = null,
+		this._framebuffer = null;
 
-		_currentRenderTarget = null,
-		_currentFramebuffer = null,
-		_currentMaterialId = - 1,
+		this._currentRenderTarget = null;
+		this._currentFramebuffer = null;
+		this._currentMaterialId = - 1;
 
 		// geometry and program caching
 
-		_currentGeometryProgram = {
+		this._currentGeometryProgram = {
 			geometry: null,
 			program: null,
 			wireframe: false
 		},
 
-		_currentCamera = null,
-		_currentArrayCamera = null,
+		this._currentCamera = null;
+		this._currentArrayCamera = null;
 
-		_currentViewport = new Vector4(),
-		_currentScissor = new Vector4(),
-		_currentScissorTest = null,
+		this._currentViewport = new Vector4();
+		this._currentScissor = new Vector4();
+		this._currentScissorTest = null;
 
 		//
 
-		_width = _canvas.width,
-		_height = _canvas.height,
+		this._width = this._canvas.width;
+		this._height = this._canvas.height;
 
-		_pixelRatio = 1,
+		this._pixelRatio = 1;
 
-		_viewport = new Vector4( 0, 0, _width, _height ),
-		_scissor = new Vector4( 0, 0, _width, _height ),
-		_scissorTest = false,
+		this._viewport = new Vector4( 0, 0, this._width, this._height );
+		this._scissor = new Vector4( 0, 0, this._width, this._height );
+		this._scissorTest = false;
 
 		// frustum
 
-		_frustum = new Frustum(),
+		this._frustum = new Frustum();
 
 		// clipping
 
-		_clipping = new WebGLClipping(),
-		_clippingEnabled = false,
-		_localClippingEnabled = false,
+		this._clipping = new WebGLClipping();
+		this._clippingEnabled = false;
+		this._localClippingEnabled = false;
 
 		// camera matrices cache
 
-		_projScreenMatrix = new Matrix4(),
+		this._projScreenMatrix = new Matrix4();
 
-		_vector3 = new Vector3();
-
-	function getTargetPixelRatio() {
-
-		return _currentRenderTarget === null ? _pixelRatio : 1;
-
-	}
+		this._vector3 = new Vector3();
 
 	// initialize
 
-	var _gl;
 
 	try {
 
 		var contextAttributes = {
-			alpha: _alpha,
-			depth: _depth,
-			stencil: _stencil,
-			antialias: _antialias,
-			premultipliedAlpha: _premultipliedAlpha,
-			preserveDrawingBuffer: _preserveDrawingBuffer,
-			powerPreference: _powerPreference,
-			failIfMajorPerformanceCaveat: _failIfMajorPerformanceCaveat
+			alpha: this._alpha,
+			depth: this._depth,
+			stencil: this._stencil,
+			antialias: this._antialias,
+			premultipliedAlpha: this._premultipliedAlpha,
+			preserveDrawingBuffer: this._preserveDrawingBuffer,
+			powerPreference: this._powerPreference,
+			failIfMajorPerformanceCaveat: this._failIfMajorPerformanceCaveat
 		};
 
 		// event listeners must be registered before WebGL context is created, see #12753
 
-		_canvas.addEventListener( 'webglcontextlost', onContextLost, false );
-		_canvas.addEventListener( 'webglcontextrestored', onContextRestore, false );
+		this._canvas.addEventListener( 'webglcontextlost', this.onContextLost, false );
+		this._canvas.addEventListener( 'webglcontextrestored', this.onContextRestore, false );
 
-		_gl = _context || _canvas.getContext( 'webgl', contextAttributes ) || _canvas.getContext( 'experimental-webgl', contextAttributes );
+		this._gl = this._context || this._canvas.getContext( 'webgl', contextAttributes ) || this._canvas.getContext( 'experimental-webgl', contextAttributes );
 
-		if ( _gl === null ) {
+		if ( this._gl === null ) {
 
-			if ( _canvas.getContext( 'webgl' ) !== null ) {
+			if ( this._canvas.getContext( 'webgl' ) !== null ) {
 
 				throw new Error( 'Error creating WebGL context with your selected attributes.' );
 
@@ -227,9 +219,9 @@ function WebGLRenderer( parameters ) {
 
 		// Some experimental-webgl implementations do not have getShaderPrecisionFormat
 
-		if ( _gl.getShaderPrecisionFormat === undefined ) {
+		if ( this._gl.getShaderPrecisionFormat === undefined ) {
 
-			_gl.getShaderPrecisionFormat = function () {
+			this._gl.getShaderPrecisionFormat = function () {
 
 				return { 'rangeMin': 1, 'rangeMax': 1, 'precision': 1 };
 
@@ -244,127 +236,238 @@ function WebGLRenderer( parameters ) {
 
 	}
 
-	var extensions, capabilities, state, info;
-	var properties, textures, attributes, geometries, objects;
-	var programCache, renderLists, renderStates;
 
-	var background, morphtargets, bufferRenderer, indexedBufferRenderer;
-
-	var utils;
-
-	function initGLContext() {
-
-		extensions = new WebGLExtensions( _gl );
-
-		capabilities = new WebGLCapabilities( _gl, extensions, parameters );
-
-		if ( ! capabilities.isWebGL2 ) {
-
-			extensions.get( 'WEBGL_depth_texture' );
-			extensions.get( 'OES_texture_float' );
-			extensions.get( 'OES_texture_half_float' );
-			extensions.get( 'OES_texture_half_float_linear' );
-			extensions.get( 'OES_standard_derivatives' );
-			extensions.get( 'OES_element_index_uint' );
-			extensions.get( 'ANGLE_instanced_arrays' );
-
-		}
-
-		extensions.get( 'OES_texture_float_linear' );
-
-		utils = new WebGLUtils( _gl, extensions, capabilities );
-
-		state = new WebGLState( _gl, extensions, utils, capabilities );
-		state.scissor( _currentScissor.copy( _scissor ).multiplyScalar( _pixelRatio ) );
-		state.viewport( _currentViewport.copy( _viewport ).multiplyScalar( _pixelRatio ) );
-
-		info = new WebGLInfo( _gl );
-		properties = new WebGLProperties();
-		textures = new WebGLTextures( _gl, extensions, state, properties, capabilities, utils, info );
-		attributes = new WebGLAttributes( _gl );
-		geometries = new WebGLGeometries( _gl, attributes, info );
-		objects = new WebGLObjects( geometries, info );
-		morphtargets = new WebGLMorphtargets( _gl );
-		programCache = new WebGLPrograms( _this, extensions, capabilities, textures );
-		renderLists = new WebGLRenderLists();
-		renderStates = new WebGLRenderStates();
-
-		background = new WebGLBackground( _this, state, objects, _premultipliedAlpha );
-
-		bufferRenderer = new WebGLBufferRenderer( _gl, extensions, info, capabilities );
-		indexedBufferRenderer = new WebGLIndexedBufferRenderer( _gl, extensions, info, capabilities );
-
-		info.programs = programCache.programs;
-
-		_this.context = _gl;
-		_this.capabilities = capabilities;
-		_this.extensions = extensions;
-		_this.properties = properties;
-		_this.renderLists = renderLists;
-		_this.state = state;
-		_this.info = info;
-
-	}
-
-	initGLContext();
+	this.initGLContext();
 
 	// vr
 
-	var vr = ( typeof navigator !== 'undefined' && 'xr' in navigator && 'requestDevice' in navigator.xr ) ? new WebXRManager( _this ) : new WebVRManager( _this );
-
-	this.vr = vr;
+	this.vr = ( typeof navigator !== 'undefined' && 'xr' in navigator && 'requestDevice' in (navigator as any).xr ) ? new WebXRManager( this ) : new WebVRManager( this );
 
 	// shadow map
 
-	var shadowMap = new WebGLShadowMap( _this, objects, capabilities.maxTextureSize );
+	this.shadowMap = new WebGLShadowMap( this, this.objects, this.capabilities.maxTextureSize );
 
-	this.shadowMap = shadowMap;
+	// Animation Loop
+
+	var onAnimationFrameCallback: ((time: number) => any) | null = null;
+
+	const onAnimationFrame = ( time: number ) => {
+
+		if ( this.vr.isPresenting() ) return;
+		if ( onAnimationFrameCallback ) onAnimationFrameCallback( time );
+
+	}
+
+	this.animation = new WebGLAnimation();
+	this.animation.setAnimationLoop( onAnimationFrame );
+
+	if ( typeof window !== 'undefined' ) this.animation.setContext( window );
+
+
+
+
+}
+
+private animation: WebGLAnimation;
+
+private setAnimationLoop ( callback: (time: number) => void ): void {
+
+	this.onAnimationFrameCallback = callback;
+	this.vr.setAnimationLoop( callback );
+
+	this.animation.start();
+
+};
+
+private currentRenderList: any = null;
+private currentRenderState: any = null;
+
+
+	private _gl:   WebGLRenderingContext;
+
+public domElement: any;
+public context: any;
+public debug: any;
+public autoClear: any;
+public autoClearColor: any;
+public autoClearDepth: any;
+public autoClearStencil: any;
+public sortObjects: any;
+public clippingPlanes: any;
+public localClippingEnabled: any;
+public gammaFactor: any;
+public gammaInput: any;
+public gammaOutput: any;
+public physicallyCorrectLights: any;
+public toneMapping: any;
+public toneMappingExposure: any;
+public toneMappingWhitePoint: any;
+public maxMorphTargets: any;
+public maxMorphNormals: any;
+
+private _isContextLost: any;
+private _framebuffer: any;
+private _currentRenderTarget: any;
+private _currentFramebuffer: any;
+private _currentMaterialId: any;
+private _currentGeometryProgram: any;
+private _currentCamera: any;
+private _currentArrayCamera: any;
+private _currentViewport: Vector4;
+private _currentScissor: Vector4;
+private _currentScissorTest: any;
+private _width: number;
+private _height: number;
+private _pixelRatio: number;
+private _viewport: Vector4;
+private _scissor: Vector4;
+private _scissorTest: any;
+private _frustum: any;
+private _clipping: any;
+private _clippingEnabled: any;
+private _localClippingEnabled: any;
+private _projScreenMatrix: any;
+private _vector3: any;
+
+private _canvas: HTMLCanvasElement;
+private _context: any;
+private _alpha: any;
+private _depth: any;
+private _stencil: any;
+private _antialias: any;
+private _premultipliedAlpha: any;
+private _preserveDrawingBuffer: any;
+private _powerPreference: any;
+private _failIfMajorPerformanceCaveat: any;
+
+
+
+	private extensions: WebGLExtensions;
+	private capabilities: WebGLCapabilities;
+	public state: any;
+	private info: any;
+	private properties: WebGLProperties;
+	private parameters: WebGLCapabilitiesParams;
+	private textures: any;
+	private attributes: any;
+	private geometries: any;
+	private objects: any;
+	private programCache: any;
+	private renderLists: any;
+	private renderStates: any;
+
+	private background: any;
+	private morphtargets: any;
+	private bufferRenderer: any;
+	private indexedBufferRenderer: any;
+
+	public shadowMap: WebGLShadowMap;
+
+	private utils: any;
+
+	vr: WebXRManager | WebVRManager;
+
+	private getTargetPixelRatio() {
+
+		return this._currentRenderTarget === null ? this._pixelRatio : 1;
+
+	}
+
+
+
+
+	private initGLContext() {
+
+		this.extensions = new WebGLExtensions( this._gl );
+
+		this.capabilities = new WebGLCapabilities( this._gl, this.extensions, this.parameters );
+
+		if ( ! this.capabilities.isWebGL2 ) {
+
+			this.extensions.get( 'WEBGL_depth_texture' );
+			this.extensions.get( 'OES_texture_float' );
+			this.extensions.get( 'OES_texture_half_float' );
+			this.extensions.get( 'OES_texture_half_float_linear' );
+			this.extensions.get( 'OES_standard_derivatives' );
+			this.extensions.get( 'OES_element_index_uint' );
+			this.extensions.get( 'ANGLE_instanced_arrays' );
+
+		}
+
+		this.extensions.get( 'OES_texture_float_linear' );
+
+		this.utils = new WebGLUtils( this._gl, this.extensions, this.capabilities );
+
+		this.state = new WebGLState( this._gl, this.extensions, this.utils, this.capabilities );
+		this.state.scissor( this._currentScissor.copy( this._scissor ).multiplyScalar( this._pixelRatio ) );
+		this.state.viewport( this._currentViewport.copy( this._viewport ).multiplyScalar( this._pixelRatio ) );
+
+		this.info = new WebGLInfo( this._gl );
+		this.properties = new WebGLProperties();
+		this.textures = new WebGLTextures( this._gl, this.extensions, state, properties, capabilities, this.utils, info );
+		this.attributes = new WebGLAttributes( this._gl );
+		this.geometries = new WebGLGeometries( this._gl, attributes, info );
+		this.objects = new WebGLObjects( geometries, info );
+		this.morphtargets = new WebGLMorphtargets( this._gl );
+		this.programCache = new WebGLPrograms( this, this.extensions, capabilities, textures );
+		this.renderLists = new WebGLRenderLists();
+		this.renderStates = new WebGLRenderStates();
+
+		this.background = new WebGLBackground( this, state, objects, _premultipliedAlpha );
+
+		this.bufferRenderer = new WebGLBufferRenderer( this._gl, this.extensions, info, capabilities );
+		this.indexedBufferRenderer = new WebGLIndexedBufferRenderer( this._gl, this.extensions, info, capabilities );
+
+		this.info.programs = this.programCache.programs;
+
+		this.context = this._gl;
+	}
 
 	// API
 
-	this.getContext = function () {
+	getContext () {
 
-		return _gl;
-
-	};
-
-	this.getContextAttributes = function () {
-
-		return _gl.getContextAttributes();
+		return this._gl;
 
 	};
 
-	this.forceContextLoss = function () {
+	getContextAttributes () {
 
-		var extension = extensions.get( 'WEBGL_lose_context' );
+		return this._gl.getContextAttributes();
+
+	};
+
+	forceContextLoss () {
+
+		var extension = this.extensions.get( 'WEBGL_lose_context' );
 		if ( extension ) extension.loseContext();
 
 	};
 
-	this.forceContextRestore = function () {
+	forceContextRestore () {
 
-		var extension = extensions.get( 'WEBGL_lose_context' );
+		var extension = this.extensions.get( 'WEBGL_lose_context' );
 		if ( extension ) extension.restoreContext();
 
 	};
 
-	this.getPixelRatio = function () {
+	getPixelRatio () {
 
-		return _pixelRatio;
+		return this._pixelRatio;
 
 	};
 
-	this.setPixelRatio = function ( value ) {
+	setPixelRatio ( value?: number ) {
 
 		if ( value === undefined ) return;
 
-		_pixelRatio = value;
+		this._pixelRatio = value;
 
-		this.setSize( _width, _height, false );
+		this.setSize( this._width, this._height, false );
 
 	};
 
-	this.getSize = function ( target ) {
+	getSize ( target: Vector2 ) {
 
 		if ( target === undefined ) {
 
@@ -374,29 +477,29 @@ function WebGLRenderer( parameters ) {
 
 		}
 
-		return target.set( _width, _height );
+		return target.set( this._width, this._height );
 
 	};
 
-	this.setSize = function ( width, height, updateStyle ) {
+	setSize ( width: number, height: number, updateStyle?: boolean ) {
 
-		if ( vr.isPresenting() ) {
+		if ( this.vr.isPresenting() ) {
 
 			console.warn( 'THREE.WebGLRenderer: Can\'t change size while VR device is presenting.' );
 			return;
 
 		}
 
-		_width = width;
-		_height = height;
+		this._width = width;
+		this._height = height;
 
-		_canvas.width = width * _pixelRatio;
-		_canvas.height = height * _pixelRatio;
+		this._canvas.width = width * this._pixelRatio;
+		this._canvas.height = height * this._pixelRatio;
 
 		if ( updateStyle !== false ) {
 
-			_canvas.style.width = width + 'px';
-			_canvas.style.height = height + 'px';
+			this._canvas.style.width = width + 'px';
+			this._canvas.style.height = height + 'px';
 
 		}
 
@@ -404,7 +507,7 @@ function WebGLRenderer( parameters ) {
 
 	};
 
-	this.getDrawingBufferSize = function ( target ) {
+	getDrawingBufferSize ( target: Vector2 ) {
 
 		if ( target === undefined ) {
 
@@ -414,25 +517,25 @@ function WebGLRenderer( parameters ) {
 
 		}
 
-		return target.set( _width * _pixelRatio, _height * _pixelRatio );
+		return target.set( this._width * this._pixelRatio, this._height * this._pixelRatio );
 
 	};
 
-	this.setDrawingBufferSize = function ( width, height, pixelRatio ) {
+	setDrawingBufferSize ( width: number, height: number, pixelRatio: number ) {
 
-		_width = width;
-		_height = height;
+		this._width = width;
+		this._height = height;
 
-		_pixelRatio = pixelRatio;
+		this._pixelRatio = pixelRatio;
 
-		_canvas.width = width * pixelRatio;
-		_canvas.height = height * pixelRatio;
+		this._canvas.width = width * pixelRatio;
+		this._canvas.height = height * pixelRatio;
 
 		this.setViewport( 0, 0, width, height );
 
 	};
 
-	this.getCurrentViewport = function ( target ) {
+	getCurrentViewport  ( target: Vector4 ) {
 
 		if ( target === undefined ) {
 
@@ -442,117 +545,125 @@ function WebGLRenderer( parameters ) {
 
 		}
 
-		return target.copy( _currentViewport );
+		return target.copy( this._currentViewport );
 
 	};
 
-	this.getViewport = function ( target ) {
+	getViewport ( target: Vector4 ) {
 
-		return target.copy( _viewport );
+		return target.copy( this._viewport );
 
 	};
 
-	this.setViewport = function ( x, y, width, height ) {
+	setViewport ( x: Vector4 , y: Vector4, width: number, height: number ): any;
+	setViewport ( x: number , y: number, width: number, height: number ): any;
 
-		if ( x.isVector4 ) {
+	// TODO(meyer) explicitly check both X and Y
+	setViewport ( x: Vector4 | number, y: Vector4 | number, width: number, height: number ) {
 
-			_viewport.set( x.x, x.y, x.z, x.w );
+		if ( typeof x === 'number' ) {
 
+			this._viewport.set( x, y as number, width, height );
+			
 		} else {
-
-			_viewport.set( x, y, width, height );
+			
+			this._viewport.set( x.x, x.y, x.z, x.w );
 
 		}
 
-		state.viewport( _currentViewport.copy( _viewport ).multiplyScalar( _pixelRatio ) );
+		this.state.viewport( this._currentViewport.copy( this._viewport ).multiplyScalar( this._pixelRatio ) );
 
 	};
 
-	this.getScissor = function ( target ) {
+	getScissor ( target: Vector4 ) {
 
-		return target.copy( _scissor );
+		return target.copy( this._scissor );
 
 	};
 
-	this.setScissor = function ( x, y, width, height ) {
+	setScissor ( x: Vector4, y: Vector4, width: number, height: number ): any;
+	setScissor ( x: number, y: number, width: number, height: number ): any;
+	
+	// TODO(meyer) explicitly check both X and Y
+	setScissor( x: Vector4 | number, y: Vector4 | number, width: number, height: number ) {
 
-		if ( x.isVector4 ) {
+		if ( typeof x === 'object' ) {
 
-			_scissor.set( x.x, x.y, x.z, x.w );
+			this._scissor.set( x.x, x.y, x.z, x.w );
 
 		} else {
 
-			_scissor.set( x, y, width, height );
+			this._scissor.set( x, y as number, width, height );
 
 		}
 
-		state.scissor( _currentScissor.copy( _scissor ).multiplyScalar( _pixelRatio ) );
+		this.state.scissor( this._currentScissor.copy( this._scissor ).multiplyScalar( this._pixelRatio ) );
 
 	};
 
-	this.getScissorTest = function () {
+	getScissorTest () {
 
-		return _scissorTest;
+		return this._scissorTest;
 
 	};
 
-	this.setScissorTest = function ( boolean ) {
+	setScissorTest ( boolean: boolean ) {
 
-		state.setScissorTest( _scissorTest = boolean );
+		this.state.setScissorTest( this._scissorTest = boolean );
 
 	};
 
 	// Clearing
 
-	this.getClearColor = function () {
+	getClearColor () {
 
-		return background.getClearColor();
-
-	};
-
-	this.setClearColor = function () {
-
-		background.setClearColor.apply( background, arguments );
+		return this.background.getClearColor();
 
 	};
 
-	this.getClearAlpha = function () {
+	setClearColor () {
 
-		return background.getClearAlpha();
-
-	};
-
-	this.setClearAlpha = function () {
-
-		background.setClearAlpha.apply( background, arguments );
+		this.background.setClearColor.apply( this.background, arguments );
 
 	};
 
-	this.clear = function ( color, depth, stencil ) {
+	getClearAlpha () {
+
+		return this.background.getClearAlpha();
+
+	};
+
+	setClearAlpha () {
+
+		this.background.setClearAlpha.apply( this.background, arguments );
+
+	};
+
+	clear ( color?: boolean, depth?: boolean, stencil?: boolean ) {
 
 		var bits = 0;
 
-		if ( color === undefined || color ) bits |= _gl.COLOR_BUFFER_BIT;
-		if ( depth === undefined || depth ) bits |= _gl.DEPTH_BUFFER_BIT;
-		if ( stencil === undefined || stencil ) bits |= _gl.STENCIL_BUFFER_BIT;
+		if ( color === undefined || color ) bits |= this._gl.COLOR_BUFFER_BIT;
+		if ( depth === undefined || depth ) bits |= this._gl.DEPTH_BUFFER_BIT;
+		if ( stencil === undefined || stencil ) bits |= this._gl.STENCIL_BUFFER_BIT;
 
-		_gl.clear( bits );
+		this._gl.clear( bits );
 
 	};
 
-	this.clearColor = function () {
+	clearColor  () {
 
 		this.clear( true, false, false );
 
 	};
 
-	this.clearDepth = function () {
+	clearDepth () {
 
 		this.clear( false, true, false );
 
 	};
 
-	this.clearStencil = function () {
+	clearStencil () {
 
 		this.clear( false, false, true );
 
@@ -560,74 +671,74 @@ function WebGLRenderer( parameters ) {
 
 	//
 
-	this.dispose = function () {
+	dispose () {
 
-		_canvas.removeEventListener( 'webglcontextlost', onContextLost, false );
-		_canvas.removeEventListener( 'webglcontextrestored', onContextRestore, false );
+		this._canvas.removeEventListener( 'webglcontextlost', this.onContextLost, false );
+		this._canvas.removeEventListener( 'webglcontextrestored', this.onContextRestore, false );
 
-		renderLists.dispose();
-		renderStates.dispose();
-		properties.dispose();
-		objects.dispose();
+		this.renderLists.dispose();
+		this.renderStates.dispose();
+		this.properties.dispose();
+		this.objects.dispose();
 
-		vr.dispose();
+		this.vr.dispose();
 
-		animation.stop();
+		this.animation.stop();
 
 	};
 
 	// Events
 
-	function onContextLost( event ) {
+	private onContextLost( event: Event ) {
 
 		event.preventDefault();
 
 		console.log( 'THREE.WebGLRenderer: Context Lost.' );
 
-		_isContextLost = true;
+		this._isContextLost = true;
 
 	}
 
-	function onContextRestore( /* event */ ) {
+	private onContextRestore( /* event */ ) {
 
 		console.log( 'THREE.WebGLRenderer: Context Restored.' );
 
-		_isContextLost = false;
+		this._isContextLost = false;
 
-		initGLContext();
+		this.initGLContext();
 
 	}
 
-	function onMaterialDispose( event ) {
+	private onMaterialDispose( event: Event ) {
 
-		var material = event.target;
+		var material = event.target as any as Material;
 
-		material.removeEventListener( 'dispose', onMaterialDispose );
+		material.removeEventListener( 'dispose', this.onMaterialDispose );
 
-		deallocateMaterial( material );
+		this.deallocateMaterial( material );
 
 	}
 
 	// Buffer deallocation
 
-	function deallocateMaterial( material ) {
+	private deallocateMaterial( material: Material ) {
 
-		releaseMaterialProgramReference( material );
+		this.releaseMaterialProgramReference( material );
 
-		properties.remove( material );
+		this.properties.remove( material );
 
 	}
 
 
-	function releaseMaterialProgramReference( material ) {
+	private releaseMaterialProgramReference( material: Material ) {
 
-		var programInfo = properties.get( material ).program;
+		var programInfo = this.properties.get( material ).program;
 
-		material.program = undefined;
+		(material as any).program = undefined;
 
 		if ( programInfo !== undefined ) {
 
-			programCache.releaseProgram( programInfo );
+			this.programCache.releaseProgram( programInfo );
 
 		}
 
@@ -635,101 +746,101 @@ function WebGLRenderer( parameters ) {
 
 	// Buffer rendering
 
-	function renderObjectImmediate( object, program ) {
+	private renderObjectImmediate( object: any, program: any ) {
 
-		object.render( function ( object ) {
+		object.render(  ( object: any ) => {
 
-			_this.renderBufferImmediate( object, program );
+			this.renderBufferImmediate( object, program );
 
 		} );
 
 	}
 
-	this.renderBufferImmediate = function ( object, program ) {
+	private renderBufferImmediate ( object: any, program: any ) {
 
-		state.initAttributes();
+		this.state.initAttributes();
 
-		var buffers = properties.get( object );
+		var buffers = this.properties.get( object );
 
-		if ( object.hasPositions && ! buffers.position ) buffers.position = _gl.createBuffer();
-		if ( object.hasNormals && ! buffers.normal ) buffers.normal = _gl.createBuffer();
-		if ( object.hasUvs && ! buffers.uv ) buffers.uv = _gl.createBuffer();
-		if ( object.hasColors && ! buffers.color ) buffers.color = _gl.createBuffer();
+		if ( object.hasPositions && ! buffers.position ) buffers.position = this._gl.createBuffer();
+		if ( object.hasNormals && ! buffers.normal ) buffers.normal = this._gl.createBuffer();
+		if ( object.hasUvs && ! buffers.uv ) buffers.uv = this._gl.createBuffer();
+		if ( object.hasColors && ! buffers.color ) buffers.color = this._gl.createBuffer();
 
 		var programAttributes = program.getAttributes();
 
 		if ( object.hasPositions ) {
 
-			_gl.bindBuffer( _gl.ARRAY_BUFFER, buffers.position );
-			_gl.bufferData( _gl.ARRAY_BUFFER, object.positionArray, _gl.DYNAMIC_DRAW );
+			this._gl.bindBuffer( this._gl.ARRAY_BUFFER, buffers.position );
+			this._gl.bufferData( this._gl.ARRAY_BUFFER, object.positionArray, this._gl.DYNAMIC_DRAW );
 
-			state.enableAttribute( programAttributes.position );
-			_gl.vertexAttribPointer( programAttributes.position, 3, _gl.FLOAT, false, 0, 0 );
+			this.state.enableAttribute( programAttributes.position );
+			this._gl.vertexAttribPointer( programAttributes.position, 3, this._gl.FLOAT, false, 0, 0 );
 
 		}
 
 		if ( object.hasNormals ) {
 
-			_gl.bindBuffer( _gl.ARRAY_BUFFER, buffers.normal );
-			_gl.bufferData( _gl.ARRAY_BUFFER, object.normalArray, _gl.DYNAMIC_DRAW );
+			this._gl.bindBuffer( this._gl.ARRAY_BUFFER, buffers.normal );
+			this._gl.bufferData( this._gl.ARRAY_BUFFER, object.normalArray, this._gl.DYNAMIC_DRAW );
 
-			state.enableAttribute( programAttributes.normal );
-			_gl.vertexAttribPointer( programAttributes.normal, 3, _gl.FLOAT, false, 0, 0 );
+			this.state.enableAttribute( programAttributes.normal );
+			this._gl.vertexAttribPointer( programAttributes.normal, 3, this._gl.FLOAT, false, 0, 0 );
 
 		}
 
 		if ( object.hasUvs ) {
 
-			_gl.bindBuffer( _gl.ARRAY_BUFFER, buffers.uv );
-			_gl.bufferData( _gl.ARRAY_BUFFER, object.uvArray, _gl.DYNAMIC_DRAW );
+			this._gl.bindBuffer( this._gl.ARRAY_BUFFER, buffers.uv );
+			this._gl.bufferData( this._gl.ARRAY_BUFFER, object.uvArray, this._gl.DYNAMIC_DRAW );
 
-			state.enableAttribute( programAttributes.uv );
-			_gl.vertexAttribPointer( programAttributes.uv, 2, _gl.FLOAT, false, 0, 0 );
+			this.state.enableAttribute( programAttributes.uv );
+			this._gl.vertexAttribPointer( programAttributes.uv, 2, this._gl.FLOAT, false, 0, 0 );
 
 		}
 
 		if ( object.hasColors ) {
 
-			_gl.bindBuffer( _gl.ARRAY_BUFFER, buffers.color );
-			_gl.bufferData( _gl.ARRAY_BUFFER, object.colorArray, _gl.DYNAMIC_DRAW );
+			this._gl.bindBuffer( this._gl.ARRAY_BUFFER, buffers.color );
+			this._gl.bufferData( this._gl.ARRAY_BUFFER, object.colorArray, this._gl.DYNAMIC_DRAW );
 
-			state.enableAttribute( programAttributes.color );
-			_gl.vertexAttribPointer( programAttributes.color, 3, _gl.FLOAT, false, 0, 0 );
+			this.state.enableAttribute( programAttributes.color );
+			this._gl.vertexAttribPointer( programAttributes.color, 3, this._gl.FLOAT, false, 0, 0 );
 
 		}
 
-		state.disableUnusedAttributes();
+		this.state.disableUnusedAttributes();
 
-		_gl.drawArrays( _gl.TRIANGLES, 0, object.count );
+		this._gl.drawArrays( this._gl.TRIANGLES, 0, object.count );
 
 		object.count = 0;
 
 	};
 
-	this.renderBufferDirect = function ( camera, fog, geometry, material, object, group ) {
+	public renderBufferDirect ( camera: Camera, fog: any, geometry: any, material: Material, object: any, group: any ) {
 
 		var frontFaceCW = ( object.isMesh && object.matrixWorld.determinant() < 0 );
 
-		state.setMaterial( material, frontFaceCW );
+		this.state.setMaterial( material, frontFaceCW );
 
-		var program = setProgram( camera, fog, material, object );
+		var program = this.setProgram( camera, fog, material, object );
 
 		var updateBuffers = false;
 
-		if ( _currentGeometryProgram.geometry !== geometry.id ||
-			_currentGeometryProgram.program !== program.id ||
-			_currentGeometryProgram.wireframe !== ( material.wireframe === true ) ) {
+		if ( this._currentGeometryProgram.geometry !== geometry.id ||
+			this._currentGeometryProgram.program !== program.id ||
+			this._currentGeometryProgram.wireframe !== ( material.wireframe === true ) ) {
 
-			_currentGeometryProgram.geometry = geometry.id;
-			_currentGeometryProgram.program = program.id;
-			_currentGeometryProgram.wireframe = material.wireframe === true;
+			this._currentGeometryProgram.geometry = geometry.id;
+			this._currentGeometryProgram.program = program.id;
+			this._currentGeometryProgram.wireframe = material.wireframe === true;
 			updateBuffers = true;
 
 		}
 
 		if ( object.morphTargetInfluences ) {
 
-			morphtargets.update( object, geometry, material, program );
+			this.morphtargets.update( object, geometry, material, program );
 
 			updateBuffers = true;
 
@@ -743,30 +854,30 @@ function WebGLRenderer( parameters ) {
 
 		if ( material.wireframe === true ) {
 
-			index = geometries.getWireframeAttribute( geometry );
+			index = this.geometries.getWireframeAttribute( geometry );
 			rangeFactor = 2;
 
 		}
 
 		var attribute;
-		var renderer = bufferRenderer;
+		var renderer = this.bufferRenderer;
 
 		if ( index !== null ) {
 
-			attribute = attributes.get( index );
+			attribute = this.attributes.get( index );
 
-			renderer = indexedBufferRenderer;
+			renderer = this.indexedBufferRenderer;
 			renderer.setIndex( attribute );
 
 		}
 
 		if ( updateBuffers ) {
 
-			setupVertexAttributes( material, program, geometry );
+			this.setupVertexAttributes( material, program, geometry );
 
 			if ( index !== null ) {
 
-				_gl.bindBuffer( _gl.ELEMENT_ARRAY_BUFFER, attribute.buffer );
+				this._gl.bindBuffer( this._gl.ELEMENT_ARRAY_BUFFER, attribute.buffer );
 
 			}
 
@@ -805,23 +916,23 @@ function WebGLRenderer( parameters ) {
 
 			if ( material.wireframe === true ) {
 
-				state.setLineWidth( material.wireframeLinewidth * getTargetPixelRatio() );
-				renderer.setMode( _gl.LINES );
+				this.state.setLineWidth( material.wireframeLinewidth * this.getTargetPixelRatio() );
+				renderer.setMode( this._gl.LINES );
 
 			} else {
 
 				switch ( object.drawMode ) {
 
 					case TrianglesDrawMode:
-						renderer.setMode( _gl.TRIANGLES );
+						renderer.setMode( this._gl.TRIANGLES );
 						break;
 
 					case TriangleStripDrawMode:
-						renderer.setMode( _gl.TRIANGLE_STRIP );
+						renderer.setMode( this._gl.TRIANGLE_STRIP );
 						break;
 
 					case TriangleFanDrawMode:
-						renderer.setMode( _gl.TRIANGLE_FAN );
+						renderer.setMode( this._gl.TRIANGLE_FAN );
 						break;
 
 				}
@@ -835,29 +946,29 @@ function WebGLRenderer( parameters ) {
 
 			if ( lineWidth === undefined ) lineWidth = 1; // Not using Line*Material
 
-			state.setLineWidth( lineWidth * getTargetPixelRatio() );
+			this.state.setLineWidth( lineWidth * this.getTargetPixelRatio() );
 
 			if ( object.isLineSegments ) {
 
-				renderer.setMode( _gl.LINES );
+				renderer.setMode( this._gl.LINES );
 
 			} else if ( object.isLineLoop ) {
 
-				renderer.setMode( _gl.LINE_LOOP );
+				renderer.setMode( this._gl.LINE_LOOP );
 
 			} else {
 
-				renderer.setMode( _gl.LINE_STRIP );
+				renderer.setMode( this._gl.LINE_STRIP );
 
 			}
 
 		} else if ( object.isPoints ) {
 
-			renderer.setMode( _gl.POINTS );
+			renderer.setMode( this._gl.POINTS );
 
 		} else if ( object.isSprite ) {
 
-			renderer.setMode( _gl.TRIANGLES );
+			renderer.setMode( this._gl.TRIANGLES );
 
 		}
 
@@ -877,11 +988,11 @@ function WebGLRenderer( parameters ) {
 
 	};
 
-	function setupVertexAttributes( material, program, geometry ) {
+	private setupVertexAttributes( material: any, program: any, geometry: any ) {
 
-		if ( geometry && geometry.isInstancedBufferGeometry && ! capabilities.isWebGL2 ) {
+		if ( geometry && geometry.isInstancedBufferGeometry && ! this.capabilities.isWebGL2 ) {
 
-			if ( extensions.get( 'ANGLE_instanced_arrays' ) === null ) {
+			if ( this.extensions.get( 'ANGLE_instanced_arrays' ) === null ) {
 
 				console.error( 'THREE.WebGLRenderer.setupVertexAttributes: using THREE.InstancedBufferGeometry but hardware does not support extension ANGLE_instanced_arrays.' );
 				return;
@@ -890,7 +1001,7 @@ function WebGLRenderer( parameters ) {
 
 		}
 
-		state.initAttributes();
+		this.state.initAttributes();
 
 		var geometryAttributes = geometry.attributes;
 
@@ -911,7 +1022,7 @@ function WebGLRenderer( parameters ) {
 					var normalized = geometryAttribute.normalized;
 					var size = geometryAttribute.itemSize;
 
-					var attribute = attributes.get( geometryAttribute );
+					var attribute = this.attributes.get( geometryAttribute );
 
 					// TODO Attribute may not be available on context restore
 
@@ -929,7 +1040,7 @@ function WebGLRenderer( parameters ) {
 
 						if ( data && data.isInstancedInterleavedBuffer ) {
 
-							state.enableAttributeAndDivisor( programAttribute, data.meshPerAttribute );
+							this.state.enableAttributeAndDivisor( programAttribute, data.meshPerAttribute );
 
 							if ( geometry.maxInstancedCount === undefined ) {
 
@@ -939,18 +1050,18 @@ function WebGLRenderer( parameters ) {
 
 						} else {
 
-							state.enableAttribute( programAttribute );
+							this.state.enableAttribute( programAttribute );
 
 						}
 
-						_gl.bindBuffer( _gl.ARRAY_BUFFER, buffer );
-						_gl.vertexAttribPointer( programAttribute, size, type, normalized, stride * bytesPerElement, offset * bytesPerElement );
+						this._gl.bindBuffer( this._gl.ARRAY_BUFFER, buffer );
+						this._gl.vertexAttribPointer( programAttribute, size, type, normalized, stride * bytesPerElement, offset * bytesPerElement );
 
 					} else {
 
 						if ( geometryAttribute.isInstancedBufferAttribute ) {
 
-							state.enableAttributeAndDivisor( programAttribute, geometryAttribute.meshPerAttribute );
+							this.state.enableAttributeAndDivisor( programAttribute, geometryAttribute.meshPerAttribute );
 
 							if ( geometry.maxInstancedCount === undefined ) {
 
@@ -960,12 +1071,12 @@ function WebGLRenderer( parameters ) {
 
 						} else {
 
-							state.enableAttribute( programAttribute );
+							this.state.enableAttribute( programAttribute );
 
 						}
 
-						_gl.bindBuffer( _gl.ARRAY_BUFFER, buffer );
-						_gl.vertexAttribPointer( programAttribute, size, type, normalized, 0, 0 );
+						this._gl.bindBuffer( this._gl.ARRAY_BUFFER, buffer );
+						this._gl.vertexAttribPointer( programAttribute, size, type, normalized, 0, 0 );
 
 					}
 
@@ -978,19 +1089,19 @@ function WebGLRenderer( parameters ) {
 						switch ( value.length ) {
 
 							case 2:
-								_gl.vertexAttrib2fv( programAttribute, value );
+								this._gl.vertexAttrib2fv( programAttribute, value );
 								break;
 
 							case 3:
-								_gl.vertexAttrib3fv( programAttribute, value );
+								this._gl.vertexAttrib3fv( programAttribute, value );
 								break;
 
 							case 4:
-								_gl.vertexAttrib4fv( programAttribute, value );
+								this._gl.vertexAttrib4fv( programAttribute, value );
 								break;
 
 							default:
-								_gl.vertexAttrib1fv( programAttribute, value );
+								this._gl.vertexAttrib1fv( programAttribute, value );
 
 						}
 
@@ -1002,26 +1113,26 @@ function WebGLRenderer( parameters ) {
 
 		}
 
-		state.disableUnusedAttributes();
+		this.state.disableUnusedAttributes();
 
 	}
 
 	// Compile
 
-	this.compile = function ( scene, camera ) {
+	compile ( scene: any, camera: Camera ) {
 
-		currentRenderState = renderStates.get( scene, camera );
-		currentRenderState.init();
+		this.currentRenderState = this.renderStates.get( scene, camera );
+		this.currentRenderState.init();
 
-		scene.traverse( function ( object ) {
+		scene.traverse( ( object: any ) => {
 
 			if ( object.isLight ) {
 
-				currentRenderState.pushLight( object );
+				this.currentRenderState.pushLight( object );
 
 				if ( object.castShadow ) {
 
-					currentRenderState.pushShadow( object );
+					this.currentRenderState.pushShadow( object );
 
 				}
 
@@ -1029,9 +1140,9 @@ function WebGLRenderer( parameters ) {
 
 		} );
 
-		currentRenderState.setupLights( camera );
+		this.currentRenderState.setupLights( camera );
 
-		scene.traverse( function ( object ) {
+		scene.traverse( ( object: any ) => {
 
 			if ( object.material ) {
 
@@ -1039,13 +1150,13 @@ function WebGLRenderer( parameters ) {
 
 					for ( var i = 0; i < object.material.length; i ++ ) {
 
-						initMaterial( object.material[ i ], scene.fog, object );
+						this.initMaterial( object.material[ i ], scene.fog, object );
 
 					}
 
 				} else {
 
-					initMaterial( object.material, scene.fog, object );
+					this.initMaterial( object.material, scene.fog, object );
 
 				}
 
@@ -1055,34 +1166,11 @@ function WebGLRenderer( parameters ) {
 
 	};
 
-	// Animation Loop
 
-	var onAnimationFrameCallback = null;
-
-	function onAnimationFrame( time ) {
-
-		if ( vr.isPresenting() ) return;
-		if ( onAnimationFrameCallback ) onAnimationFrameCallback( time );
-
-	}
-
-	var animation = new WebGLAnimation();
-	animation.setAnimationLoop( onAnimationFrame );
-
-	if ( typeof window !== 'undefined' ) animation.setContext( window );
-
-	this.setAnimationLoop = function ( callback ) {
-
-		onAnimationFrameCallback = callback;
-		vr.setAnimationLoop( callback );
-
-		animation.start();
-
-	};
 
 	// Rendering
 
-	this.render = function ( scene, camera ) {
+	render ( scene: any, camera: Camera ) {
 
 		var renderTarget, forceClear;
 
@@ -1107,15 +1195,15 @@ function WebGLRenderer( parameters ) {
 
 		}
 
-		if ( _isContextLost ) return;
+		if ( this._isContextLost ) return;
 
 		// reset caching for this frame
 
-		_currentGeometryProgram.geometry = null;
-		_currentGeometryProgram.program = null;
-		_currentGeometryProgram.wireframe = false;
-		_currentMaterialId = - 1;
-		_currentCamera = null;
+		this._currentGeometryProgram.geometry = null;
+		this._currentGeometryProgram.program = null;
+		this._currentGeometryProgram.wireframe = false;
+		this._currentMaterialId = - 1;
+		this._currentCamera = null;
 
 		// update scene graph
 
@@ -1125,47 +1213,47 @@ function WebGLRenderer( parameters ) {
 
 		if ( camera.parent === null ) camera.updateMatrixWorld();
 
-		if ( vr.enabled ) {
+		if ( this.vr.enabled ) {
 
-			camera = vr.getCamera( camera );
-
-		}
-
-		//
-
-		currentRenderState = renderStates.get( scene, camera );
-		currentRenderState.init();
-
-		scene.onBeforeRender( _this, scene, camera, renderTarget || _currentRenderTarget );
-
-		_projScreenMatrix.multiplyMatrices( camera.projectionMatrix, camera.matrixWorldInverse );
-		_frustum.setFromMatrix( _projScreenMatrix );
-
-		_localClippingEnabled = this.localClippingEnabled;
-		_clippingEnabled = _clipping.init( this.clippingPlanes, _localClippingEnabled, camera );
-
-		currentRenderList = renderLists.get( scene, camera );
-		currentRenderList.init();
-
-		projectObject( scene, camera, 0, _this.sortObjects );
-
-		if ( _this.sortObjects === true ) {
-
-			currentRenderList.sort();
+			camera = this.vr.getCamera( camera );
 
 		}
 
 		//
 
-		if ( _clippingEnabled ) _clipping.beginShadows();
+		this.currentRenderState = this.renderStates.get( scene, camera );
+		this.currentRenderState.init();
 
-		var shadowsArray = currentRenderState.state.shadowsArray;
+		scene.onBeforeRender( this, scene, camera, renderTarget || this._currentRenderTarget );
 
-		shadowMap.render( shadowsArray, scene, camera );
+		this._projScreenMatrix.multiplyMatrices( camera.projectionMatrix, camera.matrixWorldInverse );
+		this._frustum.setFromMatrix( this._projScreenMatrix );
 
-		currentRenderState.setupLights( camera );
+		this._localClippingEnabled = this.localClippingEnabled;
+		this._clippingEnabled = this._clipping.init( this.clippingPlanes, this._localClippingEnabled, camera );
 
-		if ( _clippingEnabled ) _clipping.endShadows();
+		this.currentRenderList = this.renderLists.get( scene, camera );
+		this.currentRenderList.init();
+
+		this.projectObject( scene, camera, 0, this.sortObjects );
+
+		if ( this.sortObjects === true ) {
+
+			this.currentRenderList.sort();
+
+		}
+
+		//
+
+		if ( this._clippingEnabled ) this._clipping.beginShadows();
+
+		var shadowsArray = this.currentRenderState.state.shadowsArray;
+
+		this.shadowMap.render( shadowsArray, scene, camera );
+
+		this.currentRenderState.setupLights( camera );
+
+		if ( this._clippingEnabled ) this._clipping.endShadows();
 
 		//
 
@@ -1179,72 +1267,72 @@ function WebGLRenderer( parameters ) {
 
 		//
 
-		background.render( currentRenderList, scene, camera, forceClear );
+		this.background.render( this.currentRenderList, scene, camera, forceClear );
 
 		// render scene
 
-		var opaqueObjects = currentRenderList.opaque;
-		var transparentObjects = currentRenderList.transparent;
+		var opaqueObjects = this.currentRenderList.opaque;
+		var transparentObjects = this.currentRenderList.transparent;
 
 		if ( scene.overrideMaterial ) {
 
 			var overrideMaterial = scene.overrideMaterial;
 
-			if ( opaqueObjects.length ) renderObjects( opaqueObjects, scene, camera, overrideMaterial );
-			if ( transparentObjects.length ) renderObjects( transparentObjects, scene, camera, overrideMaterial );
+			if ( opaqueObjects.length ) this.renderObjects( opaqueObjects, scene, camera, overrideMaterial );
+			if ( transparentObjects.length ) this.renderObjects( transparentObjects, scene, camera, overrideMaterial );
 
 		} else {
 
 			// opaque pass (front-to-back order)
 
-			if ( opaqueObjects.length ) renderObjects( opaqueObjects, scene, camera );
+			if ( opaqueObjects.length ) this.renderObjects( opaqueObjects, scene, camera );
 
 			// transparent pass (back-to-front order)
 
-			if ( transparentObjects.length ) renderObjects( transparentObjects, scene, camera );
+			if ( transparentObjects.length ) this.renderObjects( transparentObjects, scene, camera );
 
 		}
 
 		//
 
-		scene.onAfterRender( _this, scene, camera );
+		scene.onAfterRender( this, scene, camera );
 
 		//
 
-		if ( _currentRenderTarget !== null ) {
+		if ( this._currentRenderTarget !== null ) {
 
 			// Generate mipmap if we're using any kind of mipmap filtering
 
-			textures.updateRenderTargetMipmap( _currentRenderTarget );
+			this.textures.updateRenderTargetMipmap( this._currentRenderTarget );
 
 			// resolve multisample renderbuffers to a single-sample texture if necessary
 
-			textures.updateMultisampleRenderTarget( _currentRenderTarget );
+			this.textures.updateMultisampleRenderTarget( this._currentRenderTarget );
 
 		}
 
 		// Ensure depth buffer writing is enabled so it can be cleared on next render
 
-		state.buffers.depth.setTest( true );
-		state.buffers.depth.setMask( true );
-		state.buffers.color.setMask( true );
+		this.state.buffers.depth.setTest( true );
+		this.state.buffers.depth.setMask( true );
+		this.state.buffers.color.setMask( true );
 
-		state.setPolygonOffset( false );
+		this.state.setPolygonOffset( false );
 
-		if ( vr.enabled ) {
+		if ( this.vr.enabled ) {
 
-			vr.submitFrame();
+			this.vr.submitFrame();
 
 		}
 
-		// _gl.finish();
+		// this._gl.finish();
 
-		currentRenderList = null;
-		currentRenderState = null;
+		this.currentRenderList = null;
+		this.currentRenderState = null;
 
 	};
 
-	function projectObject( object, camera, groupOrder, sortObjects ) {
+	private projectObject( object: any, camera: any, groupOrder: number, sortObjects: any ) {
 
 		if ( object.visible === false ) return;
 
@@ -1258,31 +1346,31 @@ function WebGLRenderer( parameters ) {
 
 			} else if ( object.isLight ) {
 
-				currentRenderState.pushLight( object );
+				this.currentRenderState.pushLight( object );
 
 				if ( object.castShadow ) {
 
-					currentRenderState.pushShadow( object );
+					this.currentRenderState.pushShadow( object );
 
 				}
 
 			} else if ( object.isSprite ) {
 
-				if ( ! object.frustumCulled || _frustum.intersectsSprite( object ) ) {
+				if ( ! object.frustumCulled || this._frustum.intersectsSprite( object ) ) {
 
 					if ( sortObjects ) {
 
-						_vector3.setFromMatrixPosition( object.matrixWorld )
-							.applyMatrix4( _projScreenMatrix );
+						this._vector3.setFromMatrixPosition( object.matrixWorld )
+							.applyMatrix4( this._projScreenMatrix );
 
 					}
 
-					var geometry = objects.update( object );
+					var geometry = this.objects.update( object );
 					var material = object.material;
 
 					if ( material.visible ) {
 
-						currentRenderList.push( object, geometry, material, groupOrder, _vector3.z, null );
+						this.currentRenderList.push( object, geometry, material, groupOrder, this._vector3.z, null );
 
 					}
 
@@ -1292,12 +1380,12 @@ function WebGLRenderer( parameters ) {
 
 				if ( sortObjects ) {
 
-					_vector3.setFromMatrixPosition( object.matrixWorld )
-						.applyMatrix4( _projScreenMatrix );
+					this._vector3.setFromMatrixPosition( object.matrixWorld )
+						.applyMatrix4( this._projScreenMatrix );
 
 				}
 
-				currentRenderList.push( object, null, object.material, groupOrder, _vector3.z, null );
+				this.currentRenderList.push( object, null, object.material, groupOrder, this._vector3.z, null );
 
 			} else if ( object.isMesh || object.isLine || object.isPoints ) {
 
@@ -1307,16 +1395,16 @@ function WebGLRenderer( parameters ) {
 
 				}
 
-				if ( ! object.frustumCulled || _frustum.intersectsObject( object ) ) {
+				if ( ! object.frustumCulled || this._frustum.intersectsObject( object ) ) {
 
 					if ( sortObjects ) {
 
-						_vector3.setFromMatrixPosition( object.matrixWorld )
-							.applyMatrix4( _projScreenMatrix );
+						this._vector3.setFromMatrixPosition( object.matrixWorld )
+							.applyMatrix4( this._projScreenMatrix );
 
 					}
 
-					var geometry = objects.update( object );
+					var geometry = this.objects.update( object );
 					var material = object.material;
 
 					if ( Array.isArray( material ) ) {
@@ -1330,7 +1418,7 @@ function WebGLRenderer( parameters ) {
 
 							if ( groupMaterial && groupMaterial.visible ) {
 
-								currentRenderList.push( object, geometry, groupMaterial, groupOrder, _vector3.z, group );
+								this.currentRenderList.push( object, geometry, groupMaterial, groupOrder, this._vector3.z, group );
 
 							}
 
@@ -1338,7 +1426,7 @@ function WebGLRenderer( parameters ) {
 
 					} else if ( material.visible ) {
 
-						currentRenderList.push( object, geometry, material, groupOrder, _vector3.z, null );
+						this.currentRenderList.push( object, geometry, material, groupOrder, this._vector3.z, null );
 
 					}
 
@@ -1352,13 +1440,13 @@ function WebGLRenderer( parameters ) {
 
 		for ( var i = 0, l = children.length; i < l; i ++ ) {
 
-			projectObject( children[ i ], camera, groupOrder, sortObjects );
+			this.projectObject( children[ i ], camera, groupOrder, sortObjects );
 
 		}
 
 	}
 
-	function renderObjects( renderList, scene, camera, overrideMaterial ) {
+	private renderObjects( renderList: any, scene: any, camera: any, overrideMaterial?: any ) {
 
 		for ( var i = 0, l = renderList.length; i < l; i ++ ) {
 
@@ -1371,7 +1459,7 @@ function WebGLRenderer( parameters ) {
 
 			if ( camera.isArrayCamera ) {
 
-				_currentArrayCamera = camera;
+				this._currentArrayCamera = camera;
 
 				var cameras = camera.cameras;
 
@@ -1381,11 +1469,11 @@ function WebGLRenderer( parameters ) {
 
 					if ( object.layers.test( camera2.layers ) ) {
 
-						state.viewport( _currentViewport.copy( camera2.viewport ) );
+						this.state.viewport( this._currentViewport.copy( camera2.viewport ) );
 
-						currentRenderState.setupLights( camera2 );
+						this.currentRenderState.setupLights( camera2 );
 
-						renderObject( object, scene, camera2, geometry, material, group );
+						this.renderObject( object, scene, camera2, geometry, material, group );
 
 					}
 
@@ -1395,7 +1483,7 @@ function WebGLRenderer( parameters ) {
 
 				_currentArrayCamera = null;
 
-				renderObject( object, scene, camera, geometry, material, group );
+				this.renderObject( object, scene, camera, geometry, material, group );
 
 			}
 
@@ -1403,9 +1491,9 @@ function WebGLRenderer( parameters ) {
 
 	}
 
-	function renderObject( object, scene, camera, geometry, material, group ) {
+	private renderObject( object, scene, camera, geometry, material, group ) {
 
-		object.onBeforeRender( _this, scene, camera, geometry, material, group );
+		object.onBeforeRender( this, scene, camera, geometry, material, group );
 		currentRenderState = renderStates.get( scene, _currentArrayCamera || camera );
 
 		object.modelViewMatrix.multiplyMatrices( camera.matrixWorldInverse, object.matrixWorld );
@@ -1413,33 +1501,33 @@ function WebGLRenderer( parameters ) {
 
 		if ( object.isImmediateRenderObject ) {
 
-			state.setMaterial( material );
+			this.state.setMaterial( material );
 
 			var program = setProgram( camera, scene.fog, material, object );
 
-			_currentGeometryProgram.geometry = null;
-			_currentGeometryProgram.program = null;
-			_currentGeometryProgram.wireframe = false;
+			this._currentGeometryProgram.geometry = null;
+			this._currentGeometryProgram.program = null;
+			this._currentGeometryProgram.wireframe = false;
 
-			renderObjectImmediate( object, program );
+			this.renderObjectImmediate( object, program );
 
 		} else {
 
-			_this.renderBufferDirect( camera, scene.fog, geometry, material, object, group );
+			this.renderBufferDirect( camera, scene.fog, geometry, material, object, group );
 
 		}
 
-		object.onAfterRender( _this, scene, camera, geometry, material, group );
+		object.onAfterRender( this, scene, camera, geometry, material, group );
 		currentRenderState = renderStates.get( scene, _currentArrayCamera || camera );
 
 	}
 
-	function initMaterial( material, fog, object ) {
+	private initMaterial( material, fog, object ) {
 
 		var materialProperties = properties.get( material );
 
-		var lights = currentRenderState.state.lights;
-		var shadowsArray = currentRenderState.state.shadowsArray;
+		var lights = this.currentRenderState.state.lights;
+		var shadowsArray = this.currentRenderState.state.shadowsArray;
 
 		var lightsHash = materialProperties.lightsHash;
 		var lightsStateHash = lights.state.hash;
@@ -1516,7 +1604,7 @@ function WebGLRenderer( parameters ) {
 
 			}
 
-			material.onBeforeCompile( materialProperties.shader, _this );
+			material.onBeforeCompile( materialProperties.shader, this );
 
 			// Computing code again as onBeforeCompile may have changed the shaders
 			code = programCache.getProgramCode( material, parameters );
@@ -1534,7 +1622,7 @@ function WebGLRenderer( parameters ) {
 
 			material.numSupportedMorphTargets = 0;
 
-			for ( var i = 0; i < _this.maxMorphTargets; i ++ ) {
+			for ( var i = 0; i < this.maxMorphTargets; i ++ ) {
 
 				if ( programAttributes[ 'morphTarget' + i ] >= 0 ) {
 
@@ -1550,7 +1638,7 @@ function WebGLRenderer( parameters ) {
 
 			material.numSupportedMorphNormals = 0;
 
-			for ( var i = 0; i < _this.maxMorphNormals; i ++ ) {
+			for ( var i = 0; i < this.maxMorphNormals; i ++ ) {
 
 				if ( programAttributes[ 'morphNormal' + i ] >= 0 ) {
 
@@ -1621,17 +1709,17 @@ function WebGLRenderer( parameters ) {
 
 	}
 
-	function setProgram( camera, fog, material, object ) {
+	private setProgram( camera, fog, material, object ) {
 
 		textures.resetTextureUnits();
 
 		var materialProperties = properties.get( material );
-		var lights = currentRenderState.state.lights;
+		var lights = this.currentRenderState.state.lights;
 
 		var lightsHash = materialProperties.lightsHash;
 		var lightsStateHash = lights.state.hash;
 
-		if ( _clippingEnabled ) {
+		if ( this._clippingEnabled ) {
 
 			if ( _localClippingEnabled || camera !== _currentCamera ) {
 
@@ -1713,11 +1801,11 @@ function WebGLRenderer( parameters ) {
 
 		if ( refreshProgram || _currentCamera !== camera ) {
 
-			p_uniforms.setValue( _gl, 'projectionMatrix', camera.projectionMatrix );
+			p_uniforms.setValue( this._gl, 'projectionMatrix', camera.projectionMatrix );
 
 			if ( capabilities.logarithmicDepthBuffer ) {
 
-				p_uniforms.setValue( _gl, 'logDepthBufFC',
+				p_uniforms.setValue( this._gl, 'logDepthBufFC',
 					2.0 / ( Math.log( camera.far + 1.0 ) / Math.LN2 ) );
 
 			}
@@ -1747,8 +1835,8 @@ function WebGLRenderer( parameters ) {
 
 				if ( uCamPos !== undefined ) {
 
-					uCamPos.setValue( _gl,
-						_vector3.setFromMatrixPosition( camera.matrixWorld ) );
+					uCamPos.setValue( this._gl,
+						this._vector3.setFromMatrixPosition( camera.matrixWorld ) );
 
 				}
 
@@ -1761,7 +1849,7 @@ function WebGLRenderer( parameters ) {
 				material.isShaderMaterial ||
 				material.skinning ) {
 
-				p_uniforms.setValue( _gl, 'viewMatrix', camera.matrixWorldInverse );
+				p_uniforms.setValue( this._gl, 'viewMatrix', camera.matrixWorldInverse );
 
 			}
 
@@ -1773,8 +1861,8 @@ function WebGLRenderer( parameters ) {
 
 		if ( material.skinning ) {
 
-			p_uniforms.setOptional( _gl, object, 'bindMatrix' );
-			p_uniforms.setOptional( _gl, object, 'bindMatrixInverse' );
+			p_uniforms.setOptional( this._gl, object, 'bindMatrix' );
+			p_uniforms.setOptional( this._gl, object, 'bindMatrixInverse' );
 
 			var skeleton = object.skeleton;
 
@@ -1810,12 +1898,12 @@ function WebGLRenderer( parameters ) {
 
 					}
 
-					p_uniforms.setValue( _gl, 'boneTexture', skeleton.boneTexture, textures );
-					p_uniforms.setValue( _gl, 'boneTextureSize', skeleton.boneTextureSize );
+					p_uniforms.setValue( this._gl, 'boneTexture', skeleton.boneTexture, textures );
+					p_uniforms.setValue( this._gl, 'boneTextureSize', skeleton.boneTextureSize );
 
 				} else {
 
-					p_uniforms.setOptional( _gl, skeleton, 'boneMatrices' );
+					p_uniforms.setOptional( this._gl, skeleton, 'boneMatrices' );
 
 				}
 
@@ -1825,8 +1913,8 @@ function WebGLRenderer( parameters ) {
 
 		if ( refreshMaterial ) {
 
-			p_uniforms.setValue( _gl, 'toneMappingExposure', _this.toneMappingExposure );
-			p_uniforms.setValue( _gl, 'toneMappingWhitePoint', _this.toneMappingWhitePoint );
+			p_uniforms.setValue( this._gl, 'toneMappingExposure', this.toneMappingExposure );
+			p_uniforms.setValue( this._gl, 'toneMappingWhitePoint', this.toneMappingWhitePoint );
 
 			if ( material.lights ) {
 
@@ -1940,28 +2028,28 @@ function WebGLRenderer( parameters ) {
 			if ( m_uniforms.ltc_1 !== undefined ) m_uniforms.ltc_1.value = UniformsLib.LTC_1;
 			if ( m_uniforms.ltc_2 !== undefined ) m_uniforms.ltc_2.value = UniformsLib.LTC_2;
 
-			WebGLUniforms.upload( _gl, materialProperties.uniformsList, m_uniforms, textures );
+			WebGLUniforms.upload( this._gl, materialProperties.uniformsList, m_uniforms, textures );
 
 		}
 
 		if ( material.isShaderMaterial && material.uniformsNeedUpdate === true ) {
 
-			WebGLUniforms.upload( _gl, materialProperties.uniformsList, m_uniforms, textures );
+			WebGLUniforms.upload( this._gl, materialProperties.uniformsList, m_uniforms, textures );
 			material.uniformsNeedUpdate = false;
 
 		}
 
 		if ( material.isSpriteMaterial ) {
 
-			p_uniforms.setValue( _gl, 'center', object.center );
+			p_uniforms.setValue( this._gl, 'center', object.center );
 
 		}
 
 		// common matrices
 
-		p_uniforms.setValue( _gl, 'modelViewMatrix', object.modelViewMatrix );
-		p_uniforms.setValue( _gl, 'normalMatrix', object.normalMatrix );
-		p_uniforms.setValue( _gl, 'modelMatrix', object.matrixWorld );
+		p_uniforms.setValue( this._gl, 'modelViewMatrix', object.modelViewMatrix );
+		p_uniforms.setValue( this._gl, 'normalMatrix', object.normalMatrix );
+		p_uniforms.setValue( this._gl, 'modelMatrix', object.matrixWorld );
 
 		return program;
 
@@ -1969,7 +2057,7 @@ function WebGLRenderer( parameters ) {
 
 	// Uniforms (refresh uniforms objects)
 
-	function refreshUniformsCommon( uniforms, material ) {
+	private refreshUniformsCommon( uniforms, material ) {
 
 		uniforms.opacity.value = material.opacity;
 
@@ -2103,14 +2191,14 @@ function WebGLRenderer( parameters ) {
 
 	}
 
-	function refreshUniformsLine( uniforms, material ) {
+	private refreshUniformsLine( uniforms, material ) {
 
 		uniforms.diffuse.value.copy( material.color );
 		uniforms.opacity.value = material.opacity;
 
 	}
 
-	function refreshUniformsDash( uniforms, material ) {
+	private refreshUniformsDash( uniforms, material ) {
 
 		uniforms.dashSize.value = material.dashSize;
 		uniforms.totalSize.value = material.dashSize + material.gapSize;
@@ -2118,7 +2206,7 @@ function WebGLRenderer( parameters ) {
 
 	}
 
-	function refreshUniformsPoints( uniforms, material ) {
+	private refreshUniformsPoints( uniforms, material ) {
 
 		uniforms.diffuse.value.copy( material.color );
 		uniforms.opacity.value = material.opacity;
@@ -2141,7 +2229,7 @@ function WebGLRenderer( parameters ) {
 
 	}
 
-	function refreshUniformsSprites( uniforms, material ) {
+	private refreshUniformsSprites( uniforms, material ) {
 
 		uniforms.diffuse.value.copy( material.color );
 		uniforms.opacity.value = material.opacity;
@@ -2162,7 +2250,7 @@ function WebGLRenderer( parameters ) {
 
 	}
 
-	function refreshUniformsFog( uniforms, fog ) {
+	private refreshUniformsFog( uniforms, fog ) {
 
 		uniforms.fogColor.value.copy( fog.color );
 
@@ -2179,7 +2267,7 @@ function WebGLRenderer( parameters ) {
 
 	}
 
-	function refreshUniformsLambert( uniforms, material ) {
+	private refreshUniformsLambert( uniforms, material ) {
 
 		if ( material.emissiveMap ) {
 
@@ -2189,7 +2277,7 @@ function WebGLRenderer( parameters ) {
 
 	}
 
-	function refreshUniformsPhong( uniforms, material ) {
+	private refreshUniformsPhong( uniforms, material ) {
 
 		uniforms.specular.value.copy( material.specular );
 		uniforms.shininess.value = Math.max( material.shininess, 1e-4 ); // to prevent pow( 0.0, 0.0 )
@@ -2226,7 +2314,7 @@ function WebGLRenderer( parameters ) {
 
 	}
 
-	function refreshUniformsToon( uniforms, material ) {
+	private refreshUniformsToon( uniforms, material ) {
 
 		refreshUniformsPhong( uniforms, material );
 
@@ -2238,7 +2326,7 @@ function WebGLRenderer( parameters ) {
 
 	}
 
-	function refreshUniformsStandard( uniforms, material ) {
+	private refreshUniformsStandard( uniforms, material ) {
 
 		uniforms.roughness.value = material.roughness;
 		uniforms.metalness.value = material.metalness;
@@ -2294,7 +2382,7 @@ function WebGLRenderer( parameters ) {
 
 	}
 
-	function refreshUniformsPhysical( uniforms, material ) {
+	private refreshUniformsPhysical( uniforms, material ) {
 
 		refreshUniformsStandard( uniforms, material );
 
@@ -2305,7 +2393,7 @@ function WebGLRenderer( parameters ) {
 
 	}
 
-	function refreshUniformsMatcap( uniforms, material ) {
+	private refreshUniformsMatcap( uniforms, material ) {
 
 		if ( material.matcap ) {
 
@@ -2339,7 +2427,7 @@ function WebGLRenderer( parameters ) {
 
 	}
 
-	function refreshUniformsDepth( uniforms, material ) {
+	private refreshUniformsDepth( uniforms, material ) {
 
 		if ( material.displacementMap ) {
 
@@ -2351,7 +2439,7 @@ function WebGLRenderer( parameters ) {
 
 	}
 
-	function refreshUniformsDistance( uniforms, material ) {
+	private refreshUniformsDistance( uniforms, material ) {
 
 		if ( material.displacementMap ) {
 
@@ -2367,7 +2455,7 @@ function WebGLRenderer( parameters ) {
 
 	}
 
-	function refreshUniformsNormal( uniforms, material ) {
+	private refreshUniformsNormal( uniforms, material ) {
 
 		if ( material.bumpMap ) {
 
@@ -2397,7 +2485,7 @@ function WebGLRenderer( parameters ) {
 
 	// If uniforms are marked as clean, they don't need to be loaded to the GPU.
 
-	function markUniformsLightsNeedsUpdate( uniforms, value ) {
+	private markUniformsLightsNeedsUpdate( uniforms, value ) {
 
 		uniforms.ambientLightColor.needsUpdate = value;
 		uniforms.lightProbe.needsUpdate = value;
@@ -2412,34 +2500,34 @@ function WebGLRenderer( parameters ) {
 
 	//
 
-	this.setFramebuffer = function ( value ) {
+	setFramebuffer ( value: any ) {
 
-		_framebuffer = value;
-
-	};
-
-	this.getRenderTarget = function () {
-
-		return _currentRenderTarget;
+		this._framebuffer = value;
 
 	};
 
-	this.setRenderTarget = function ( renderTarget, activeCubeFace, activeMipMapLevel ) {
+	getRenderTarget () {
 
-		_currentRenderTarget = renderTarget;
+		return this._currentRenderTarget;
 
-		if ( renderTarget && properties.get( renderTarget ).__webglFramebuffer === undefined ) {
+	};
 
-			textures.setupRenderTarget( renderTarget );
+	setRenderTarget ( renderTarget: any, activeCubeFace?: any, activeMipMapLevel?: any ) {
+
+		this._currentRenderTarget = renderTarget;
+
+		if ( renderTarget && this.properties.get( renderTarget ).__webglFramebuffer === undefined ) {
+
+			this.textures.setupRenderTarget( renderTarget );
 
 		}
 
-		var framebuffer = _framebuffer;
+		var framebuffer = this._framebuffer;
 		var isCube = false;
 
 		if ( renderTarget ) {
 
-			var __webglFramebuffer = properties.get( renderTarget ).__webglFramebuffer;
+			var __webglFramebuffer = this.properties.get( renderTarget ).__webglFramebuffer;
 
 			if ( renderTarget.isWebGLRenderTargetCube ) {
 
@@ -2448,7 +2536,7 @@ function WebGLRenderer( parameters ) {
 
 			} else if ( renderTarget.isWebGLMultisampleRenderTarget ) {
 
-				framebuffer = properties.get( renderTarget ).__webglMultisampledFramebuffer;
+				framebuffer = this.properties.get( renderTarget ).__webglMultisampledFramebuffer;
 
 			} else {
 
@@ -2456,39 +2544,39 @@ function WebGLRenderer( parameters ) {
 
 			}
 
-			_currentViewport.copy( renderTarget.viewport );
-			_currentScissor.copy( renderTarget.scissor );
-			_currentScissorTest = renderTarget.scissorTest;
+			this._currentViewport.copy( renderTarget.viewport );
+			this._currentScissor.copy( renderTarget.scissor );
+			this._currentScissorTest = renderTarget.scissorTest;
 
 		} else {
 
-			_currentViewport.copy( _viewport ).multiplyScalar( _pixelRatio );
-			_currentScissor.copy( _scissor ).multiplyScalar( _pixelRatio );
-			_currentScissorTest = _scissorTest;
+			this._currentViewport.copy( this._viewport ).multiplyScalar( this._pixelRatio );
+			this._currentScissor.copy( this._scissor ).multiplyScalar( this._pixelRatio );
+			this._currentScissorTest = this._scissorTest;
 
 		}
 
-		if ( _currentFramebuffer !== framebuffer ) {
+		if ( this._currentFramebuffer !== framebuffer ) {
 
-			_gl.bindFramebuffer( _gl.FRAMEBUFFER, framebuffer );
-			_currentFramebuffer = framebuffer;
+			this._gl.bindFramebuffer( this._gl.FRAMEBUFFER, framebuffer );
+			this._currentFramebuffer = framebuffer;
 
 		}
 
-		state.viewport( _currentViewport );
-		state.scissor( _currentScissor );
-		state.setScissorTest( _currentScissorTest );
+		this.state.viewport( _currentViewport );
+		this.state.scissor( _currentScissor );
+		this.state.setScissorTest( _currentScissorTest );
 
 		if ( isCube ) {
 
 			var textureProperties = properties.get( renderTarget.texture );
-			_gl.framebufferTexture2D( _gl.FRAMEBUFFER, _gl.COLOR_ATTACHMENT0, _gl.TEXTURE_CUBE_MAP_POSITIVE_X + ( activeCubeFace || 0 ), textureProperties.__webglTexture, activeMipMapLevel || 0 );
+			this._gl.framebufferTexture2D( this._gl.FRAMEBUFFER, this._gl.COLOR_ATTACHMENT0, this._gl.TEXTURE_CUBE_MAP_POSITIVE_X + ( activeCubeFace || 0 ), textureProperties.__webglTexture, activeMipMapLevel || 0 );
 
 		}
 
 	};
 
-	this.readRenderTargetPixels = function ( renderTarget, x, y, width, height, buffer, activeCubeFaceIndex ) {
+	readRenderTargetPixels ( renderTarget, x, y, width, height, buffer, activeCubeFaceIndex ) {
 
 		if ( ! ( renderTarget && renderTarget.isWebGLRenderTarget ) ) {
 
@@ -2509,9 +2597,9 @@ function WebGLRenderer( parameters ) {
 
 			var restore = false;
 
-			if ( framebuffer !== _currentFramebuffer ) {
+			if ( framebuffer !== this._currentFramebuffer ) {
 
-				_gl.bindFramebuffer( _gl.FRAMEBUFFER, framebuffer );
+				this._gl.bindFramebuffer( this._gl.FRAMEBUFFER, framebuffer );
 
 				restore = true;
 
@@ -2523,29 +2611,29 @@ function WebGLRenderer( parameters ) {
 				var textureFormat = texture.format;
 				var textureType = texture.type;
 
-				if ( textureFormat !== RGBAFormat && utils.convert( textureFormat ) !== _gl.getParameter( _gl.IMPLEMENTATION_COLOR_READ_FORMAT ) ) {
+				if ( textureFormat !== RGBAFormat && this.utils.convert( textureFormat ) !== this._gl.getParameter( this._gl.IMPLEMENTATION_COLOR_READ_FORMAT ) ) {
 
 					console.error( 'THREE.WebGLRenderer.readRenderTargetPixels: renderTarget is not in RGBA or implementation defined format.' );
 					return;
 
 				}
 
-				if ( textureType !== UnsignedByteType && utils.convert( textureType ) !== _gl.getParameter( _gl.IMPLEMENTATION_COLOR_READ_TYPE ) && // IE11, Edge and Chrome Mac < 52 (#9513)
-					! ( textureType === FloatType && ( capabilities.isWebGL2 || extensions.get( 'OES_texture_float' ) || extensions.get( 'WEBGL_color_buffer_float' ) ) ) && // Chrome Mac >= 52 and Firefox
-					! ( textureType === HalfFloatType && ( capabilities.isWebGL2 ? extensions.get( 'EXT_color_buffer_float' ) : extensions.get( 'EXT_color_buffer_half_float' ) ) ) ) {
+				if ( textureType !== UnsignedByteType && this.utils.convert( textureType ) !== this._gl.getParameter( this._gl.IMPLEMENTATION_COLOR_READ_TYPE ) && // IE11, Edge and Chrome Mac < 52 (#9513)
+					! ( textureType === FloatType && ( capabilities.isWebGL2 || this.extensions.get( 'OES_texture_float' ) || this.extensions.get( 'WEBGL_color_buffer_float' ) ) ) && // Chrome Mac >= 52 and Firefox
+					! ( textureType === HalfFloatType && ( capabilities.isWebGL2 ? this.extensions.get( 'EXT_color_buffer_float' ) : this.extensions.get( 'EXT_color_buffer_half_float' ) ) ) ) {
 
 					console.error( 'THREE.WebGLRenderer.readRenderTargetPixels: renderTarget is not in UnsignedByteType or implementation defined type.' );
 					return;
 
 				}
 
-				if ( _gl.checkFramebufferStatus( _gl.FRAMEBUFFER ) === _gl.FRAMEBUFFER_COMPLETE ) {
+				if ( this._gl.checkFramebufferStatus( this._gl.FRAMEBUFFER ) === this._gl.FRAMEBUFFER_COMPLETE ) {
 
 					// the following if statement ensures valid read requests (no out-of-bounds pixels, see #8604)
 
 					if ( ( x >= 0 && x <= ( renderTarget.width - width ) ) && ( y >= 0 && y <= ( renderTarget.height - height ) ) ) {
 
-						_gl.readPixels( x, y, width, height, utils.convert( textureFormat ), utils.convert( textureType ), buffer );
+						this._gl.readPixels( x, y, width, height, this.utils.convert( textureFormat ), this.utils.convert( textureType ), buffer );
 
 					}
 
@@ -2559,7 +2647,7 @@ function WebGLRenderer( parameters ) {
 
 				if ( restore ) {
 
-					_gl.bindFramebuffer( _gl.FRAMEBUFFER, _currentFramebuffer );
+					this._gl.bindFramebuffer( this._gl.FRAMEBUFFER, this._currentFramebuffer );
 
 				}
 
@@ -2569,39 +2657,37 @@ function WebGLRenderer( parameters ) {
 
 	};
 
-	this.copyFramebufferToTexture = function ( position, texture, level ) {
+	copyFramebufferToTexture ( position: any, texture: any, level: any ) {
 
 		var width = texture.image.width;
 		var height = texture.image.height;
-		var glFormat = utils.convert( texture.format );
+		var glFormat = this.utils.convert( texture.format );
 
-		textures.setTexture2D( texture, 0 );
+		this.textures.setTexture2D( texture, 0 );
 
-		_gl.copyTexImage2D( _gl.TEXTURE_2D, level || 0, glFormat, position.x, position.y, width, height, 0 );
+		this._gl.copyTexImage2D( this._gl.TEXTURE_2D, level || 0, glFormat, position.x, position.y, width, height, 0 );
 
-	};
+	}
 
-	this.copyTextureToTexture = function ( position, srcTexture, dstTexture, level ) {
+	copyTextureToTexture ( position: any, srcTexture: any, dstTexture: any, level: any ) {
 
 		var width = srcTexture.image.width;
 		var height = srcTexture.image.height;
-		var glFormat = utils.convert( dstTexture.format );
-		var glType = utils.convert( dstTexture.type );
+		var glFormat = this.utils.convert( dstTexture.format );
+		var glType = this.utils.convert( dstTexture.type );
 
 		textures.setTexture2D( dstTexture, 0 );
 
 		if ( srcTexture.isDataTexture ) {
 
-			_gl.texSubImage2D( _gl.TEXTURE_2D, level || 0, position.x, position.y, width, height, glFormat, glType, srcTexture.image.data );
+			this._gl.texSubImage2D( this._gl.TEXTURE_2D, level || 0, position.x, position.y, width, height, glFormat, glType, srcTexture.image.data );
 
 		} else {
 
-			_gl.texSubImage2D( _gl.TEXTURE_2D, level || 0, position.x, position.y, glFormat, glType, srcTexture.image );
+			this._gl.texSubImage2D( this._gl.TEXTURE_2D, level || 0, position.x, position.y, glFormat, glType, srcTexture.image );
 
 		}
 
 	};
 
 }
-
-export { WebGLRenderer };

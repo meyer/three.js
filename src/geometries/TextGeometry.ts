@@ -18,8 +18,8 @@
  * }
  */
 
-import { Geometry } from '../core/Geometry.js';
-import { ExtrudeBufferGeometry } from './ExtrudeGeometry.js';
+import { Geometry } from '../core/Geometry';
+import { ExtrudeBufferGeometry } from './ExtrudeGeometry';
 
 // TextGeometry
 

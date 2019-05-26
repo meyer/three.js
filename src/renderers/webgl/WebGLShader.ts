@@ -2,13 +2,13 @@
  * @author mrdoob / http://mrdoob.com/
  */
 
-function addLineNumbers( string ) {
+function addLineNumbers( string: string ) {
 
 	var lines = string.split( '\n' );
 
 	for ( var i = 0; i < lines.length; i ++ ) {
 
-		lines[ i ] = ( i + 1 ) + ': ' + lines[ i ];
+		lines[ i ] = i + 1 + ': ' + lines[ i ];
 
 	}
 
@@ -16,9 +16,20 @@ function addLineNumbers( string ) {
 
 }
 
-function WebGLShader( gl, type, string, debug ) {
+export function WebGLShader(
+	gl: WebGLRenderingContext | WebGL2RenderingContext,
+	type: any,
+	string: string,
+	debug?: boolean
+) {
 
 	var shader = gl.createShader( type );
+
+	if ( ! shader ) {
+
+		throw new Error( 'Could not create shader' );
+
+	}
 
 	gl.shaderSource( shader, string );
 	gl.compileShader( shader );
@@ -27,13 +38,18 @@ function WebGLShader( gl, type, string, debug ) {
 
 		if ( gl.getShaderParameter( shader, gl.COMPILE_STATUS ) === false ) {
 
-			console.error( 'THREE.WebGLShader: Shader couldn\'t compile.' );
+			console.error( "THREE.WebGLShader: Shader couldn't compile." );
 
 		}
 
 		if ( gl.getShaderInfoLog( shader ) !== '' ) {
 
-			console.warn( 'THREE.WebGLShader: gl.getShaderInfoLog()', type === gl.VERTEX_SHADER ? 'vertex' : 'fragment', gl.getShaderInfoLog( shader ), addLineNumbers( string ) );
+			console.warn(
+				'THREE.WebGLShader: gl.getShaderInfoLog()',
+				type === gl.VERTEX_SHADER ? 'vertex' : 'fragment',
+				gl.getShaderInfoLog( shader ),
+				addLineNumbers( string )
+			);
 
 		}
 
@@ -45,6 +61,3 @@ function WebGLShader( gl, type, string, debug ) {
 	return shader;
 
 }
-
-
-export { WebGLShader };

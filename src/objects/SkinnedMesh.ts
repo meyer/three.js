@@ -4,9 +4,9 @@
  * @author ikerr / http://verold.com
  */
 
-import { Mesh } from './Mesh.js';
-import { Matrix4 } from '../math/Matrix4.js';
-import { Vector4 } from '../math/Vector4.js';
+import { Mesh } from './Mesh';
+import { Matrix4 } from '../math/Matrix4';
+import { Vector4 } from '../math/Vector4';
 
 function SkinnedMesh( geometry, material ) {
 

@@ -1,69 +1,98 @@
+import { WebGLExtensions } from './WebGLExtensions';
+import { WebGLInfo } from './WebGLInfo';
+import { WebGLCapabilities } from './WebGLCapabilities';
+
 /**
  * @author mrdoob / http://mrdoob.com/
  */
 
-function WebGLIndexedBufferRenderer( gl, extensions, info, capabilities ) {
+export class WebGLIndexedBufferRenderer {
 
-	var mode;
+	constructor(
+		gl: WebGLRenderingContext | WebGL2RenderingContext,
+		extensions: WebGLExtensions,
+		info: WebGLInfo,
+		capabilities: WebGLCapabilities
+	) {
 
-	function setMode( value ) {
-
-		mode = value;
-
-	}
-
-	var type, bytesPerElement;
-
-	function setIndex( value ) {
-
-		type = value.type;
-		bytesPerElement = value.bytesPerElement;
+		this.gl = gl;
+		this.extensions = extensions;
+		this.info = info;
+		this.capabilities = capabilities;
 
 	}
 
-	function render( start, count ) {
+	private type: number = 0;
+	private bytesPerElement: any;
+	private mode: number = 0;
+	private gl: WebGLRenderingContext | WebGL2RenderingContext;
+	private extensions: WebGLExtensions;
+	private info: WebGLInfo;
+	private capabilities: WebGLCapabilities;
 
-		gl.drawElements( mode, count, type, start * bytesPerElement );
+	public setMode( value: any ) {
 
-		info.update( count, mode );
+		this.mode = value;
 
 	}
 
-	function renderInstances( geometry, start, count ) {
+	public setIndex( value: any ) {
 
-		var extension;
+		this.type = value.type;
+		this.bytesPerElement = value.bytesPerElement;
 
-		if ( capabilities.isWebGL2 ) {
+	}
 
-			extension = gl;
+	public render( start: number, count: number ) {
+
+		this.gl.drawElements(
+			this.mode,
+			count,
+			this.type,
+			start * this.bytesPerElement
+		);
+
+		this.info.update( count, this.mode );
+
+	}
+
+	public renderInstances( geometry: any, start: any, count: number ) {
+
+		var extension: any;
+
+		if ( this.capabilities.isWebGL2 ) {
+
+			extension = this.gl;
 
 		} else {
 
-			var extension = extensions.get( 'ANGLE_instanced_arrays' );
+			extension = this.extensions.get( 'ANGLE_instanced_arrays' );
 
 			if ( extension === null ) {
 
-				console.error( 'THREE.WebGLIndexedBufferRenderer: using THREE.InstancedBufferGeometry but hardware does not support extension ANGLE_instanced_arrays.' );
+				console.error(
+					'THREE.WebGLIndexedBufferRenderer: using THREE.InstancedBufferGeometry but hardware does not support extension ANGLE_instanced_arrays.'
+				);
 				return;
 
 			}
 
 		}
 
-		extension[ capabilities.isWebGL2 ? 'drawElementsInstanced' : 'drawElementsInstancedANGLE' ]( mode, count, type, start * bytesPerElement, geometry.maxInstancedCount );
+		extension[
+			this.capabilities.isWebGL2
+				? 'drawElementsInstanced'
+				: 'drawElementsInstancedANGLE'
+		](
+			this.mode,
+			count,
+			this.type,
+			start * this.bytesPerElement,
+			geometry.maxInstancedCount
+		);
 
-		info.update( count, mode, geometry.maxInstancedCount );
+		this.info.update( count, this.mode, geometry.maxInstancedCount );
 
 	}
 
-	//
-
-	this.setMode = setMode;
-	this.setIndex = setIndex;
-	this.render = render;
-	this.renderInstances = renderInstances;
-
 }
-
-
-export { WebGLIndexedBufferRenderer };

@@ -2,27 +2,29 @@
  * @author Takahiro https://github.com/takahirox
  */
 
-import { Texture } from './Texture.js';
-import { ClampToEdgeWrapping, NearestFilter } from '../constants.js';
+import { Texture } from './Texture';
+import { ClampToEdgeWrapping, NearestFilter, Wrapping } from '../constants';
 
-function DataTexture2DArray( data, width, height, depth ) {
+export class DataTexture2DArray extends Texture {
 
-	Texture.call( this, null );
+	constructor( data: any, width: number, height: number, depth: number ) {
 
-	this.image = { data: data, width: width, height: height, depth: depth };
+		super( null );
 
-	this.magFilter = NearestFilter;
-	this.minFilter = NearestFilter;
+		this.image = { data: data, width: width, height: height, depth: depth };
 
-	this.wrapR = ClampToEdgeWrapping;
+		this.magFilter = NearestFilter;
+		this.minFilter = NearestFilter;
 
-	this.generateMipmaps = false;
-	this.flipY = false;
+		this.wrapR = ClampToEdgeWrapping;
+
+		this.generateMipmaps = false;
+		this.flipY = false;
+
+	}
+
+	wrapR: Wrapping;
+
+	isDataTexture2DArray = true as const;
 
 }
-
-DataTexture2DArray.prototype = Object.create( Texture.prototype );
-DataTexture2DArray.prototype.constructor = DataTexture2DArray;
-DataTexture2DArray.prototype.isDataTexture2DArray = true;
-
-export { DataTexture2DArray };

@@ -1,14 +1,47 @@
-import { Vector3 } from '../math/Vector3.js';
-import { Box3 } from '../math/Box3.js';
-import { EventDispatcher } from './EventDispatcher.js';
-import { BufferAttribute, Float32BufferAttribute, Uint16BufferAttribute, Uint32BufferAttribute } from './BufferAttribute.js';
-import { Sphere } from '../math/Sphere.js';
-import { DirectGeometry } from './DirectGeometry.js';
-import { Object3D } from './Object3D.js';
-import { Matrix4 } from '../math/Matrix4.js';
-import { Matrix3 } from '../math/Matrix3.js';
-import { _Math } from '../math/Math.js';
-import { arrayMax } from '../utils.js';
+import { Vector3 } from '../math/Vector3';
+import { Box3 } from '../math/Box3';
+import { EventDispatcher } from './EventDispatcher';
+import {
+	BufferAttribute,
+	Float32BufferAttribute,
+	Uint16BufferAttribute,
+	Uint32BufferAttribute,
+} from './BufferAttribute';
+import { Sphere } from '../math/Sphere';
+import { DirectGeometry } from './DirectGeometry';
+import { Object3D } from './Object3D';
+import { Matrix4 } from '../math/Matrix4';
+import { Matrix3 } from '../math/Matrix3';
+import { _Math } from '../math/Math';
+import { arrayMax } from '../utils';
+import { InterleavedBufferAttribute } from './InterleavedBufferAttribute';
+import { Geometry } from './Geometry';
+
+interface ExportedData {
+	metadata: {
+		version: number;
+		type: 'BufferGeometry';
+		generator: 'BufferGeometry.toJSON';
+	};
+	uuid: string;
+	type: string;
+	name?: string;
+	userData?: Record<string, any>;
+	data: {
+		index?: {
+			type: string;
+			array: any[];
+		};
+		attributes: Record<string, any>;
+		groups?: any[];
+		boundingSphere?: {
+			center: number[];
+			radius: number;
+		};
+		morphAttributes?: Record<string, any>;
+	};
+	[key: string]: any;
+}
 
 /**
  * @author alteredq / http://alteredqualia.com/
@@ -17,48 +50,72 @@ import { arrayMax } from '../utils.js';
 
 var bufferGeometryId = 1; // BufferGeometry uses odd numbers as Id
 
-function BufferGeometry() {
+export class BufferGeometry extends EventDispatcher {
 
-	Object.defineProperty( this, 'id', { value: bufferGeometryId += 2 } );
+	constructor() {
 
-	this.uuid = _Math.generateUUID();
+		super();
+		Object.defineProperty( this, 'id', { value: bufferGeometryId += 2 } );
 
-	this.name = '';
-	this.type = 'BufferGeometry';
+		this.uuid = _Math.generateUUID();
 
-	this.index = null;
-	this.attributes = {};
+		this.name = '';
+		this.type = 'BufferGeometry';
 
-	this.morphAttributes = {};
+		this.index = null;
+		this.attributes = {};
 
-	this.groups = [];
+		this.morphAttributes = {};
 
-	this.boundingBox = null;
-	this.boundingSphere = null;
+		this.groups = [];
 
-	this.drawRange = { start: 0, count: Infinity };
+		this.boundingBox = null;
+		this.boundingSphere = null;
 
-	this.userData = {};
+		this.drawRange = { start: 0, count: Infinity };
 
-}
+		this.userData = {};
 
-BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototype ), {
+	}
 
-	constructor: BufferGeometry,
+	readonly id!: number;
 
-	isBufferGeometry: true,
+	uuid: string;
+	name: string;
+	type: string;
+	index:
+		| null
+		| BufferAttribute
+		| InterleavedBufferAttribute
+		| Uint32BufferAttribute
+		| Uint16BufferAttribute;
+	attributes: Record<string, any>;
+	morphAttributes: Record<string, any>;
+	groups: any[];
+	boundingBox: null | any;
+	boundingSphere: null | any;
+	drawRange: { start: number; count: number };
+	userData: Record<string, any>;
 
-	getIndex: function () {
+	isBufferGeometry = true;
+
+	parameters?: Record<string, any>;
+
+	getIndex() {
 
 		return this.index;
 
-	},
+	}
 
-	setIndex: function ( index ) {
+	setIndex(
+		index: number | number[] | BufferAttribute | InterleavedBufferAttribute
+	) {
 
 		if ( Array.isArray( index ) ) {
 
-			this.index = new ( arrayMax( index ) > 65535 ? Uint32BufferAttribute : Uint16BufferAttribute )( index, 1 );
+			this.index = new ( arrayMax( index ) > 65535
+				? Uint32BufferAttribute
+				: Uint16BufferAttribute )( index, 1 );
 
 		} else {
 
@@ -66,21 +123,34 @@ BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototy
 
 		}
 
-	},
+	}
 
-	addAttribute: function ( name, attribute ) {
+	addAttribute(
+		name: string,
+		attribute: BufferAttribute | InterleavedBufferAttribute
+	): this {
 
-		if ( ! ( attribute && attribute.isBufferAttribute ) && ! ( attribute && attribute.isInterleavedBufferAttribute ) ) {
+		if (
+			! ( attribute && 'isBufferAttribute' in attribute ) &&
+			! ( attribute && 'isInterleavedBufferAttribute' in attribute )
+		) {
 
-			console.warn( 'THREE.BufferGeometry: .addAttribute() now expects ( name, attribute ).' );
+			console.warn(
+				'THREE.BufferGeometry: .addAttribute() now expects ( name, attribute ).'
+			);
 
-			return this.addAttribute( name, new BufferAttribute( arguments[ 1 ], arguments[ 2 ] ) );
+			return this.addAttribute(
+				name,
+				new BufferAttribute( arguments[ 1 ], arguments[ 2 ] )
+			);
 
 		}
 
 		if ( name === 'index' ) {
 
-			console.warn( 'THREE.BufferGeometry.addAttribute: Use .setIndex() for index attribute.' );
+			console.warn(
+				'THREE.BufferGeometry.addAttribute: Use .setIndex() for index attribute.'
+			);
 			this.setIndex( attribute );
 
 			return this;
@@ -91,48 +161,46 @@ BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototy
 
 		return this;
 
-	},
+	}
 
-	getAttribute: function ( name ) {
+	getAttribute( name: string ) {
 
 		return this.attributes[ name ];
 
-	},
+	}
 
-	removeAttribute: function ( name ) {
+	removeAttribute( name: string ) {
 
 		delete this.attributes[ name ];
 
 		return this;
 
-	},
+	}
 
-	addGroup: function ( start, count, materialIndex ) {
+	addGroup( start: number, count: number, materialIndex: number ) {
 
 		this.groups.push( {
-
 			start: start,
 			count: count,
-			materialIndex: materialIndex !== undefined ? materialIndex : 0
-
+			materialIndex: materialIndex !== undefined ? materialIndex : 0,
 		} );
 
-	},
+	}
 
-	clearGroups: function () {
+	clearGroups() {
 
 		this.groups = [];
 
-	},
+	}
 
-	setDrawRange: function ( start, count ) {
+	setDrawRange( start: number, count: number ) {
 
 		this.drawRange.start = start;
 		this.drawRange.count = count;
 
-	},
+	}
 
-	applyMatrix: function ( matrix ) {
+	applyMatrix( matrix: Matrix4 ) {
 
 		var position = this.attributes.position;
 
@@ -180,15 +248,15 @@ BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototy
 
 		return this;
 
-	},
+	}
 
-	rotateX: function () {
+	rotateX = ( () => {
 
 		// rotate geometry around world x-axis
 
 		var m1 = new Matrix4();
 
-		return function rotateX( angle ) {
+		const rotateX = ( angle: number ) => {
 
 			m1.makeRotationX( angle );
 
@@ -198,15 +266,17 @@ BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototy
 
 		};
 
-	}(),
+		return rotateX;
 
-	rotateY: function () {
+	} )();
+
+	rotateY = ( () => {
 
 		// rotate geometry around world y-axis
 
 		var m1 = new Matrix4();
 
-		return function rotateY( angle ) {
+		const rotateY = ( angle: number ) => {
 
 			m1.makeRotationY( angle );
 
@@ -216,15 +286,17 @@ BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototy
 
 		};
 
-	}(),
+		return rotateY;
 
-	rotateZ: function () {
+	} )();
+
+	rotateZ = ( () => {
 
 		// rotate geometry around world z-axis
 
 		var m1 = new Matrix4();
 
-		return function rotateZ( angle ) {
+		const rotateZ = ( angle: number ) => {
 
 			m1.makeRotationZ( angle );
 
@@ -234,15 +306,17 @@ BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototy
 
 		};
 
-	}(),
+		return rotateZ;
 
-	translate: function () {
+	} )();
+
+	translate = ( () => {
 
 		// translate geometry
 
 		var m1 = new Matrix4();
 
-		return function translate( x, y, z ) {
+		const translate = ( x: number, y: number, z: number ) => {
 
 			m1.makeTranslation( x, y, z );
 
@@ -252,15 +326,17 @@ BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototy
 
 		};
 
-	}(),
+		return translate;
 
-	scale: function () {
+	} )();
+
+	scale = ( () => {
 
 		// scale geometry
 
 		var m1 = new Matrix4();
 
-		return function scale( x, y, z ) {
+		const scale = ( x: number, y: number, z: number ) => {
 
 			m1.makeScale( x, y, z );
 
@@ -270,13 +346,15 @@ BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototy
 
 		};
 
-	}(),
+		return scale;
 
-	lookAt: function () {
+	} )();
+
+	lookAt = ( () => {
 
 		var obj = new Object3D();
 
-		return function lookAt( vector ) {
+		const lookAt = ( vector: Vector3 ) => {
 
 			obj.lookAt( vector );
 
@@ -286,13 +364,15 @@ BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototy
 
 		};
 
-	}(),
+		return lookAt;
 
-	center: function () {
+	} )();
+
+	center = ( () => {
 
 		var offset = new Vector3();
 
-		return function center() {
+		const center = () => {
 
 			this.computeBoundingBox();
 
@@ -304,27 +384,45 @@ BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototy
 
 		};
 
-	}(),
+		return center;
 
-	setFromObject: function ( object ) {
+	} )();
+
+	// TODO(meyer) use a union of Object3D subtypes here
+	setFromObject( object: Object3D ) {
 
 		// console.log( 'THREE.BufferGeometry.setFromObject(). Converting', object, this );
 
-		var geometry = object.geometry;
+		var geometry = object.geometry as Geometry;
 
 		if ( object.isPoints || object.isLine ) {
 
-			var positions = new Float32BufferAttribute( geometry.vertices.length * 3, 3 );
+			var positions = new Float32BufferAttribute(
+				geometry!.vertices.length * 3,
+				3
+			);
 			var colors = new Float32BufferAttribute( geometry.colors.length * 3, 3 );
 
-			this.addAttribute( 'position', positions.copyVector3sArray( geometry.vertices ) );
+			this.addAttribute(
+				'position',
+				positions.copyVector3sArray( geometry.vertices )
+			);
 			this.addAttribute( 'color', colors.copyColorsArray( geometry.colors ) );
 
-			if ( geometry.lineDistances && geometry.lineDistances.length === geometry.vertices.length ) {
+			if (
+				geometry.lineDistances &&
+				geometry.lineDistances.length === geometry.vertices.length
+			) {
 
-				var lineDistances = new Float32BufferAttribute( geometry.lineDistances.length, 1 );
+				var lineDistances = new Float32BufferAttribute(
+					geometry.lineDistances.length,
+					1
+				);
 
-				this.addAttribute( 'lineDistance', lineDistances.copyArray( geometry.lineDistances ) );
+				this.addAttribute(
+					'lineDistance',
+					lineDistances.copyArray( geometry.lineDistances )
+				);
 
 			}
 
@@ -352,9 +450,9 @@ BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototy
 
 		return this;
 
-	},
+	}
 
-	setFromPoints: function ( points ) {
+	setFromPoints( points: Vector3[] ) {
 
 		var position = [];
 
@@ -369,9 +467,9 @@ BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototy
 
 		return this;
 
-	},
+	}
 
-	updateFromObject: function ( object ) {
+	updateFromObject( object: any ) {
 
 		var geometry = object.geometry;
 
@@ -496,46 +594,61 @@ BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototy
 
 		return this;
 
-	},
+	}
 
-	fromGeometry: function ( geometry ) {
+	fromGeometry( geometry: Geometry ) {
 
 		geometry.__directGeometry = new DirectGeometry().fromGeometry( geometry );
 
 		return this.fromDirectGeometry( geometry.__directGeometry );
 
-	},
+	}
 
-	fromDirectGeometry: function ( geometry ) {
+	fromDirectGeometry( geometry: DirectGeometry ) {
 
 		var positions = new Float32Array( geometry.vertices.length * 3 );
-		this.addAttribute( 'position', new BufferAttribute( positions, 3 ).copyVector3sArray( geometry.vertices ) );
+		this.addAttribute(
+			'position',
+			new BufferAttribute( positions, 3 ).copyVector3sArray( geometry.vertices )
+		);
 
 		if ( geometry.normals.length > 0 ) {
 
 			var normals = new Float32Array( geometry.normals.length * 3 );
-			this.addAttribute( 'normal', new BufferAttribute( normals, 3 ).copyVector3sArray( geometry.normals ) );
+			this.addAttribute(
+				'normal',
+				new BufferAttribute( normals, 3 ).copyVector3sArray( geometry.normals )
+			);
 
 		}
 
 		if ( geometry.colors.length > 0 ) {
 
 			var colors = new Float32Array( geometry.colors.length * 3 );
-			this.addAttribute( 'color', new BufferAttribute( colors, 3 ).copyColorsArray( geometry.colors ) );
+			this.addAttribute(
+				'color',
+				new BufferAttribute( colors, 3 ).copyColorsArray( geometry.colors )
+			);
 
 		}
 
 		if ( geometry.uvs.length > 0 ) {
 
 			var uvs = new Float32Array( geometry.uvs.length * 2 );
-			this.addAttribute( 'uv', new BufferAttribute( uvs, 2 ).copyVector2sArray( geometry.uvs ) );
+			this.addAttribute(
+				'uv',
+				new BufferAttribute( uvs, 2 ).copyVector2sArray( geometry.uvs )
+			);
 
 		}
 
 		if ( geometry.uvs2.length > 0 ) {
 
 			var uvs2 = new Float32Array( geometry.uvs2.length * 2 );
-			this.addAttribute( 'uv2', new BufferAttribute( uvs2, 2 ).copyVector2sArray( geometry.uvs2 ) );
+			this.addAttribute(
+				'uv2',
+				new BufferAttribute( uvs2, 2 ).copyVector2sArray( geometry.uvs2 )
+			);
 
 		}
 
@@ -554,7 +667,10 @@ BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototy
 
 				var morphTarget = morphTargets[ i ];
 
-				var attribute = new Float32BufferAttribute( morphTarget.data.length * 3, 3 );
+				var attribute = new Float32BufferAttribute(
+					morphTarget.data.length * 3,
+					3
+				);
 				attribute.name = morphTarget.name;
 
 				array.push( attribute.copyVector3sArray( morphTarget.data ) );
@@ -569,15 +685,27 @@ BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototy
 
 		if ( geometry.skinIndices.length > 0 ) {
 
-			var skinIndices = new Float32BufferAttribute( geometry.skinIndices.length * 4, 4 );
-			this.addAttribute( 'skinIndex', skinIndices.copyVector4sArray( geometry.skinIndices ) );
+			var skinIndices = new Float32BufferAttribute(
+				geometry.skinIndices.length * 4,
+				4
+			);
+			this.addAttribute(
+				'skinIndex',
+				skinIndices.copyVector4sArray( geometry.skinIndices )
+			);
 
 		}
 
 		if ( geometry.skinWeights.length > 0 ) {
 
-			var skinWeights = new Float32BufferAttribute( geometry.skinWeights.length * 4, 4 );
-			this.addAttribute( 'skinWeight', skinWeights.copyVector4sArray( geometry.skinWeights ) );
+			var skinWeights = new Float32BufferAttribute(
+				geometry.skinWeights.length * 4,
+				4
+			);
+			this.addAttribute(
+				'skinWeight',
+				skinWeights.copyVector4sArray( geometry.skinWeights )
+			);
 
 		}
 
@@ -597,13 +725,13 @@ BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototy
 
 		return this;
 
-	},
+	}
 
-	computeBoundingBox: function () {
+	computeBoundingBox = ( () => {
 
 		var box = new Box3();
 
-		return function computeBoundingBox() {
+		const computeBoundingBox = () => {
 
 			if ( this.boundingBox === null ) {
 
@@ -640,23 +768,32 @@ BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototy
 
 			}
 
-			if ( isNaN( this.boundingBox.min.x ) || isNaN( this.boundingBox.min.y ) || isNaN( this.boundingBox.min.z ) ) {
+			if (
+				isNaN( this.boundingBox.min.x ) ||
+				isNaN( this.boundingBox.min.y ) ||
+				isNaN( this.boundingBox.min.z )
+			) {
 
-				console.error( 'THREE.BufferGeometry.computeBoundingBox: Computed min/max have NaN values. The "position" attribute is likely to have NaN values.', this );
+				console.error(
+					'THREE.BufferGeometry.computeBoundingBox: Computed min/max have NaN values. The "position" attribute is likely to have NaN values.',
+					this
+				);
 
 			}
 
 		};
 
-	}(),
+		return computeBoundingBox;
 
-	computeBoundingSphere: function () {
+	} )();
+
+	computeBoundingSphere = ( () => {
 
 		var box = new Box3();
 		var boxMorphTargets = new Box3();
 		var vector = new Vector3();
 
-		return function computeBoundingSphere() {
+		const computeBoundingSphere = () => {
 
 			if ( this.boundingSphere === null ) {
 
@@ -718,7 +855,10 @@ BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototy
 
 							vector.fromBufferAttribute( morphAttribute, j );
 
-							maxRadiusSq = Math.max( maxRadiusSq, center.distanceToSquared( vector ) );
+							maxRadiusSq = Math.max(
+								maxRadiusSq,
+								center.distanceToSquared( vector )
+							);
 
 						}
 
@@ -730,7 +870,10 @@ BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototy
 
 				if ( isNaN( this.boundingSphere.radius ) ) {
 
-					console.error( 'THREE.BufferGeometry.computeBoundingSphere(): Computed radius is NaN. The "position" attribute is likely to have NaN values.', this );
+					console.error(
+						'THREE.BufferGeometry.computeBoundingSphere(): Computed radius is NaN. The "position" attribute is likely to have NaN values.',
+						this
+					);
 
 				}
 
@@ -738,15 +881,15 @@ BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototy
 
 		};
 
-	}(),
+		return computeBoundingSphere;
 
-	computeFaceNormals: function () {
+	} )();
 
+	computeFaceNormals() {
 		// backwards compatibility
+	}
 
-	},
-
-	computeVertexNormals: function () {
+	computeVertexNormals() {
 
 		var index = this.index;
 		var attributes = this.attributes;
@@ -757,7 +900,10 @@ BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototy
 
 			if ( attributes.normal === undefined ) {
 
-				this.addAttribute( 'normal', new BufferAttribute( new Float32Array( positions.length ), 3 ) );
+				this.addAttribute(
+					'normal',
+					new BufferAttribute( new Float32Array( positions.length ), 3 )
+				);
 
 			} else {
 
@@ -776,8 +922,11 @@ BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototy
 			var normals = attributes.normal.array;
 
 			var vA, vB, vC;
-			var pA = new Vector3(), pB = new Vector3(), pC = new Vector3();
-			var cb = new Vector3(), ab = new Vector3();
+			var pA = new Vector3(),
+				pB = new Vector3(),
+				pC = new Vector3();
+			var cb = new Vector3(),
+				ab = new Vector3();
 
 			// indexed elements
 
@@ -785,7 +934,7 @@ BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototy
 
 				var indices = index.array;
 
-				for ( var i = 0, il = index.count; i < il; i += 3 ) {
+				for ( let i = 0, il = index.count; i < il; i += 3 ) {
 
 					vA = indices[ i + 0 ] * 3;
 					vB = indices[ i + 1 ] * 3;
@@ -817,7 +966,7 @@ BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototy
 
 				// non-indexed elements (unconnected triangle soup)
 
-				for ( var i = 0, il = positions.length; i < il; i += 9 ) {
+				for ( let i = 0, il = positions.length; i < il; i += 9 ) {
 
 					pA.fromArray( positions, i );
 					pB.fromArray( positions, i + 3 );
@@ -849,13 +998,16 @@ BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototy
 
 		}
 
-	},
+	}
 
-	merge: function ( geometry, offset ) {
+	merge( geometry: BufferGeometry, offset: number ) {
 
 		if ( ! ( geometry && geometry.isBufferGeometry ) ) {
 
-			console.error( 'THREE.BufferGeometry.merge(): geometry not an instance of THREE.BufferGeometry.', geometry );
+			console.error(
+				'THREE.BufferGeometry.merge(): geometry not an instance of THREE.BufferGeometry.',
+				geometry
+			);
 			return;
 
 		}
@@ -865,8 +1017,8 @@ BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototy
 			offset = 0;
 
 			console.warn(
-				'THREE.BufferGeometry.merge(): Overwriting original geometry, starting at offset=0. '
-				+ 'Use BufferGeometryUtils.mergeBufferGeometries() for lossless merge.'
+				'THREE.BufferGeometry.merge(): Overwriting original geometry, starting at offset=0. ' +
+					'Use BufferGeometryUtils.mergeBufferGeometries() for lossless merge.'
 			);
 
 		}
@@ -884,7 +1036,10 @@ BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototy
 			var attributeArray2 = attribute2.array;
 
 			var attributeOffset = attribute2.itemSize * offset;
-			var length = Math.min( attributeArray2.length, attributeArray1.length - attributeOffset );
+			var length = Math.min(
+				attributeArray2.length,
+				attributeArray1.length - attributeOffset
+			);
 
 			for ( var i = 0, j = attributeOffset; i < length; i ++, j ++ ) {
 
@@ -896,13 +1051,13 @@ BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototy
 
 		return this;
 
-	},
+	}
 
-	normalizeNormals: function () {
+	normalizeNormals = ( () => {
 
 		var vector = new Vector3();
 
-		return function normalizeNormals() {
+		const normalizeNormals = () => {
 
 			var normals = this.attributes.normal;
 
@@ -920,18 +1075,24 @@ BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototy
 
 		};
 
-	}(),
+		return normalizeNormals;
 
-	toNonIndexed: function () {
+	} )();
 
-		function convertBufferAttribute( attribute, indices ) {
+	toNonIndexed() {
+
+		function convertBufferAttribute(
+			attribute: BufferAttribute,
+			indices: ArrayLike<number>
+		) {
 
 			var array = attribute.array;
 			var itemSize = attribute.itemSize;
 
 			var array2 = new array.constructor( indices.length * itemSize );
 
-			var index = 0, index2 = 0;
+			var index = 0,
+				index2 = 0;
 
 			for ( var i = 0, l = indices.length; i < l; i ++ ) {
 
@@ -953,7 +1114,9 @@ BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototy
 
 		if ( this.index === null ) {
 
-			console.warn( 'THREE.BufferGeometry.toNonIndexed(): Geometry is already non-indexed.' );
+			console.warn(
+				'THREE.BufferGeometry.toNonIndexed(): Geometry is already non-indexed.'
+			);
 			return this;
 
 		}
@@ -1011,17 +1174,17 @@ BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototy
 
 		return geometry2;
 
-	},
+	}
 
-	toJSON: function () {
+	toJSON() {
 
-		var data = {
+		var data: ExportedData = {
 			metadata: {
 				version: 4.5,
 				type: 'BufferGeometry',
-				generator: 'BufferGeometry.toJSON'
-			}
-		};
+				generator: 'BufferGeometry.toJSON',
+			},
+		} as any;
 
 		// standard BufferGeometry serialization
 
@@ -1052,7 +1215,7 @@ BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototy
 
 			data.data.index = {
 				type: index.array.constructor.name,
-				array: Array.prototype.slice.call( index.array )
+				array: Array.prototype.slice.call( index.array ),
 			};
 
 		}
@@ -1071,14 +1234,14 @@ BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototy
 
 		}
 
-		var morphAttributes = {};
+		var morphAttributes: Record<string, any[]> = {};
 		var hasMorphAttributes = false;
 
 		for ( var key in this.morphAttributes ) {
 
 			var attributeArray = this.morphAttributes[ key ];
 
-			var array = [];
+			var array: any[] = [];
 
 			for ( var i = 0, il = attributeArray.length; i < il; i ++ ) {
 
@@ -1118,16 +1281,16 @@ BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototy
 
 			data.data.boundingSphere = {
 				center: boundingSphere.center.toArray(),
-				radius: boundingSphere.radius
+				radius: boundingSphere.radius,
 			};
 
 		}
 
 		return data;
 
-	},
+	}
 
-	clone: function () {
+	clone() {
 
 		/*
 		 // Handle primitives
@@ -1155,11 +1318,11 @@ BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototy
 
 		return new BufferGeometry().copy( this );
 
-	},
+	}
 
-	copy: function ( source ) {
+	copy( source: BufferGeometry ) {
 
-		var name, i, l;
+		var name: string, i: number, l: number;
 
 		// reset
 
@@ -1180,6 +1343,7 @@ BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototy
 
 		if ( index !== null ) {
 
+			// TODO(meyer) InterleavedBufferAttribute does not have a `clone` method
 			this.setIndex( index.clone() );
 
 		}
@@ -1256,15 +1420,12 @@ BufferGeometry.prototype = Object.assign( Object.create( EventDispatcher.prototy
 
 		return this;
 
-	},
+	}
 
-	dispose: function () {
+	dispose() {
 
 		this.dispatchEvent( { type: 'dispose' } );
 
 	}
 
-} );
-
-
-export { BufferGeometry };
+}

@@ -1,7 +1,7 @@
-import { TangentSpaceNormalMap } from '../constants.js';
-import { Material } from './Material.js';
-import { Vector2 } from '../math/Vector2.js';
-import { Color } from '../math/Color.js';
+import { TangentSpaceNormalMap } from '../constants';
+import { Material } from './Material';
+import { Vector2 } from '../math/Vector2';
+import { Color } from '../math/Color';
 
 /**
  * @author WestLangley / http://github.com/WestLangley

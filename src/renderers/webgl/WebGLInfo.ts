@@ -2,52 +2,64 @@
  * @author Mugen87 / https://github.com/Mugen87
  */
 
-function WebGLInfo( gl ) {
+export class WebGLInfo {
 
-	var memory = {
+	constructor( gl: WebGLRenderingContext | WebGL2RenderingContext ) {
+
+		this.gl = gl;
+
+	}
+
+	private gl: WebGLRenderingContext | WebGL2RenderingContext;
+
+	public memory = {
 		geometries: 0,
-		textures: 0
+		textures: 0,
 	};
 
-	var render = {
+	public render = {
 		frame: 0,
 		calls: 0,
 		triangles: 0,
 		points: 0,
-		lines: 0
+		lines: 0,
 	};
 
-	function update( count, mode, instanceCount ) {
+	public programs = null;
+
+	public autoReset = true;
+
+	public update( count: number, mode: any, instanceCount?: number ) {
 
 		instanceCount = instanceCount || 1;
 
-		render.calls ++;
+		this.render.calls ++;
 
 		switch ( mode ) {
 
-			case gl.TRIANGLES:
-				render.triangles += instanceCount * ( count / 3 );
+			case this.gl.TRIANGLES:
+				this.render.triangles += instanceCount * ( count / 3 );
 				break;
 
-			case gl.TRIANGLE_STRIP:
-			case gl.TRIANGLE_FAN:
-				render.triangles += instanceCount * ( count - 2 );
+			case this.gl.TRIANGLE_STRIP:
+			case this.gl.TRIANGLE_FAN:
+				this.render.triangles += instanceCount * ( count - 2 );
 				break;
 
-			case gl.LINES:
-				render.lines += instanceCount * ( count / 2 );
+			case this.gl.LINES:
+				this.render.lines += instanceCount * ( count / 2 );
 				break;
 
-			case gl.LINE_STRIP:
-				render.lines += instanceCount * ( count - 1 );
+			case this.gl.LINE_STRIP:
+				this.render.lines += instanceCount * ( count - 1 );
 				break;
 
-			case gl.LINE_LOOP:
-				render.lines += instanceCount * count;
+			case this.gl.LINE_LOOP:
+				this.render.lines += instanceCount * count;
 				break;
 
-			case gl.POINTS:
-				render.points += instanceCount * count;
+			case this.gl.POINTS:
+				this.render.points += instanceCount * count;
 				break;
 
 			default:
@@ -58,26 +70,14 @@ function WebGLInfo( gl ) {
 
 	}
 
-	function reset() {
+	public reset() {
 
-		render.frame ++;
-		render.calls = 0;
-		render.triangles = 0;
-		render.points = 0;
-		render.lines = 0;
+		this.render.frame ++;
+		this.render.calls = 0;
+		this.render.triangles = 0;
+		this.render.points = 0;
+		this.render.lines = 0;
 
 	}
 
-	return {
-		memory: memory,
-		render: render,
-		programs: null,
-		autoReset: true,
-		reset: reset,
-		update: update
-	};
-
 }
-
-
-export { WebGLInfo };

@@ -2,58 +2,75 @@
  * @author mrdoob / http://mrdoob.com/
  */
 
-import { Group } from '../../objects/Group.js';
-import { Matrix4 } from '../../math/Matrix4.js';
-import { Vector4 } from '../../math/Vector4.js';
-import { ArrayCamera } from '../../cameras/ArrayCamera.js';
-import { PerspectiveCamera } from '../../cameras/PerspectiveCamera.js';
-import { WebGLAnimation } from '../webgl/WebGLAnimation.js';
-import { setProjectionFromUnion } from './WebVRUtils.js';
+import { Group } from '../../objects/Group';
+import { Matrix4 } from '../../math/Matrix4';
+import { Vector4 } from '../../math/Vector4';
+import { ArrayCamera } from '../../cameras/ArrayCamera';
+import { PerspectiveCamera } from '../../cameras/PerspectiveCamera';
+import { WebGLAnimation } from '../webgl/WebGLAnimation';
+import { setProjectionFromUnion } from './WebVRUtils';
+import { WebGLRenderer } from '../WebGLRenderer';
+import { Camera } from '../../cameras/Camera';
+import { Object3D } from '../../core/Object3D';
 
-function WebXRManager( renderer ) {
+interface PerspectiveCameraWithViewport extends PerspectiveCamera {
+	viewport: Vector4;
+}
 
-	var gl = renderer.context;
+export class WebXRManager {
 
-	var device = null;
-	var session = null;
+	constructor( renderer: WebGLRenderer ) {
 
-	var framebufferScaleFactor = 1.0;
+		this.renderer = renderer;
+		this.gl = renderer.context;
 
-	var frameOfReference = null;
-	var frameOfReferenceType = 'stage';
+		this.cameraL = new PerspectiveCamera() as PerspectiveCameraWithViewport;
+		this.cameraL.layers.enable( 1 );
+		this.cameraL.viewport = new Vector4();
 
-	var pose = null;
+		this.cameraR = new PerspectiveCamera() as PerspectiveCameraWithViewport;
+		this.cameraR.layers.enable( 2 );
+		this.cameraR.viewport = new Vector4();
 
-	var controllers = [];
-	var inputSources = [];
-
-	function isPresenting() {
-
-		return session !== null && frameOfReference !== null;
+		this.cameraVR = new ArrayCamera( [ this.cameraL, this.cameraR ] );
+		this.cameraVR.layers.enable( 1 );
+		this.cameraVR.layers.enable( 2 );
 
 	}
 
-	//
+	private renderer: WebGLRenderer;
+	gl: WebGLRenderingContext | WebGL2RenderingContext;
 
-	var cameraL = new PerspectiveCamera();
-	cameraL.layers.enable( 1 );
-	cameraL.viewport = new Vector4();
+	cameraR: PerspectiveCameraWithViewport;
+	cameraL: PerspectiveCameraWithViewport;
+	cameraVR: ArrayCamera<PerspectiveCameraWithViewport>;
 
-	var cameraR = new PerspectiveCamera();
-	cameraR.layers.enable( 2 );
-	cameraR.viewport = new Vector4();
+	device: any = null;
+	session: any = null;
 
-	var cameraVR = new ArrayCamera( [ cameraL, cameraR ] );
-	cameraVR.layers.enable( 1 );
-	cameraVR.layers.enable( 2 );
+	framebufferScaleFactor: number = 1.0;
 
-	//
+	frameOfReference: any = null;
+	frameOfReferenceType: string = 'stage';
 
-	this.enabled = false;
+	pose: any = null;
 
-	this.getController = function ( id ) {
+	controllers: Group[] = [];
+	inputSources: any[] = [];
 
-		var controller = controllers[ id ];
+	enabled = false;
+
+	animation = new WebGLAnimation();
+
+	isPresenting() {
+
+		return this.session !== null && this.frameOfReference !== null;
+
+	}
+
+	getController( id: number ) {
+
+		var controller = this.controllers[ id ];
 
 		if ( controller === undefined ) {
 
@@ -61,92 +78,97 @@ function WebXRManager( renderer ) {
 			controller.matrixAutoUpdate = false;
 			controller.visible = false;
 
-			controllers[ id ] = controller;
+			this.controllers[ id ] = controller;
 
 		}
 
 		return controller;
 
-	};
+	}
 
-	this.getDevice = function () {
+	getDevice() {
 
-		return device;
+		return this.device;
 
-	};
+	}
 
-	this.setDevice = function ( value ) {
+	setDevice( value: any ) {
 
-		if ( value !== undefined ) device = value;
-		if ( value instanceof XRDevice ) gl.setCompatibleXRDevice( value );
+		if ( value !== undefined ) this.device = value;
+		if ( value instanceof XRDevice )
+			( this.gl as any ).setCompatibleXRDevice( value );
 
-	};
+	}
 
-	//
+	onSessionEvent( event: any ) {
 
-	function onSessionEvent( event ) {
-
-		var controller = controllers[ inputSources.indexOf( event.inputSource ) ];
+		var controller = this.controllers[
+			this.inputSources.indexOf( event.inputSource )
+		];
 		if ( controller ) controller.dispatchEvent( { type: event.type } );
 
 	}
 
-	function onSessionEnd() {
+	onSessionEnd() {
 
-		renderer.setFramebuffer( null );
-		renderer.setRenderTarget( renderer.getRenderTarget() ); // Hack #15830
-		animation.stop();
+		this.renderer.setFramebuffer( null );
+		this.renderer.setRenderTarget( this.renderer.getRenderTarget() ); // Hack #15830
+		this.animation.stop();
 
 	}
 
-	this.setFramebufferScaleFactor = function ( value ) {
+	public setFramebufferScaleFactor( value: number ) {
 
-		framebufferScaleFactor = value;
+		this.framebufferScaleFactor = value;
 
-	};
+	}
 
-	this.setFrameOfReferenceType = function ( value ) {
+	setFrameOfReferenceType( value: string ) {
 
-		frameOfReferenceType = value;
+		this.frameOfReferenceType = value;
 
-	};
+	}
 
-	this.setSession = function ( value ) {
+	setSession( value: any ) {
 
-		session = value;
+		this.session = value;
 
-		if ( session !== null ) {
+		if ( this.session !== null ) {
 
-			session.addEventListener( 'select', onSessionEvent );
-			session.addEventListener( 'selectstart', onSessionEvent );
-			session.addEventListener( 'selectend', onSessionEvent );
-			session.addEventListener( 'end', onSessionEnd );
+			this.session.addEventListener( 'select', this.onSessionEvent );
+			this.session.addEventListener( 'selectstart', this.onSessionEvent );
+			this.session.addEventListener( 'selectend', this.onSessionEvent );
+			this.session.addEventListener( 'end', this.onSessionEnd );
 
-			session.baseLayer = new XRWebGLLayer( session, gl, { framebufferScaleFactor: framebufferScaleFactor } );
-			session.requestFrameOfReference( frameOfReferenceType ).then( function ( value ) {
-
-				frameOfReference = value;
-
-				renderer.setFramebuffer( session.baseLayer.framebuffer );
-
-				animation.setContext( session );
-				animation.start();
-
+			this.session.baseLayer = new XRWebGLLayer( this.session, this.gl, {
+				framebufferScaleFactor: this.framebufferScaleFactor,
 			} );
+			this.session
+				.requestFrameOfReference( this.frameOfReferenceType )
+				.then( ( value: any ) => {
+
+					this.frameOfReference = value;
+
+					this.renderer.setFramebuffer( this.session.baseLayer.framebuffer );
+
+					this.animation.setContext( this.session );
+					this.animation.start();
+
+				} );
 
 			//
 
-			inputSources = session.getInputSources();
+			this.inputSources = this.session.getInputSources();
 
-			session.addEventListener( 'inputsourceschange', function () {
+			this.session.addEventListener( 'inputsourceschange', () => {
 
-				inputSources = session.getInputSources();
-				console.log( inputSources );
+				this.inputSources = this.session.getInputSources();
+				console.log( this.inputSources );
 
-				for ( var i = 0; i < controllers.length; i ++ ) {
+				for ( var i = 0; i < this.controllers.length; i ++ ) {
 
-					var controller = controllers[ i ];
-					controller.userData.inputSource = inputSources[ i ];
+					var controller = this.controllers[ i ];
+					controller.userData.inputSource = this.inputSources[ i ];
 
 				}
 
@@ -154,9 +176,12 @@ function WebXRManager( renderer ) {
 
 		}
 
-	};
+	}
 
-	function updateCamera( camera, parent ) {
+	updateCamera<T extends Camera, P extends Object3D>(
+		camera: T,
+		parent: P | null
+	) {
 
 		if ( parent === null ) {
 
@@ -172,24 +197,24 @@ function WebXRManager( renderer ) {
 
 	}
 
-	this.getCamera = function ( camera ) {
+	getCamera<T extends Camera>( camera: T ) {
 
-		if ( isPresenting() ) {
+		if ( this.isPresenting() ) {
 
 			var parent = camera.parent;
-			var cameras = cameraVR.cameras;
+			var cameras = this.cameraVR.cameras;
 
-			updateCamera( cameraVR, parent );
+			this.updateCamera( this.cameraVR, parent );
 
 			for ( var i = 0; i < cameras.length; i ++ ) {
 
-				updateCamera( cameras[ i ], parent );
+				this.updateCamera( cameras[ i ], parent );
 
 			}
 
 			// update camera and its children
 
-			camera.matrixWorld.copy( cameraVR.matrixWorld );
+			camera.matrixWorld.copy( this.cameraVR.matrixWorld );
 
 			var children = camera.children;
 
@@ -199,45 +224,48 @@ function WebXRManager( renderer ) {
 
 			}
 
-			setProjectionFromUnion( cameraVR, cameraL, cameraR );
+			setProjectionFromUnion( this.cameraVR, this.cameraL, this.cameraR );
 
-			return cameraVR;
+			return this.cameraVR;
 
 		}
 
 		return camera;
 
-	};
-
-	this.isPresenting = isPresenting;
+	}
 
 	// Animation Loop
 
-	var onAnimationFrameCallback = null;
+	onAnimationFrameCallback: ( ( time: number ) => void ) | null = null;
 
-	function onAnimationFrame( time, frame ) {
+	private onAnimationFrame( time: number, frame: any ) {
 
-		pose = frame.getDevicePose( frameOfReference );
+		this.pose = frame.getDevicePose( this.frameOfReference );
 
-		if ( pose !== null ) {
+		if ( this.pose !== null ) {
 
-			var layer = session.baseLayer;
+			var layer = this.session.baseLayer;
 			var views = frame.views;
 
 			for ( var i = 0; i < views.length; i ++ ) {
 
 				var view = views[ i ];
 				var viewport = layer.getViewport( view );
-				var viewMatrix = pose.getViewMatrix( view );
+				var viewMatrix = this.pose.getViewMatrix( view );
 
-				var camera = cameraVR.cameras[ i ];
+				var camera = this.cameraVR.cameras[ i ];
 				camera.matrix.fromArray( viewMatrix ).getInverse( camera.matrix );
 				camera.projectionMatrix.fromArray( view.projectionMatrix );
-				camera.viewport.set( viewport.x, viewport.y, viewport.width, viewport.height );
+				camera.viewport.set(
+					viewport.x,
+					viewport.y,
+					viewport.width,
+					viewport.height
+				);
 
 				if ( i === 0 ) {
 
-					cameraVR.matrix.copy( camera.matrix );
+					this.cameraVR.matrix.copy( camera.matrix );
 
 				}
 
@@ -247,15 +275,15 @@ function WebXRManager( renderer ) {
 
 		//
 
-		for ( var i = 0; i < controllers.length; i ++ ) {
+		for ( var i = 0; i < this.controllers.length; i ++ ) {
 
-			var controller = controllers[ i ];
+			var controller = this.controllers[ i ];
 
-			var inputSource = inputSources[ i ];
+			var inputSource = this.inputSources[ i ];
 
 			if ( inputSource ) {
 
-				var inputPose = frame.getInputPose( inputSource, frameOfReference );
+				var inputPose = frame.getInputPose( inputSource, this.frameOfReference );
 
 				if ( inputPose !== null ) {
 
@@ -271,7 +299,11 @@ function WebXRManager( renderer ) {
 
 					}
 
-					controller.matrix.decompose( controller.position, controller.rotation, controller.scale );
+					controller.matrix.decompose(
+						controller.position!,
+						controller.rotation,
+						controller.scale!
+					);
 					controller.visible = true;
 
 					continue;
@@ -284,32 +316,29 @@ function WebXRManager( renderer ) {
 
 		}
 
-		if ( onAnimationFrameCallback ) onAnimationFrameCallback( time );
+		if ( this.onAnimationFrameCallback ) this.onAnimationFrameCallback( time );
 
 	}
 
-	var animation = new WebGLAnimation();
-	animation.setAnimationLoop( onAnimationFrame );
+	setAnimationLoop( callback: ( time: number ) => void ) {
 
-	this.setAnimationLoop = function ( callback ) {
+		this.onAnimationFrameCallback = callback;
 
-		onAnimationFrameCallback = callback;
+	}
 
-	};
-
-	this.dispose = function () {};
+	dispose = function () {};
 
 	// DEPRECATED
 
-	this.getStandingMatrix = function () {
+	getStandingMatrix() {
 
-		console.warn( 'THREE.WebXRManager: getStandingMatrix() is no longer needed.' );
+		console.warn(
+			'THREE.WebXRManager: getStandingMatrix() is no longer needed.'
+		);
 		return new Matrix4();
 
-	};
+	}
 
-	this.submitFrame = function () {};
+	submitFrame = function () {};
 
 }
-
-export { WebXRManager };

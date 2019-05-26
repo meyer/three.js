@@ -1,21 +1,32 @@
+import { WebGLInfo } from './WebGLInfo';
+
 /**
  * @author mrdoob / http://mrdoob.com/
  */
 
-function WebGLObjects( geometries, info ) {
+export class WebGLObjects {
 
-	var updateList = {};
+	constructor( geometries: any, info: WebGLInfo ) {
 
-	function update( object ) {
+		this.geometries = geometries;
+		this.info = info;
 
-		var frame = info.render.frame;
+	}
+
+	private geometries: any;
+	private info: WebGLInfo;
+	private updateList: Record<string, any> = {};
+
+	public update( object: any ) {
+
+		var frame = this.info.render.frame;
 
 		var geometry = object.geometry;
-		var buffergeometry = geometries.get( object, geometry );
+		var buffergeometry = this.geometries.get( object, geometry );
 
 		// Update once per frame
 
-		if ( updateList[ buffergeometry.id ] !== frame ) {
+		if ( this.updateList[ buffergeometry.id ] !== frame ) {
 
 			if ( geometry.isGeometry ) {
 
@@ -23,9 +34,9 @@ function WebGLObjects( geometries, info ) {
 
 			}
 
-			geometries.update( buffergeometry );
+			this.geometries.update( buffergeometry );
 
-			updateList[ buffergeometry.id ] = frame;
+			this.updateList[ buffergeometry.id ] = frame;
 
 		}
 
@@ -33,20 +44,10 @@ function WebGLObjects( geometries, info ) {
 
 	}
 
-	function dispose() {
+	public dispose() {
 
-		updateList = {};
+		this.updateList = {};
 
 	}
 
-	return {
-
-		update: update,
-		dispose: dispose
-
-	};
-
 }
-
-
-export { WebGLObjects };

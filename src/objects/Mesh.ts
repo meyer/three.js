@@ -1,14 +1,21 @@
-import { Vector3 } from '../math/Vector3.js';
-import { Vector2 } from '../math/Vector2.js';
-import { Sphere } from '../math/Sphere.js';
-import { Ray } from '../math/Ray.js';
-import { Matrix4 } from '../math/Matrix4.js';
-import { Object3D } from '../core/Object3D.js';
-import { Triangle } from '../math/Triangle.js';
-import { Face3 } from '../core/Face3.js';
-import { DoubleSide, BackSide, TrianglesDrawMode } from '../constants.js';
-import { MeshBasicMaterial } from '../materials/MeshBasicMaterial.js';
-import { BufferGeometry } from '../core/BufferGeometry.js';
+import { Vector3 } from '../math/Vector3';
+import { Vector2 } from '../math/Vector2';
+import { Sphere } from '../math/Sphere';
+import { Ray } from '../math/Ray';
+import { Matrix4 } from '../math/Matrix4';
+import { Object3D } from '../core/Object3D';
+import { Triangle } from '../math/Triangle';
+import { Face3 } from '../core/Face3';
+import {
+	DoubleSide,
+	BackSide,
+	TrianglesDrawMode,
+	TrianglesDrawModes,
+} from '../constants';
+import { MeshBasicMaterial } from '../materials/MeshBasicMaterial';
+import { BufferGeometry } from '../core/BufferGeometry';
+import { Material } from '../materials/Material';
+import { BufferAttribute } from '../core/BufferAttribute';
 
 /**
  * @author mrdoob / http://mrdoob.com/
@@ -17,34 +24,40 @@ import { BufferGeometry } from '../core/BufferGeometry.js';
  * @author jonobr1 / http://jonobr1.com/
  */
 
-function Mesh( geometry, material ) {
+export class Mesh extends Object3D {
 
-	Object3D.call( this );
+	constructor( geometry: BufferGeometry, material: MeshBasicMaterial ) {
 
-	this.type = 'Mesh';
+		super();
 
-	this.geometry = geometry !== undefined ? geometry : new BufferGeometry();
-	this.material = material !== undefined ? material : new MeshBasicMaterial( { color: Math.random() * 0xffffff } );
+		this.type = 'Mesh';
 
-	this.drawMode = TrianglesDrawMode;
+		this.geometry = geometry !== undefined ? geometry : new BufferGeometry();
+		this.material =
+			material !== undefined
+				? material
+				: new MeshBasicMaterial( { color: Math.random() * 0xffffff } );
 
-	this.updateMorphTargets();
+		this.drawMode = TrianglesDrawMode;
 
-}
+		this.updateMorphTargets();
 
-Mesh.prototype = Object.assign( Object.create( Object3D.prototype ), {
+	}
+	type = 'Mesh' as const;
+	geometry: BufferGeometry;
+	material: MeshBasicMaterial;
+	morphTargetInfluences: any;
+	morphTargetDictionary: Record<string, any>;
 
-	constructor: Mesh,
+	isMesh = true as const;
 
-	isMesh: true,
-
-	setDrawMode: function ( value ) {
+	setDrawMode( value?: TrianglesDrawModes ) {
 
 		this.drawMode = value;
 
-	},
+	}
 
-	copy: function ( source ) {
+	copy( source: Mesh ) {
 
 		Object3D.prototype.copy.call( this, source );
 
@@ -58,15 +71,18 @@ Mesh.prototype = Object.assign( Object.create( Object3D.prototype ), {
 
 		if ( source.morphTargetDictionary !== undefined ) {
 
-			this.morphTargetDictionary = Object.assign( {}, source.morphTargetDictionary );
+			this.morphTargetDictionary = Object.assign(
+				{},
+				source.morphTargetDictionary
+			);
 
 		}
 
 		return this;
 
-	},
+	}
 
-	updateMorphTargets: function () {
+	updateMorphTargets() {
 
 		var geometry = this.geometry;
 		var m, ml, name;
@@ -100,19 +116,21 @@ Mesh.prototype = Object.assign( Object.create( Object3D.prototype ), {
 
 		} else {
 
-			var morphTargets = geometry.morphTargets;
+			var morphTargets = (geometry as any).morphTargets;
 
 			if ( morphTargets !== undefined && morphTargets.length > 0 ) {
 
-				console.error( 'THREE.Mesh.updateMorphTargets() no longer supports THREE.Geometry. Use THREE.BufferGeometry instead.' );
+				console.error(
+					'THREE.Mesh.updateMorphTargets() no longer supports THREE.Geometry. Use THREE.BufferGeometry instead.'
+				);
 
 			}
 
 		}
 
-	},
+	}
 
-	raycast: ( function () {
+	raycast = ( function () {
 
 		var inverseMatrix = new Matrix4();
 		var ray = new Ray();
@@ -137,7 +155,16 @@ Mesh.prototype = Object.assign( Object.create( Object3D.prototype ), {
 		var intersectionPoint = new Vector3();
 		var intersectionPointWorld = new Vector3();
 
-		function checkIntersection( object, material, raycaster, ray, pA, pB, pC, point ) {
+		function checkIntersection<T extends Object3D, M extends Material>(
+			object: T,
+			material: M,
+			raycaster: any,
+			ray: Ray,
+			pA: Vector3,
+			pB: Vector3,
+			pC: Vector3,
+			point: Vector3
+		) {
 
 			var intersect;
 
@@ -147,7 +174,13 @@ Mesh.prototype = Object.assign( Object.create( Object3D.prototype ), {
 
 			} else {
 
-				intersect = ray.intersectTriangle( pA, pB, pC, material.side !== DoubleSide, point );
+				intersect = ray.intersectTriangle(
+					pA,
+					pB,
+					pC,
+					material.side !== DoubleSide,
+					point
+				);
 
 			}
 
@@ -163,12 +196,23 @@ Mesh.prototype = Object.assign( Object.create( Object3D.prototype ), {
 			return {
 				distance: distance,
 				point: intersectionPointWorld.clone(),
-				object: object
+				object: object,
 			};
 
 		}
 
-		function checkBufferGeometryIntersection( object, material, raycaster, ray, position, morphPosition, uv, a, b, c ) {
+		function checkBufferGeometryIntersection<T extends Object3D, M extends Material>(
+			object: T,
+			material: M,
+			raycaster: any,
+			ray: Ray,
+			position: BufferAttribute,
+			morphPosition: BufferAttribute[],
+			uv: Vector3,
+			a: number,
+			b: number,
+			c: number
+		) {
 
 			vA.fromBufferAttribute( position, a );
 			vB.fromBufferAttribute( position, b );
@@ -205,7 +249,16 @@ Mesh.prototype = Object.assign( Object.create( Object3D.prototype ), {
 
 			}
 
-			var intersection = checkIntersection( object, material, raycaster, ray, vA, vB, vC, intersectionPoint );
+			var intersection = checkIntersection(
+				object,
+				material,
+				raycaster,
+				ray,
+				vA,
+				vB,
+				vC,
+				intersectionPoint
+			);
 
 			if ( intersection ) {
 
@@ -215,7 +268,16 @@ Mesh.prototype = Object.assign( Object.create( Object3D.prototype ), {
 					uvB.fromBufferAttribute( uv, b );
 					uvC.fromBufferAttribute( uv, c );
 
-					intersection.uv = Triangle.getUV( intersectionPoint, vA, vB, vC, uvA, uvB, uvC, new Vector2() );
+					intersection.uv = Triangle.getUV(
+						intersectionPoint,
+						vA,
+						vB,
+						vC,
+						uvA,
+						uvB,
+						uvC,
+						new Vector2()
+					);
 
 				}
 
@@ -287,7 +349,10 @@ Mesh.prototype = Object.assign( Object.create( Object3D.prototype ), {
 							groupMaterial = material[ group.materialIndex ];
 
 							start = Math.max( group.start, drawRange.start );
-							end = Math.min( ( group.start + group.count ), ( drawRange.start + drawRange.count ) );
+							end = Math.min(
+								group.start + group.count,
+								drawRange.start + drawRange.count
+							);
 
 							for ( j = start, jl = end; j < jl; j += 3 ) {
 
@@ -295,7 +360,18 @@ Mesh.prototype = Object.assign( Object.create( Object3D.prototype ), {
 								b = index.getX( j + 1 );
 								c = index.getX( j + 2 );
 
-								intersection = checkBufferGeometryIntersection( this, groupMaterial, raycaster, ray, position, morphPosition, uv, a, b, c );
+								intersection = checkBufferGeometryIntersection(
+									this,
+									groupMaterial,
+									raycaster,
+									ray,
+									position,
+									morphPosition,
+									uv,
+									a,
+									b,
+									c
+								);
 
 								if ( intersection ) {
 
@@ -312,7 +388,7 @@ Mesh.prototype = Object.assign( Object.create( Object3D.prototype ), {
 					} else {
 
 						start = Math.max( 0, drawRange.start );
-						end = Math.min( index.count, ( drawRange.start + drawRange.count ) );
+						end = Math.min( index.count, drawRange.start + drawRange.count );
 
 						for ( i = start, il = end; i < il; i += 3 ) {
 
@@ -320,7 +396,18 @@ Mesh.prototype = Object.assign( Object.create( Object3D.prototype ), {
 							b = index.getX( i + 1 );
 							c = index.getX( i + 2 );
 
-							intersection = checkBufferGeometryIntersection( this, material, raycaster, ray, position, morphPosition, uv, a, b, c );
+							intersection = checkBufferGeometryIntersection(
+								this,
+								material,
+								raycaster,
+								ray,
+								position,
+								morphPosition,
+								uv,
+								a,
+								b,
+								c
+							);
 
 							if ( intersection ) {
 
@@ -345,7 +432,10 @@ Mesh.prototype = Object.assign( Object.create( Object3D.prototype ), {
 							groupMaterial = material[ group.materialIndex ];
 
 							start = Math.max( group.start, drawRange.start );
-							end = Math.min( ( group.start + group.count ), ( drawRange.start + drawRange.count ) );
+							end = Math.min(
+								group.start + group.count,
+								drawRange.start + drawRange.count
+							);
 
 							for ( j = start, jl = end; j < jl; j += 3 ) {
 
@@ -353,7 +443,18 @@ Mesh.prototype = Object.assign( Object.create( Object3D.prototype ), {
 								b = j + 1;
 								c = j + 2;
 
-								intersection = checkBufferGeometryIntersection( this, groupMaterial, raycaster, ray, position, morphPosition, uv, a, b, c );
+								intersection = checkBufferGeometryIntersection(
+									this,
+									groupMaterial,
+									raycaster,
+									ray,
+									position,
+									morphPosition,
+									uv,
+									a,
+									b,
+									c
+								);
 
 								if ( intersection ) {
 
@@ -370,7 +471,7 @@ Mesh.prototype = Object.assign( Object.create( Object3D.prototype ), {
 					} else {
 
 						start = Math.max( 0, drawRange.start );
-						end = Math.min( position.count, ( drawRange.start + drawRange.count ) );
+						end = Math.min( position.count, drawRange.start + drawRange.count );
 
 						for ( i = start, il = end; i < il; i += 3 ) {
 
@@ -378,7 +479,18 @@ Mesh.prototype = Object.assign( Object.create( Object3D.prototype ), {
 							b = i + 1;
 							c = i + 2;
 
-							intersection = checkBufferGeometryIntersection( this, material, raycaster, ray, position, morphPosition, uv, a, b, c );
+							intersection = checkBufferGeometryIntersection(
+								this,
+								material,
+								raycaster,
+								ray,
+								position,
+								morphPosition,
+								uv,
+								a,
+								b,
+								c
+							);
 
 							if ( intersection ) {
 
@@ -408,7 +520,9 @@ Mesh.prototype = Object.assign( Object.create( Object3D.prototype ), {
 				for ( var f = 0, fl = faces.length; f < fl; f ++ ) {
 
 					var face = faces[ f ];
-					var faceMaterial = isMultiMaterial ? material[ face.materialIndex ] : material;
+					var faceMaterial = isMultiMaterial
+						? material[ face.materialIndex ]
+						: material;
 
 					if ( faceMaterial === undefined ) continue;
 
@@ -416,7 +530,16 @@ Mesh.prototype = Object.assign( Object.create( Object3D.prototype ), {
 					fvB = vertices[ face.b ];
 					fvC = vertices[ face.c ];
 
-					intersection = checkIntersection( this, faceMaterial, raycaster, ray, fvA, fvB, fvC, intersectionPoint );
+					intersection = checkIntersection(
+						this,
+						faceMaterial,
+						raycaster,
+						ray,
+						fvA,
+						fvB,
+						fvC,
+						intersectionPoint
+					);
 
 					if ( intersection ) {
 
@@ -427,7 +550,16 @@ Mesh.prototype = Object.assign( Object.create( Object3D.prototype ), {
 							uvB.copy( uvs_f[ 1 ] );
 							uvC.copy( uvs_f[ 2 ] );
 
-							intersection.uv = Triangle.getUV( intersectionPoint, fvA, fvB, fvC, uvA, uvB, uvC, new Vector2() );
+							intersection.uv = Triangle.getUV(
+								intersectionPoint,
+								fvA,
+								fvB,
+								fvC,
+								uvA,
+								uvB,
+								uvC,
+								new Vector2()
+							);
 
 						}
 
@@ -443,15 +575,12 @@ Mesh.prototype = Object.assign( Object.create( Object3D.prototype ), {
 
 		};
 
-	}() ),
+	} )();
 
-	clone: function () {
+	clone() {
 
 		return new this.constructor( this.geometry, this.material ).copy( this );
 
 	}
 
-} );
-
-
-export { Mesh };
+}

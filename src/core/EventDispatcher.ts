@@ -1,12 +1,14 @@
+export type EventListener = ( ...args: any[] ) => any;
+
 /**
  * https://github.com/mrdoob/eventdispatcher.js/
  */
 
-function EventDispatcher() {}
+export class EventDispatcher {
 
-Object.assign( EventDispatcher.prototype, {
+	_listeners: Record<string, EventListener[]> | undefined;
 
-	addEventListener: function ( type, listener ) {
+	addEventListener( type: string, listener: EventListener ) {
 
 		if ( this._listeners === undefined ) this._listeners = {};
 
@@ -24,19 +26,21 @@ Object.assign( EventDispatcher.prototype, {
 
 		}
 
-	},
+	}
 
-	hasEventListener: function ( type, listener ) {
+	hasEventListener( type: string, listener: EventListener ) {
 
 		if ( this._listeners === undefined ) return false;
 
 		var listeners = this._listeners;
 
-		return listeners[ type ] !== undefined && listeners[ type ].indexOf( listener ) !== - 1;
+		return (
+			listeners[ type ] !== undefined && listeners[ type ].indexOf( listener ) !== - 1
+		);
 
-	},
+	}
 
-	removeEventListener: function ( type, listener ) {
+	removeEventListener( type: string, listener: EventListener ) {
 
 		if ( this._listeners === undefined ) return;
 
@@ -55,9 +59,9 @@ Object.assign( EventDispatcher.prototype, {
 
 		}
 
-	},
+	}
 
-	dispatchEvent: function ( event ) {
+	dispatchEvent( event: { type: string; target?: any } ) {
 
 		if ( this._listeners === undefined ) return;
 
@@ -80,7 +84,4 @@ Object.assign( EventDispatcher.prototype, {
 
 	}
 
-} );
-
-
-export { EventDispatcher };
+}

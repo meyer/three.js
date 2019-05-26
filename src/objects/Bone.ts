@@ -1,4 +1,4 @@
-import { Object3D } from '../core/Object3D.js';
+import { Object3D } from '../core/Object3D';
 
 /**
  * @author mikael emtinger / http://gomo.se/
@@ -6,11 +6,12 @@ import { Object3D } from '../core/Object3D.js';
  * @author ikerr / http://verold.com
  */
 
-function Bone() {
+class Bone extends Object3D {
 
-	Object3D.call( this );
-
-	this.type = 'Bone';
+	constructor(  ) {
+		super();
+	}
+	type = 'Bone' as const;
 
 }
 

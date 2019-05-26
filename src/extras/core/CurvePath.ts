@@ -1,5 +1,5 @@
-import { Curve } from './Curve.js';
-import * as Curves from '../curves/Curves.js';
+import { Curve } from './Curve';
+import * as Curves from '../curves/Curves';
 
 /**
  * @author zz85 / http://www.lab4games.net/zz85/blog

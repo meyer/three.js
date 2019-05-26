@@ -19,11 +19,11 @@
  * }
  */
 
-import { Material } from './Material.js';
-import { cloneUniforms } from '../renderers/shaders/UniformsUtils.js';
+import { Material } from './Material';
+import { cloneUniforms } from '../renderers/shaders/UniformsUtils';
 
-import default_vertex from '../renderers/shaders/ShaderChunk/default_vertex.glsl.js';
-import default_fragment from '../renderers/shaders/ShaderChunk/default_fragment.glsl.js';
+import default_vertex from '../renderers/shaders/ShaderChunk/default_vertex.glsl';
+import default_fragment from '../renderers/shaders/ShaderChunk/default_fragment.glsl';
 
 function ShaderMaterial( parameters ) {
 

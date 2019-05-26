@@ -1,7 +1,7 @@
-import { EventDispatcher } from '../core/EventDispatcher.js';
-import { Texture } from '../textures/Texture.js';
-import { LinearFilter } from '../constants.js';
-import { Vector4 } from '../math/Vector4.js';
+import { EventDispatcher } from '../core/EventDispatcher';
+import { Texture } from '../textures/Texture';
+import { LinearFilter } from '../constants';
+import { Vector4 } from '../math/Vector4';
 
 /**
  * @author szimek / https://github.com/szimek/
@@ -14,36 +14,62 @@ import { Vector4 } from '../math/Vector4.js';
  * Texture parameters for an auto-generated target texture
  * depthBuffer/stencilBuffer: Booleans to indicate if we should generate these buffers
 */
-function WebGLRenderTarget( width, height, options ) {
+export class WebGLRenderTarget extends EventDispatcher {
 
-	this.width = width;
-	this.height = height;
+	constructor( width: number, height: number, options: any ) {
 
-	this.scissor = new Vector4( 0, 0, width, height );
-	this.scissorTest = false;
+		super();
 
-	this.viewport = new Vector4( 0, 0, width, height );
+		this.width = width;
+		this.height = height;
 
-	options = options || {};
+		this.scissor = new Vector4( 0, 0, width, height );
+		this.scissorTest = false;
 
-	this.texture = new Texture( undefined, undefined, options.wrapS, options.wrapT, options.magFilter, options.minFilter, options.format, options.type, options.anisotropy, options.encoding );
+		this.viewport = new Vector4( 0, 0, width, height );
 
-	this.texture.generateMipmaps = options.generateMipmaps !== undefined ? options.generateMipmaps : false;
-	this.texture.minFilter = options.minFilter !== undefined ? options.minFilter : LinearFilter;
+		options = options || {};
 
-	this.depthBuffer = options.depthBuffer !== undefined ? options.depthBuffer : true;
-	this.stencilBuffer = options.stencilBuffer !== undefined ? options.stencilBuffer : true;
-	this.depthTexture = options.depthTexture !== undefined ? options.depthTexture : null;
+		this.texture = new Texture(
+			undefined,
+			undefined,
+			options.wrapS,
+			options.wrapT,
+			options.magFilter,
+			options.minFilter,
+			options.format,
+			options.type,
+			options.anisotropy,
+			options.encoding
+		);
 
-}
+		this.texture.generateMipmaps =
+			options.generateMipmaps !== undefined ? options.generateMipmaps : false;
+		this.texture.minFilter =
+			options.minFilter !== undefined ? options.minFilter : LinearFilter;
 
-WebGLRenderTarget.prototype = Object.assign( Object.create( EventDispatcher.prototype ), {
+		this.depthBuffer =
+			options.depthBuffer !== undefined ? options.depthBuffer : true;
+		this.stencilBuffer =
+			options.stencilBuffer !== undefined ? options.stencilBuffer : true;
+		this.depthTexture =
+			options.depthTexture !== undefined ? options.depthTexture : null;
 
-	constructor: WebGLRenderTarget,
+	}
 
-	isWebGLRenderTarget: true,
+	width: number;
+	height: number;
+	scissor: Vector4;
+	scissorTest: boolean;
+	viewport: Vector4;
+	texture: Texture;
+	depthBuffer: boolean;
+	stencilBuffer: boolean;
+	depthTexture: any | null;
 
-	setSize: function ( width, height ) {
+	isWebGLRenderTarget = true;
+
+	setSize( width: number, height: number ) {
 
 		if ( this.width !== width || this.height !== height ) {
 
@@ -57,15 +83,15 @@ WebGLRenderTarget.prototype = Object.assign( Object.create( EventDispatcher.prot
 		this.viewport.set( 0, 0, width, height );
 		this.scissor.set( 0, 0, width, height );
 
-	},
+	}
 
-	clone: function () {
+	clone() {
 
-		return new this.constructor().copy( this );
+		return new ( this as any ).constructor()().copy( this );
 
-	},
+	}
 
-	copy: function ( source ) {
+	copy( source: WebGLRenderTarget ) {
 
 		this.width = source.width;
 		this.height = source.height;
@@ -80,15 +106,12 @@ WebGLRenderTarget.prototype = Object.assign( Object.create( EventDispatcher.prot
 
 		return this;
 
-	},
+	}
 
-	dispose: function () {
+	dispose() {
 
 		this.dispatchEvent( { type: 'dispose' } );
 
 	}
 
-} );
-
-
-export { WebGLRenderTarget };
+}

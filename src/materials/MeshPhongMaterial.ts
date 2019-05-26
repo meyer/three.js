@@ -1,7 +1,7 @@
-import { MultiplyOperation, TangentSpaceNormalMap } from '../constants.js';
-import { Material } from './Material.js';
-import { Vector2 } from '../math/Vector2.js';
-import { Color } from '../math/Color.js';
+import { MultiplyOperation, TangentSpaceNormalMap } from '../constants';
+import { Material } from './Material';
+import { Vector2 } from '../math/Vector2';
+import { Color } from '../math/Color';
 
 /**
  * @author mrdoob / http://mrdoob.com/

@@ -2,8 +2,8 @@
  * @author thespite / http://clicktorelease.com/
  */
 
-import { Cache } from './Cache.js';
-import { DefaultLoadingManager } from './LoadingManager.js';
+import { Cache } from './Cache';
+import { DefaultLoadingManager } from './LoadingManager';
 
 
 function ImageBitmapLoader( manager ) {

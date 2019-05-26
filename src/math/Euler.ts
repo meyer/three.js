@@ -1,7 +1,9 @@
-import { Quaternion } from './Quaternion.js';
-import { Vector3 } from './Vector3.js';
-import { Matrix4 } from './Matrix4.js';
-import { _Math } from './Math.js';
+import { Quaternion } from './Quaternion';
+import { Vector3 } from './Vector3';
+import { Matrix4 } from './Matrix4';
+import { _Math } from './Math';
+
+export type RotationOrder = 'XYZ' | 'YZX' | 'ZXY' | 'XZY' | 'YXZ' | 'ZYX';
 
 /**
  * @author mrdoob / http://mrdoob.com/
@@ -9,96 +11,87 @@ import { _Math } from './Math.js';
  * @author bhouston / http://clara.io
  */
 
-function Euler( x, y, z, order ) {
+export class Euler {
 
-	this._x = x || 0;
-	this._y = y || 0;
-	this._z = z || 0;
-	this._order = order || Euler.DefaultOrder;
+	constructor( x?: number, y?: number, z?: number, order?: RotationOrder ) {
 
-}
+		this._x = x || 0;
+		this._y = y || 0;
+		this._z = z || 0;
+		this._order = order || Euler.DefaultOrder;
 
-Euler.RotationOrders = [ 'XYZ', 'YZX', 'ZXY', 'XZY', 'YXZ', 'ZYX' ];
+	}
+	_x: number;
+	_y: number;
+	_z: number;
+	_order: RotationOrder;
 
-Euler.DefaultOrder = 'XYZ';
+	static RotationOrders: ReadonlyArray<RotationOrder> = [
+		'XYZ',
+		'YZX',
+		'ZXY',
+		'XZY',
+		'YXZ',
+		'ZYX',
+	] as const;
 
-Object.defineProperties( Euler.prototype, {
+	static DefaultOrder = 'XYZ' as const;
 
-	x: {
+	get x() {
 
-		get: function () {
-
-			return this._x;
-
-		},
-
-		set: function ( value ) {
-
-			this._x = value;
-			this.onChangeCallback();
-
-		}
-
-	},
-
-	y: {
-
-		get: function () {
-
-			return this._y;
-
-		},
-
-		set: function ( value ) {
-
-			this._y = value;
-			this.onChangeCallback();
-
-		}
-
-	},
-
-	z: {
-
-		get: function () {
-
-			return this._z;
-
-		},
-
-		set: function ( value ) {
-
-			this._z = value;
-			this.onChangeCallback();
-
-		}
-
-	},
-
-	order: {
-
-		get: function () {
-
-			return this._order;
-
-		},
-
-		set: function ( value ) {
-
-			this._order = value;
-			this.onChangeCallback();
-
-		}
+		return this._x;
 
 	}
 
-} );
+	set x( value: number ) {
 
-Object.assign( Euler.prototype, {
+		this._x = value;
+		this.onChangeCallback();
 
-	isEuler: true,
+	}
 
-	set: function ( x, y, z, order ) {
+	get y() {
+
+		return this._y;
+
+	}
+
+	set y( value: number ) {
+
+		this._y = value;
+		this.onChangeCallback();
+
+	}
+
+	get z() {
+
+		return this._z;
+
+	}
+
+	set z( value: number ) {
+
+		this._z = value;
+		this.onChangeCallback();
+
+	}
+
+	get order() {
+
+		return this._order;
+
+	}
+
+	set order( value: RotationOrder ) {
+
+		this._order = value;
+		this.onChangeCallback();
+
+	}
+
+	isEuler = true;
+
+	set( x: number, y: number, z: number, order: RotationOrder ) {
 
 		this._x = x;
 		this._y = y;
@@ -109,15 +102,15 @@ Object.assign( Euler.prototype, {
 
 		return this;
 
-	},
+	}
 
-	clone: function () {
+	clone() {
 
-		return new this.constructor( this._x, this._y, this._z, this._order );
+		return new Euler( this._x, this._y, this._z, this._order );
 
-	},
+	}
 
-	copy: function ( euler ) {
+	copy( euler: Euler ) {
 
 		this._x = euler._x;
 		this._y = euler._y;
@@ -128,18 +121,24 @@ Object.assign( Euler.prototype, {
 
 		return this;
 
-	},
+	}
 
-	setFromRotationMatrix: function ( m, order, update ) {
+	setFromRotationMatrix( m: Matrix4, order?: RotationOrder, update?: boolean ) {
 
 		var clamp = _Math.clamp;
 
 		// assumes the upper 3x3 of m is a pure rotation matrix (i.e, unscaled)
 
 		var te = m.elements;
-		var m11 = te[ 0 ], m12 = te[ 4 ], m13 = te[ 8 ];
-		var m21 = te[ 1 ], m22 = te[ 5 ], m23 = te[ 9 ];
-		var m31 = te[ 2 ], m32 = te[ 6 ], m33 = te[ 10 ];
+		var m11 = te[ 0 ],
+			m12 = te[ 4 ],
+			m13 = te[ 8 ];
+		var m21 = te[ 1 ],
+			m22 = te[ 5 ],
+			m23 = te[ 9 ];
+		var m31 = te[ 2 ],
+			m32 = te[ 6 ],
+			m33 = te[ 10 ];
 
 		order = order || this._order;
 
@@ -241,7 +240,10 @@ Object.assign( Euler.prototype, {
 
 		} else {
 
-			console.warn( 'THREE.Euler: .setFromRotationMatrix() given unsupported order: ' + order );
+			console.warn(
+				'THREE.Euler: .setFromRotationMatrix() given unsupported order: ' +
+					order
+			);
 
 		}
 
@@ -251,13 +253,17 @@ Object.assign( Euler.prototype, {
 
 		return this;
 
-	},
+	}
 
-	setFromQuaternion: function () {
+	setFromQuaternion = ( () => {
 
 		var matrix = new Matrix4();
 
-		return function setFromQuaternion( q, order, update ) {
+		const setFromQuaternion = (
+			q: Quaternion,
+			order: RotationOrder | undefined,
+			update?: boolean
+		) => {
 
 			matrix.makeRotationFromQuaternion( q );
 
@@ -265,21 +271,23 @@ Object.assign( Euler.prototype, {
 
 		};
 
-	}(),
+		return setFromQuaternion;
 
-	setFromVector3: function ( v, order ) {
+	} )();
+
+	setFromVector3( v: Vector3, order: RotationOrder ) {
 
 		return this.set( v.x, v.y, v.z, order || this._order );
 
-	},
+	}
 
-	reorder: function () {
+	reorder = ( () => {
 
 		// WARNING: this discards revolution information -bhouston
 
 		var q = new Quaternion();
 
-		return function reorder( newOrder ) {
+		const reorder = ( newOrder: RotationOrder ) => {
 
 			q.setFromEuler( this );
 
@@ -287,15 +295,24 @@ Object.assign( Euler.prototype, {
 
 		};
 
-	}(),
+		return reorder;
 
-	equals: function ( euler ) {
+	} )();
 
-		return ( euler._x === this._x ) && ( euler._y === this._y ) && ( euler._z === this._z ) && ( euler._order === this._order );
+	equals( euler: Euler ) {
 
-	},
+		return (
+			euler._x === this._x &&
+			euler._y === this._y &&
+			euler._z === this._z &&
+			euler._order === this._order
+		);
 
-	fromArray: function ( array ) {
+	}
+
+	fromArray(
+		array: [number, number, number] | [number, number, number, RotationOrder]
+	) {
 
 		this._x = array[ 0 ];
 		this._y = array[ 1 ];
@@ -306,9 +323,9 @@ Object.assign( Euler.prototype, {
 
 		return this;
 
-	},
+	}
 
-	toArray: function ( array, offset ) {
+	toArray( array: ( number | RotationOrder )[], offset: number ) {
 
 		if ( array === undefined ) array = [];
 		if ( offset === undefined ) offset = 0;
@@ -320,9 +337,9 @@ Object.assign( Euler.prototype, {
 
 		return array;
 
-	},
+	}
 
-	toVector3: function ( optionalResult ) {
+	toVector3( optionalResult: Vector3 ) {
 
 		if ( optionalResult ) {
 
@@ -334,19 +351,16 @@ Object.assign( Euler.prototype, {
 
 		}
 
-	},
+	}
 
-	onChange: function ( callback ) {
+	onChange( callback: ( ...args: any[] ) => any ) {
 
 		this.onChangeCallback = callback;
 
 		return this;
 
-	},
+	}
 
-	onChangeCallback: function () {}
+	onChangeCallback() {}
 
-} );
-
-
-export { Euler };
+}

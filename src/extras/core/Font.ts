@@ -3,7 +3,7 @@
  * @author mrdoob / http://mrdoob.com/
  */
 
-import { ShapePath } from './ShapePath.js';
+import { ShapePath } from './ShapePath';
 
 
 function Font( data ) {

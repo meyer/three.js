@@ -1,5 +1,5 @@
-import { Path } from './Path.js';
-import { _Math } from '../../math/Math.js';
+import { Path } from './Path';
+import { _Math } from '../../math/Math';
 
 /**
  * @author zz85 / http://www.lab4games.net/zz85/blog

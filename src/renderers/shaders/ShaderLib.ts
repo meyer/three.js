@@ -1,9 +1,9 @@
-import { ShaderChunk } from './ShaderChunk.js';
-import { mergeUniforms } from './UniformsUtils.js';
-import { Vector3 } from '../../math/Vector3.js';
-import { UniformsLib } from './UniformsLib.js';
-import { Color } from '../../math/Color.js';
-import { Matrix3 } from '../../math/Matrix3.js';
+import { ShaderChunk } from './ShaderChunk';
+import { mergeUniforms } from './UniformsUtils';
+import { Vector3 } from '../../math/Vector3';
+import { UniformsLib } from './UniformsLib';
+import { Color } from '../../math/Color';
+import { Matrix3 } from '../../math/Matrix3';
 
 /**
  * @author alteredq / http://alteredqualia.com/

@@ -1,19 +1,11 @@
-import { WebGLRenderTarget } from './WebGLRenderTarget.js';
+import { WebGLRenderTarget } from './WebGLRenderTarget';
 
 /**
  * @author alteredq / http://alteredqualia.com
  */
 
-function WebGLRenderTargetCube( width, height, options ) {
+export class WebGLRenderTargetCube extends WebGLRenderTarget {
 
-	WebGLRenderTarget.call( this, width, height, options );
+	isWebGLRenderTargetCube = true as const;
 
 }
-
-WebGLRenderTargetCube.prototype = Object.create( WebGLRenderTarget.prototype );
-WebGLRenderTargetCube.prototype.constructor = WebGLRenderTargetCube;
-
-WebGLRenderTargetCube.prototype.isWebGLRenderTargetCube = true;
-
-
-export { WebGLRenderTargetCube };

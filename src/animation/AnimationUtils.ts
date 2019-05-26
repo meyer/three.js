@@ -4,162 +4,217 @@
  * @author David Sarno / http://lighthaus.us/
  */
 
-var AnimationUtils = {
+export type TypedArrayConstructor =
+	| Float32ArrayConstructor
+	| Float64ArrayConstructor
+	| Int16ArrayConstructor
+	| Int32ArrayConstructor
+	| Int8ArrayConstructor
+	| Uint16ArrayConstructor
+	| Uint32ArrayConstructor
+	| Uint8ArrayConstructor
+	| Uint8ClampedArrayConstructor;
 
-	// same as Array.prototype.slice, but also works on typed arrays
-	arraySlice: function ( array, from, to ) {
+export type TypedArray =
+	// TODO(meyer) bigint supported?
+	// | BigInt64Array
+	// | BigUint64Array
+	| Float32Array
+	| Float64Array
+	| Int16Array
+	| Int32Array
+	| Int8Array
+	| Uint16Array
+	| Uint32Array
+	| Uint8Array
+	| Uint8ClampedArray;
 
-		if ( AnimationUtils.isTypedArray( array ) ) {
+const isTypedArrayConstructor = ( obj: any ): obj is TypedArrayConstructor =>
+	typeof obj.BYTES_PER_ELEMENT === 'number';
 
-			// in ios9 array.subarray(from, undefined) will return empty array
-			// but array.subarray(from) or array.subarray(from, len) is correct
-			return new array.constructor( array.subarray( from, to !== undefined ? to : array.length ) );
+// same as Array.prototype.slice, but also works on typed arrays
+function arraySlice( array: any, from: number, to?: number ): any {
 
-		}
+	if ( isTypedArray( array ) ) {
 
-		return array.slice( from, to );
+		// in ios9 array.subarray(from, undefined) will return empty array
+		// but array.subarray(from) or array.subarray(from, len) is correct
+		return new ( array as any ).constructor(
+			array.subarray( from, to !== undefined ? to : array.length )
+		);
 
-	},
+	}
 
-	// converts an array to a specific type
-	convertArray: function ( array, type, forceClone ) {
+	return array.slice( from, to );
 
-		if ( ! array || // let 'undefined' and 'null' pass
-			! forceClone && array.constructor === type ) return array;
+}
 
-		if ( typeof type.BYTES_PER_ELEMENT === 'number' ) {
+function convertArray<T extends any[]>(
+	array: T,
+	type: ArrayConstructor,
+	forceClone?: boolean
+): T;
 
-			return new type( array ); // create typed array
+// converts an array to a specific type
+function convertArray<T extends TypedArrayConstructor>(
+	array: any[],
+	type: T,
+	forceClone?: boolean
+): InstanceType<T> {
 
-		}
+	if (
+		! array || // let 'undefined' and 'null' pass
+		( ! forceClone && array.constructor === type )
+	)
+		return array as any;
 
-		return Array.prototype.slice.call( array ); // create Array
+	if ( isTypedArrayConstructor( type ) ) {
 
-	},
+		return new type( array ) as any; // create typed array
 
-	isTypedArray: function ( object ) {
+	}
 
-		return ArrayBuffer.isView( object ) &&
-			! ( object instanceof DataView );
+	return Array.prototype.slice.call( array ); // create Array
 
-	},
+}
 
-	// returns an array by which times and values can be sorted
-	getKeyframeOrder: function ( times ) {
+function isTypedArray( object: any ): object is TypedArray {
 
-		function compareTime( i, j ) {
+	return ArrayBuffer.isView( object ) && ! ( object instanceof DataView );
 
-			return times[ i ] - times[ j ];
+}
 
-		}
+// returns an array by which times and values can be sorted
+function getKeyframeOrder( times: number[] ): number[] {
 
-		var n = times.length;
-		var result = new Array( n );
-		for ( var i = 0; i !== n; ++ i ) result[ i ] = i;
+	function compareTime( i, j ) {
 
-		result.sort( compareTime );
+		return times[ i ] - times[ j ];
 
-		return result;
+	}
 
-	},
+	var n = times.length;
+	const result: number[] = new Array( n );
+	for ( var i = 0; i !== n; ++ i ) result[ i ] = i;
 
-	// uses the array previously returned by 'getKeyframeOrder' to sort data
-	sortedArray: function ( values, stride, order ) {
+	result.sort( compareTime );
 
-		var nValues = values.length;
-		var result = new values.constructor( nValues );
+	return result;
 
-		for ( var i = 0, dstOffset = 0; dstOffset !== nValues; ++ i ) {
+}
 
-			var srcOffset = order[ i ] * stride;
+// uses the array previously returned by 'getKeyframeOrder' to sort data
+function sortedArray<T extends any>(
+	values: T[],
+	stride: number,
+	order: number[]
+): T[] {
 
-			for ( var j = 0; j !== stride; ++ j ) {
+	var nValues = values.length;
+	var result: T[] = new ( values as any ).constructor( nValues );
 
-				result[ dstOffset ++ ] = values[ srcOffset + j ];
+	for ( var i = 0, dstOffset = 0; dstOffset !== nValues; ++ i ) {
 
-			}
+		var srcOffset = order[ i ] * stride;
 
-		}
+		for ( var j = 0; j !== stride; ++ j ) {
 
-		return result;
-
-	},
-
-	// function for parsing AOS keyframe formats
-	flattenJSON: function ( jsonKeys, times, values, valuePropertyName ) {
-
-		var i = 1, key = jsonKeys[ 0 ];
-
-		while ( key !== undefined && key[ valuePropertyName ] === undefined ) {
-
-			key = jsonKeys[ i ++ ];
-
-		}
-
-		if ( key === undefined ) return; // no data
-
-		var value = key[ valuePropertyName ];
-		if ( value === undefined ) return; // no data
-
-		if ( Array.isArray( value ) ) {
-
-			do {
-
-				value = key[ valuePropertyName ];
-
-				if ( value !== undefined ) {
-
-					times.push( key.time );
-					values.push.apply( values, value ); // push all elements
-
-				}
-
-				key = jsonKeys[ i ++ ];
-
-			} while ( key !== undefined );
-
-		} else if ( value.toArray !== undefined ) {
-
-			// ...assume THREE.Math-ish
-
-			do {
-
-				value = key[ valuePropertyName ];
-
-				if ( value !== undefined ) {
-
-					times.push( key.time );
-					value.toArray( values, values.length );
-
-				}
-
-				key = jsonKeys[ i ++ ];
-
-			} while ( key !== undefined );
-
-		} else {
-
-			// otherwise push as-is
-
-			do {
-
-				value = key[ valuePropertyName ];
-
-				if ( value !== undefined ) {
-
-					times.push( key.time );
-					values.push( value );
-
-				}
-
-				key = jsonKeys[ i ++ ];
-
-			} while ( key !== undefined );
+			result[ dstOffset ++ ] = values[ srcOffset + j ];
 
 		}
 
 	}
 
-};
+	return result;
 
-export { AnimationUtils };
+}
+
+// function for parsing AOS keyframe formats
+function flattenJSON(
+	jsonKeys: { time: number }[],
+	times: number[],
+	values: any[],
+	valuePropertyName: string
+): void {
+
+	var i = 1,
+		key = jsonKeys[ 0 ];
+
+	while ( key !== undefined && key[ valuePropertyName ] === undefined ) {
+
+		key = jsonKeys[ i ++ ];
+
+	}
+
+	if ( key === undefined ) return; // no data
+
+	var value = key[ valuePropertyName ];
+	if ( value === undefined ) return; // no data
+
+	if ( Array.isArray( value ) ) {
+
+		do {
+
+			value = key[ valuePropertyName ];
+
+			if ( value !== undefined ) {
+
+				times.push( key.time );
+				values.push.apply( values, value ); // push all elements
+
+			}
+
+			key = jsonKeys[ i ++ ];
+
+		} while ( key !== undefined );
+
+	} else if ( value.toArray !== undefined ) {
+
+		// ...assume THREE.Math-ish
+
+		do {
+
+			value = key[ valuePropertyName ];
+
+			if ( value !== undefined ) {
+
+				times.push( key.time );
+				value.toArray( values, values.length );
+
+			}
+
+			key = jsonKeys[ i ++ ];
+
+		} while ( key !== undefined );
+
+	} else {
+
+		// otherwise push as-is
+
+		do {
+
+			value = key[ valuePropertyName ];
+
+			if ( value !== undefined ) {
+
+				times.push( key.time );
+				values.push( value );
+
+			}
+
+			key = jsonKeys[ i ++ ];
+
+		} while ( key !== undefined );
+
+	}
+
+}
+
+export const AnimationUtils = {
+	isTypedArray,
+	arraySlice,
+	convertArray,
+	getKeyframeOrder,
+	sortedArray,
+	flattenJSON,
+};

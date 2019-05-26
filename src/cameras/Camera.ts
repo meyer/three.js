@@ -2,45 +2,49 @@
  * @author mrdoob / http://mrdoob.com/
  * @author mikael emtinger / http://gomo.se/
  * @author WestLangley / http://github.com/WestLangley
-*/
+ */
 
-import { Matrix4 } from '../math/Matrix4.js';
-import { Object3D } from '../core/Object3D.js';
-import { Vector3 } from '../math/Vector3.js';
+import { Matrix4 } from '../math/Matrix4';
+import { Object3D } from '../core/Object3D';
+import { Vector3 } from '../math/Vector3';
 
-function Camera() {
+export abstract class Camera extends Object3D {
 
-	Object3D.call( this );
+	constructor() {
 
-	this.type = 'Camera';
+		super();
 
-	this.matrixWorldInverse = new Matrix4();
+		this.type = 'Camera';
 
-	this.projectionMatrix = new Matrix4();
-	this.projectionMatrixInverse = new Matrix4();
+		this.matrixWorldInverse = new Matrix4();
 
-}
+		this.projectionMatrix = new Matrix4();
+		this.projectionMatrixInverse = new Matrix4();
 
-Camera.prototype = Object.assign( Object.create( Object3D.prototype ), {
+	}
 
-	constructor: Camera,
+	type: string;
 
-	isCamera: true,
+	matrixWorldInverse: Matrix4;
+	projectionMatrix: Matrix4;
+	projectionMatrixInverse: Matrix4;
 
-	copy: function ( source, recursive ) {
+	isCamera = true as const;
 
-		Object3D.prototype.copy.call( this, source, recursive );
+	copy<T extends any>( source: T, recursive?: boolean ): T {
+
+		Object3D.prototype.copy.call( this, source as any, recursive );
 
 		this.matrixWorldInverse.copy( source.matrixWorldInverse );
 
 		this.projectionMatrix.copy( source.projectionMatrix );
 		this.projectionMatrixInverse.copy( source.projectionMatrixInverse );
 
-		return this;
+		return this as any;
 
-	},
+	}
 
-	getWorldDirection: function ( target ) {
+	getWorldDirection( target: Vector3 ) {
 
 		if ( target === undefined ) {
 
@@ -55,22 +59,20 @@ Camera.prototype = Object.assign( Object.create( Object3D.prototype ), {
 
 		return target.set( - e[ 8 ], - e[ 9 ], - e[ 10 ] ).normalize();
 
-	},
+	}
 
-	updateMatrixWorld: function ( force ) {
+	updateMatrixWorld( force?: boolean ) {
 
 		Object3D.prototype.updateMatrixWorld.call( this, force );
 
 		this.matrixWorldInverse.getInverse( this.matrixWorld );
 
-	},
+	}
 
-	clone: function () {
+	clone() {
 
-		return new this.constructor().copy( this );
+		return new ( this.constructor as any )().copy( this );
 
 	}
 
-} );
-
-export { Camera };
+}

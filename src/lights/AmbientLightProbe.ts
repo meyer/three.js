@@ -2,8 +2,8 @@
  * @author WestLangley / http://github.com/WestLangley
  */
 
-import { Color } from '../math/Color.js';
-import { LightProbe } from './LightProbe.js';
+import { Color } from '../math/Color';
+import { LightProbe } from './LightProbe';
 
 function AmbientLightProbe( color, intensity ) {
 

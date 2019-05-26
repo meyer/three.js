@@ -1,3 +1,7 @@
+import { Quaternion } from './Quaternion';
+import { Matrix4 } from './Matrix4';
+import { BufferAttribute } from '../core/BufferAttribute';
+
 /**
  * @author supereggbert / http://www.paulbrunt.co.uk/
  * @author philogb / http://blog.thejit.org/
@@ -6,20 +10,24 @@
  * @author WestLangley / http://github.com/WestLangley
  */
 
-function Vector4( x, y, z, w ) {
+export class Vector4 {
 
-	this.x = x || 0;
-	this.y = y || 0;
-	this.z = z || 0;
-	this.w = ( w !== undefined ) ? w : 1;
+	constructor( x?: number, y?: number, z?: number, w?: number ) {
 
-}
+		this.x = x || 0;
+		this.y = y || 0;
+		this.z = z || 0;
+		this.w = w !== undefined ? w : 1;
 
-Object.assign( Vector4.prototype, {
+	}
+	x: number;
+	y: number;
+	z: number;
+	w: number;
 
-	isVector4: true,
+	isVector4 = true;
 
-	set: function ( x, y, z, w ) {
+	set( x: number, y: number, z: number, w: number ) {
 
 		this.x = x;
 		this.y = y;
@@ -28,9 +36,9 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	setScalar: function ( scalar ) {
+	setScalar( scalar: number ) {
 
 		this.x = scalar;
 		this.y = scalar;
@@ -39,92 +47,108 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	setX: function ( x ) {
+	setX( x: number ) {
 
 		this.x = x;
 
 		return this;
 
-	},
+	}
 
-	setY: function ( y ) {
+	setY( y: number ) {
 
 		this.y = y;
 
 		return this;
 
-	},
+	}
 
-	setZ: function ( z ) {
+	setZ( z: number ) {
 
 		this.z = z;
 
 		return this;
 
-	},
+	}
 
-	setW: function ( w ) {
+	setW( w: number ) {
 
 		this.w = w;
 
 		return this;
 
-	},
+	}
 
-	setComponent: function ( index, value ) {
+	setComponent( index: 0 | 1 | 2 | 3, value: number ) {
 
 		switch ( index ) {
 
-			case 0: this.x = value; break;
-			case 1: this.y = value; break;
-			case 2: this.z = value; break;
-			case 3: this.w = value; break;
-			default: throw new Error( 'index is out of range: ' + index );
+			case 0:
+				this.x = value;
+				break;
+			case 1:
+				this.y = value;
+				break;
+			case 2:
+				this.z = value;
+				break;
+			case 3:
+				this.w = value;
+				break;
+			default:
+				throw new Error( 'index is out of range: ' + index );
 
 		}
 
 		return this;
 
-	},
+	}
 
-	getComponent: function ( index ) {
+	getComponent( index: 0 | 1 | 2 | 3 ) {
 
 		switch ( index ) {
 
-			case 0: return this.x;
-			case 1: return this.y;
-			case 2: return this.z;
-			case 3: return this.w;
-			default: throw new Error( 'index is out of range: ' + index );
+			case 0:
+				return this.x;
+			case 1:
+				return this.y;
+			case 2:
+				return this.z;
+			case 3:
+				return this.w;
+			default:
+				throw new Error( 'index is out of range: ' + index );
 
 		}
 
-	},
+	}
 
-	clone: function () {
+	clone() {
 
-		return new this.constructor( this.x, this.y, this.z, this.w );
+		return new Vector4( this.x, this.y, this.z, this.w );
 
-	},
+	}
 
-	copy: function ( v ) {
+	copy( v: Vector4 ) {
 
 		this.x = v.x;
 		this.y = v.y;
 		this.z = v.z;
-		this.w = ( v.w !== undefined ) ? v.w : 1;
+		this.w = v.w !== undefined ? v.w : 1;
 
 		return this;
 
-	},
+	}
 
-	add: function ( v, w ) {
+	add( v: Vector4, w?: Vector4 ) {
 
 		if ( w !== undefined ) {
 
-			console.warn( 'THREE.Vector4: .add() now only accepts one argument. Use .addVectors( a, b ) instead.' );
+			console.warn(
+				'THREE.Vector4: .add() now only accepts one argument. Use .addVectors( a, b ) instead.'
+			);
 			return this.addVectors( v, w );
 
 		}
@@ -136,9 +160,9 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	addScalar: function ( s ) {
+	addScalar( s: number ) {
 
 		this.x += s;
 		this.y += s;
@@ -147,9 +171,9 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	addVectors: function ( a, b ) {
+	addVectors( a: Vector4, b: Vector4 ) {
 
 		this.x = a.x + b.x;
 		this.y = a.y + b.y;
@@ -158,9 +182,9 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	addScaledVector: function ( v, s ) {
+	addScaledVector( v: Vector4, s: number ) {
 
 		this.x += v.x * s;
 		this.y += v.y * s;
@@ -169,13 +193,15 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	sub: function ( v, w ) {
+	sub( v: Vector4, w?: Vector4 ) {
 
 		if ( w !== undefined ) {
 
-			console.warn( 'THREE.Vector4: .sub() now only accepts one argument. Use .subVectors( a, b ) instead.' );
+			console.warn(
+				'THREE.Vector4: .sub() now only accepts one argument. Use .subVectors( a, b ) instead.'
+			);
 			return this.subVectors( v, w );
 
 		}
@@ -187,9 +213,9 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	subScalar: function ( s ) {
+	subScalar( s: number ) {
 
 		this.x -= s;
 		this.y -= s;
@@ -198,9 +224,9 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	subVectors: function ( a, b ) {
+	subVectors( a: Vector4, b: Vector4 ) {
 
 		this.x = a.x - b.x;
 		this.y = a.y - b.y;
@@ -209,9 +235,9 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	multiplyScalar: function ( scalar ) {
+	multiplyScalar( scalar: number ) {
 
 		this.x *= scalar;
 		this.y *= scalar;
@@ -220,11 +246,14 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	applyMatrix4: function ( m ) {
+	applyMatrix4( m: Matrix4 ) {
 
-		var x = this.x, y = this.y, z = this.z, w = this.w;
+		var x = this.x,
+			y = this.y,
+			z = this.z,
+			w = this.w;
 		var e = m.elements;
 
 		this.x = e[ 0 ] * x + e[ 4 ] * y + e[ 8 ] * z + e[ 12 ] * w;
@@ -234,15 +263,15 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	divideScalar: function ( scalar ) {
+	divideScalar( scalar: number ) {
 
 		return this.multiplyScalar( 1 / scalar );
 
-	},
+	}
 
-	setAxisAngleFromQuaternion: function ( q ) {
+	setAxisAngleFromQuaternion( q: Quaternion ) {
 
 		// http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToAngle/index.htm
 
@@ -268,36 +297,47 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	setAxisAngleFromRotationMatrix: function ( m ) {
+	setAxisAngleFromRotationMatrix( m: Matrix4 ) {
 
 		// http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToAngle/index.htm
 
 		// assumes the upper 3x3 of m is a pure rotation matrix (i.e, unscaled)
 
-		var angle, x, y, z,		// variables for result
-			epsilon = 0.01,		// margin to allow for rounding errors
-			epsilon2 = 0.1,		// margin to distinguish between 0 and 180 degrees
-
+		var angle,
+			x,
+			y,
+			z, // variables for result
+			epsilon = 0.01, // margin to allow for rounding errors
+			epsilon2 = 0.1, // margin to distinguish between 0 and 180 degrees
 			te = m.elements,
+			m11 = te[ 0 ],
+			m12 = te[ 4 ],
+			m13 = te[ 8 ],
+			m21 = te[ 1 ],
+			m22 = te[ 5 ],
+			m23 = te[ 9 ],
+			m31 = te[ 2 ],
+			m32 = te[ 6 ],
+			m33 = te[ 10 ];
 
-			m11 = te[ 0 ], m12 = te[ 4 ], m13 = te[ 8 ],
-			m21 = te[ 1 ], m22 = te[ 5 ], m23 = te[ 9 ],
-			m31 = te[ 2 ], m32 = te[ 6 ], m33 = te[ 10 ];
-
-		if ( ( Math.abs( m12 - m21 ) < epsilon ) &&
-		     ( Math.abs( m13 - m31 ) < epsilon ) &&
-		     ( Math.abs( m23 - m32 ) < epsilon ) ) {
+		if (
+			Math.abs( m12 - m21 ) < epsilon &&
+			Math.abs( m13 - m31 ) < epsilon &&
+			Math.abs( m23 - m32 ) < epsilon
+		) {
 
 			// singularity found
 			// first check for identity matrix which must have +1 for all terms
 			// in leading diagonal and zero in other terms
 
-			if ( ( Math.abs( m12 + m21 ) < epsilon2 ) &&
-			     ( Math.abs( m13 + m31 ) < epsilon2 ) &&
-			     ( Math.abs( m23 + m32 ) < epsilon2 ) &&
-			     ( Math.abs( m11 + m22 + m33 - 3 ) < epsilon2 ) ) {
+			if (
+				Math.abs( m12 + m21 ) < epsilon2 &&
+				Math.abs( m13 + m31 ) < epsilon2 &&
+				Math.abs( m23 + m32 ) < epsilon2 &&
+				Math.abs( m11 + m22 + m33 - 3 ) < epsilon2
+			) {
 
 				// this singularity is identity matrix so angle = 0
 
@@ -318,7 +358,7 @@ Object.assign( Vector4.prototype, {
 			var xz = ( m13 + m31 ) / 4;
 			var yz = ( m23 + m32 ) / 4;
 
-			if ( ( xx > yy ) && ( xx > zz ) ) {
+			if ( xx > yy && xx > zz ) {
 
 				// m11 is the largest diagonal term
 
@@ -382,9 +422,11 @@ Object.assign( Vector4.prototype, {
 
 		// as we have reached here there are no singularities so we can handle normally
 
-		var s = Math.sqrt( ( m32 - m23 ) * ( m32 - m23 ) +
-		                   ( m13 - m31 ) * ( m13 - m31 ) +
-		                   ( m21 - m12 ) * ( m21 - m12 ) ); // used to normalize
+		var s = Math.sqrt(
+			( m32 - m23 ) * ( m32 - m23 ) +
+				( m13 - m31 ) * ( m13 - m31 ) +
+				( m21 - m12 ) * ( m21 - m12 )
+		); // used to normalize
 
 		if ( Math.abs( s ) < 0.001 ) s = 1;
 
@@ -398,9 +440,9 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	min: function ( v ) {
+	min( v: Vector4 ) {
 
 		this.x = Math.min( this.x, v.x );
 		this.y = Math.min( this.y, v.y );
@@ -409,9 +451,9 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	max: function ( v ) {
+	max( v: Vector4 ) {
 
 		this.x = Math.max( this.x, v.x );
 		this.y = Math.max( this.y, v.y );
@@ -420,9 +462,9 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	clamp: function ( min, max ) {
+	clamp( min: Vector4, max: Vector4 ) {
 
 		// assumes min < max, componentwise
 
@@ -433,13 +475,13 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	clampScalar: function () {
+	clampScalar = (  () => {
 
-		var min, max;
+		var min: Vector4, max: Vector4;
 
-		return function clampScalar( minVal, maxVal ) {
+		const clampScalar = ( minVal: number, maxVal: number ) => {
 
 			if ( min === undefined ) {
 
@@ -455,17 +497,21 @@ Object.assign( Vector4.prototype, {
 
 		};
 
-	}(),
+		return clampScalar;
 
-	clampLength: function ( min, max ) {
+	} )();
+
+	clampLength( min: number, max: number ) {
 
 		var length = this.length();
 
-		return this.divideScalar( length || 1 ).multiplyScalar( Math.max( min, Math.min( max, length ) ) );
+		return this.divideScalar( length || 1 ).multiplyScalar(
+			Math.max( min, Math.min( max, length ) )
+		);
 
-	},
+	}
 
-	floor: function () {
+	floor() {
 
 		this.x = Math.floor( this.x );
 		this.y = Math.floor( this.y );
@@ -474,9 +520,9 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	ceil: function () {
+	ceil() {
 
 		this.x = Math.ceil( this.x );
 		this.y = Math.ceil( this.y );
@@ -485,9 +531,9 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	round: function () {
+	round() {
 
 		this.x = Math.round( this.x );
 		this.y = Math.round( this.y );
@@ -496,20 +542,20 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	roundToZero: function () {
+	roundToZero() {
 
-		this.x = ( this.x < 0 ) ? Math.ceil( this.x ) : Math.floor( this.x );
-		this.y = ( this.y < 0 ) ? Math.ceil( this.y ) : Math.floor( this.y );
-		this.z = ( this.z < 0 ) ? Math.ceil( this.z ) : Math.floor( this.z );
-		this.w = ( this.w < 0 ) ? Math.ceil( this.w ) : Math.floor( this.w );
+		this.x = this.x < 0 ? Math.ceil( this.x ) : Math.floor( this.x );
+		this.y = this.y < 0 ? Math.ceil( this.y ) : Math.floor( this.y );
+		this.z = this.z < 0 ? Math.ceil( this.z ) : Math.floor( this.z );
+		this.w = this.w < 0 ? Math.ceil( this.w ) : Math.floor( this.w );
 
 		return this;
 
-	},
+	}
 
-	negate: function () {
+	negate() {
 
 		this.x = - this.x;
 		this.y = - this.y;
@@ -518,45 +564,51 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	dot: function ( v ) {
+	dot( v: Vector4 ) {
 
 		return this.x * v.x + this.y * v.y + this.z * v.z + this.w * v.w;
 
-	},
+	}
 
-	lengthSq: function () {
+	lengthSq() {
 
-		return this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w;
+		return (
+			this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w
+		);
 
-	},
+	}
 
-	length: function () {
+	length() {
 
-		return Math.sqrt( this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w );
+		return Math.sqrt(
+			this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w
+		);
 
-	},
+	}
 
-	manhattanLength: function () {
+	manhattanLength() {
 
-		return Math.abs( this.x ) + Math.abs( this.y ) + Math.abs( this.z ) + Math.abs( this.w );
+		return (
+			Math.abs( this.x ) + Math.abs( this.y ) + Math.abs( this.z ) + Math.abs( this.w )
+		);
 
-	},
+	}
 
-	normalize: function () {
+	normalize() {
 
 		return this.divideScalar( this.length() || 1 );
 
-	},
+	}
 
-	setLength: function ( length ) {
+	setLength( length: number ) {
 
 		return this.normalize().multiplyScalar( length );
 
-	},
+	}
 
-	lerp: function ( v, alpha ) {
+	lerp( v: Vector4, alpha: number ) {
 
 		this.x += ( v.x - this.x ) * alpha;
 		this.y += ( v.y - this.y ) * alpha;
@@ -565,21 +617,23 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	lerpVectors: function ( v1, v2, alpha ) {
+	lerpVectors( v1: Vector4, v2: Vector4, alpha: number ) {
 
-		return this.subVectors( v2, v1 ).multiplyScalar( alpha ).add( v1 );
+		return this.subVectors( v2, v1 )
+			.multiplyScalar( alpha )
+			.add( v1 );
 
-	},
+	}
 
-	equals: function ( v ) {
+	equals( v: Vector4 ) {
 
-		return ( ( v.x === this.x ) && ( v.y === this.y ) && ( v.z === this.z ) && ( v.w === this.w ) );
+		return v.x === this.x && v.y === this.y && v.z === this.z && v.w === this.w;
 
-	},
+	}
 
-	fromArray: function ( array, offset ) {
+	fromArray( array: number[], offset?: number ) {
 
 		if ( offset === undefined ) offset = 0;
 
@@ -590,9 +644,9 @@ Object.assign( Vector4.prototype, {
 
 		return this;
 
-	},
+	}
 
-	toArray: function ( array, offset ) {
+	toArray( array?: number[], offset?: number ) {
 
 		if ( array === undefined ) array = [];
 		if ( offset === undefined ) offset = 0;
@@ -604,13 +658,19 @@ Object.assign( Vector4.prototype, {
 
 		return array;
 
-	},
+	}
 
-	fromBufferAttribute: function ( attribute, index, offset ) {
+	fromBufferAttribute(
+		attribute: BufferAttribute,
+		index: number,
+		offset?: never
+	) {
 
 		if ( offset !== undefined ) {
 
-			console.warn( 'THREE.Vector4: offset has been removed from .fromBufferAttribute().' );
+			console.warn(
+				'THREE.Vector4: offset has been removed from .fromBufferAttribute().'
+			);
 
 		}
 
@@ -623,7 +683,4 @@ Object.assign( Vector4.prototype, {
 
 	}
 
-} );
-
-
-export { Vector4 };
+}

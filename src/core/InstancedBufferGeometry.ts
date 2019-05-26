@@ -1,4 +1,4 @@
-import { BufferGeometry } from './BufferGeometry.js';
+import { BufferGeometry } from './BufferGeometry';
 
 /**
  * @author benaadams / https://twitter.com/ben_a_adams

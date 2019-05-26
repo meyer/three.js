@@ -2,45 +2,38 @@
  * @author mrdoob / http://mrdoob.com/
  */
 
-function Layers() {
+export class Layers {
 
-	this.mask = 1 | 0;
+	mask = 1 | 0;
 
-}
+	set( channel: number ) {
 
-Object.assign( Layers.prototype, {
+		this.mask = ( 1 << channel ) | 0;
 
-	set: function ( channel ) {
+	}
 
-		this.mask = 1 << channel | 0;
+	enable( channel: number ) {
 
-	},
+		this.mask |= ( 1 << channel ) | 0;
 
-	enable: function ( channel ) {
+	}
 
-		this.mask |= 1 << channel | 0;
+	toggle( channel: number ) {
 
-	},
+		this.mask ^= ( 1 << channel ) | 0;
 
-	toggle: function ( channel ) {
+	}
 
-		this.mask ^= 1 << channel | 0;
+	disable( channel: number ) {
 
-	},
+		this.mask &= ~ ( ( 1 << channel ) | 0 );
 
-	disable: function ( channel ) {
+	}
 
-		this.mask &= ~ ( 1 << channel | 0 );
-
-	},
-
-	test: function ( layers ) {
+	test( layers: Layers ) {
 
 		return ( this.mask & layers.mask ) !== 0;
 
 	}
 
-} );
-
-
-export { Layers };
+}

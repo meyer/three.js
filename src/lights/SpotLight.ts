@@ -1,6 +1,6 @@
-import { Light } from './Light.js';
-import { SpotLightShadow } from './SpotLightShadow.js';
-import { Object3D } from '../core/Object3D.js';
+import { Light } from './Light';
+import { SpotLightShadow } from './SpotLightShadow';
+import { Object3D } from '../core/Object3D';
 
 /**
  * @author alteredq / http://alteredqualia.com/

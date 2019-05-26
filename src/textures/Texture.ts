@@ -4,7 +4,7 @@
  * @author szimek / https://github.com/szimek/
  */
 
-import { EventDispatcher } from '../core/EventDispatcher.js';
+import { EventDispatcher } from '../core/EventDispatcher';
 import {
 	MirroredRepeatWrapping,
 	ClampToEdgeWrapping,
@@ -14,85 +14,137 @@ import {
 	RGBAFormat,
 	LinearMipMapLinearFilter,
 	LinearFilter,
-	UVMapping
-} from '../constants.js';
-import { _Math } from '../math/Math.js';
-import { Vector2 } from '../math/Vector2.js';
-import { Matrix3 } from '../math/Matrix3.js';
-import { ImageUtils } from '../extras/ImageUtils.js';
+	UVMapping,
+	Wrapping,
+	TextureFilter,
+	PixelFormat,
+	TextureDataType,
+	TextureEncoding,
+} from '../constants';
+import { _Math } from '../math/Math';
+import { Vector2 } from '../math/Vector2';
+import { Matrix3 } from '../math/Matrix3';
+import { ImageUtils } from '../extras/ImageUtils';
+import { Vector3 } from '../math/Vector3';
 
 var textureId = 0;
 
-function Texture( image, mapping, wrapS, wrapT, magFilter, minFilter, format, type, anisotropy, encoding ) {
+export class Texture extends EventDispatcher {
 
-	Object.defineProperty( this, 'id', { value: textureId ++ } );
+	constructor(
+		image?: null | any,
+		mapping?: any,
+		wrapS?: Wrapping,
+		wrapT?: Wrapping,
+		magFilter?: TextureFilter,
+		minFilter?: TextureFilter,
+		format?: PixelFormat,
+		type?: TextureDataType,
+		anisotropy?: any,
+		encoding?: TextureEncoding
+	) {
 
-	this.uuid = _Math.generateUUID();
+		super();
 
-	this.name = '';
+		Object.defineProperty( this, 'id', { value: textureId ++ } );
 
-	this.image = image !== undefined ? image : Texture.DEFAULT_IMAGE;
-	this.mipmaps = [];
+		this.uuid = _Math.generateUUID();
 
-	this.mapping = mapping !== undefined ? mapping : Texture.DEFAULT_MAPPING;
+		this.name = '';
 
-	this.wrapS = wrapS !== undefined ? wrapS : ClampToEdgeWrapping;
-	this.wrapT = wrapT !== undefined ? wrapT : ClampToEdgeWrapping;
+		this.image = image !== undefined ? image : Texture.DEFAULT_IMAGE;
+		this.mipmaps = [];
 
-	this.magFilter = magFilter !== undefined ? magFilter : LinearFilter;
-	this.minFilter = minFilter !== undefined ? minFilter : LinearMipMapLinearFilter;
+		this.mapping = mapping !== undefined ? mapping : Texture.DEFAULT_MAPPING;
 
-	this.anisotropy = anisotropy !== undefined ? anisotropy : 1;
+		this.wrapS = wrapS !== undefined ? wrapS : ClampToEdgeWrapping;
+		this.wrapT = wrapT !== undefined ? wrapT : ClampToEdgeWrapping;
 
-	this.format = format !== undefined ? format : RGBAFormat;
-	this.type = type !== undefined ? type : UnsignedByteType;
+		this.magFilter = magFilter !== undefined ? magFilter : LinearFilter;
+		this.minFilter =
+			minFilter !== undefined ? minFilter : LinearMipMapLinearFilter;
 
-	this.offset = new Vector2( 0, 0 );
-	this.repeat = new Vector2( 1, 1 );
-	this.center = new Vector2( 0, 0 );
-	this.rotation = 0;
+		this.anisotropy = anisotropy !== undefined ? anisotropy : 1;
 
-	this.matrixAutoUpdate = true;
-	this.matrix = new Matrix3();
+		this.format = format !== undefined ? format : RGBAFormat;
+		this.type = type !== undefined ? type : UnsignedByteType;
 
-	this.generateMipmaps = true;
-	this.premultiplyAlpha = false;
-	this.flipY = true;
-	this.unpackAlignment = 4;	// valid values: 1, 2, 4, 8 (see http://www.khronos.org/opengles/sdk/docs/man/xhtml/glPixelStorei.xml)
+		this.offset = new Vector2( 0, 0 );
+		this.repeat = new Vector2( 1, 1 );
+		this.center = new Vector2( 0, 0 );
+		this.rotation = 0;
 
-	// Values of encoding !== THREE.LinearEncoding only supported on map, envMap and emissiveMap.
-	//
-	// Also changing the encoding after already used by a Material will not automatically make the Material
-	// update. You need to explicitly call Material.needsUpdate to trigger it to recompile.
-	this.encoding = encoding !== undefined ? encoding : LinearEncoding;
+		this.matrixAutoUpdate = true;
+		this.matrix = new Matrix3();
 
-	this.version = 0;
-	this.onUpdate = null;
+		this.generateMipmaps = true;
+		this.premultiplyAlpha = false;
+		this.flipY = true;
+		this.unpackAlignment = 4; // valid values: 1, 2, 4, 8 (see http://www.khronos.org/opengles/sdk/docs/man/xhtml/glPixelStorei.xml)
 
-}
+		// Values of encoding !== THREE.LinearEncoding only supported on map, envMap and emissiveMap.
+		//
+		// Also changing the encoding after already used by a Material will not automatically make the Material
+		// update. You need to explicitly call Material.needsUpdate to trigger it to recompile.
+		this.encoding = encoding !== undefined ? encoding : LinearEncoding;
 
-Texture.DEFAULT_IMAGE = undefined;
-Texture.DEFAULT_MAPPING = UVMapping;
+		this.version = 0;
+		this.onUpdate = null;
 
-Texture.prototype = Object.assign( Object.create( EventDispatcher.prototype ), {
+	}
 
-	constructor: Texture,
+	uuid: string;
+	name: string;
+	image: any;
+	mipmaps: any[];
+	mapping: any;
+	wrapS: Wrapping;
+	wrapT: Wrapping;
+	magFilter: TextureFilter;
+	minFilter: TextureFilter;
+	anisotropy: any;
+	format: PixelFormat;
+	type: TextureDataType;
+	offset: Vector2;
+	repeat: Vector2;
+	center: Vector2;
+	rotation: number;
+	matrixAutoUpdate: boolean;
+	matrix: Matrix3;
+	generateMipmaps: boolean;
+	premultiplyAlpha: boolean;
+	flipY: boolean;
+	unpackAlignment: 1 | 2 | 4 | 8;
+	encoding: TextureEncoding;
+	version: number;
+	onUpdate: null | any;
 
-	isTexture: true,
+	static DEFAULT_IMAGE = undefined;
+	static DEFAULT_MAPPING = UVMapping;
 
-	updateMatrix: function () {
+	isTexture = true as const;
 
-		this.matrix.setUvTransform( this.offset.x, this.offset.y, this.repeat.x, this.repeat.y, this.rotation, this.center.x, this.center.y );
+	updateMatrix() {
 
-	},
+		this.matrix.setUvTransform(
+			this.offset.x,
+			this.offset.y,
+			this.repeat.x,
+			this.repeat.y,
+			this.rotation,
+			this.center.x,
+			this.center.y
+		);
 
-	clone: function () {
+	}
 
-		return new this.constructor().copy( this );
+	clone() {
 
-	},
+		return new ( this as any ).constructor().copy( this );
 
-	copy: function ( source ) {
+	}
+
+	copy( source: Texture ) {
 
 		this.name = source.name;
 
@@ -128,11 +180,11 @@ Texture.prototype = Object.assign( Object.create( EventDispatcher.prototype ), {
 
 		return this;
 
-	},
+	}
 
-	toJSON: function ( meta ) {
+	toJSON( meta: any ) {
 
-		var isRootObject = ( meta === undefined || typeof meta === 'string' );
+		var isRootObject = meta === undefined || typeof meta === 'string';
 
 		if ( ! isRootObject && meta.textures[ this.uuid ] !== undefined ) {
 
@@ -141,11 +193,10 @@ Texture.prototype = Object.assign( Object.create( EventDispatcher.prototype ), {
 		}
 
 		var output = {
-
 			metadata: {
 				version: 4.5,
 				type: 'Texture',
-				generator: 'Texture.toJSON'
+				generator: 'Texture.toJSON',
 			},
 
 			uuid: this.uuid,
@@ -171,8 +222,9 @@ Texture.prototype = Object.assign( Object.create( EventDispatcher.prototype ), {
 			flipY: this.flipY,
 
 			premultiplyAlpha: this.premultiplyAlpha,
-			unpackAlignment: this.unpackAlignment
+			unpackAlignment: this.unpackAlignment,
 
+			image: '',
 		};
 
 		if ( this.image !== undefined ) {
@@ -213,7 +265,7 @@ Texture.prototype = Object.assign( Object.create( EventDispatcher.prototype ), {
 
 				meta.images[ image.uuid ] = {
 					uuid: image.uuid,
-					url: url
+					url: url,
 				};
 
 			}
@@ -230,15 +282,15 @@ Texture.prototype = Object.assign( Object.create( EventDispatcher.prototype ), {
 
 		return output;
 
-	},
+	}
 
-	dispose: function () {
+	dispose() {
 
 		this.dispatchEvent( { type: 'dispose' } );
 
-	},
+	}
 
-	transformUv: function ( uv ) {
+	transformUv( uv: Vector3 ) {
 
 		if ( this.mapping !== UVMapping ) return uv;
 
@@ -249,17 +301,14 @@ Texture.prototype = Object.assign( Object.create( EventDispatcher.prototype ), {
 			switch ( this.wrapS ) {
 
 				case RepeatWrapping:
-
 					uv.x = uv.x - Math.floor( uv.x );
 					break;
 
 				case ClampToEdgeWrapping:
-
 					uv.x = uv.x < 0 ? 0 : 1;
 					break;
 
 				case MirroredRepeatWrapping:
-
 					if ( Math.abs( Math.floor( uv.x ) % 2 ) === 1 ) {
 
 						uv.x = Math.ceil( uv.x ) - uv.x;
@@ -280,17 +329,14 @@ Texture.prototype = Object.assign( Object.create( EventDispatcher.prototype ), {
 			switch ( this.wrapT ) {
 
 				case RepeatWrapping:
-
 					uv.y = uv.y - Math.floor( uv.y );
 					break;
 
 				case ClampToEdgeWrapping:
-
 					uv.y = uv.y < 0 ? 0 : 1;
 					break;
 
 				case MirroredRepeatWrapping:
-
 					if ( Math.abs( Math.floor( uv.y ) % 2 ) === 1 ) {
 
 						uv.y = Math.ceil( uv.y ) - uv.y;
@@ -316,17 +362,10 @@ Texture.prototype = Object.assign( Object.create( EventDispatcher.prototype ), {
 
 	}
 
-} );
-
-Object.defineProperty( Texture.prototype, "needsUpdate", {
-
-	set: function ( value ) {
+	set needsUpdate( value: boolean ) {
 
 		if ( value === true ) this.version ++;
 
 	}
 
-} );
-
-
-export { Texture };
+}

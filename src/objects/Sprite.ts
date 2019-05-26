@@ -3,15 +3,15 @@
  * @author alteredq / http://alteredqualia.com/
  */
 
-import { Vector2 } from '../math/Vector2.js';
-import { Vector3 } from '../math/Vector3.js';
-import { Matrix4 } from '../math/Matrix4.js';
-import { Triangle } from '../math/Triangle.js';
-import { Object3D } from '../core/Object3D.js';
-import { BufferGeometry } from '../core/BufferGeometry.js';
-import { InterleavedBuffer } from '../core/InterleavedBuffer.js';
-import { InterleavedBufferAttribute } from '../core/InterleavedBufferAttribute.js';
-import { SpriteMaterial } from '../materials/SpriteMaterial.js';
+import { Vector2 } from '../math/Vector2';
+import { Vector3 } from '../math/Vector3';
+import { Matrix4 } from '../math/Matrix4';
+import { Triangle } from '../math/Triangle';
+import { Object3D } from '../core/Object3D';
+import { BufferGeometry } from '../core/BufferGeometry';
+import { InterleavedBuffer } from '../core/InterleavedBuffer';
+import { InterleavedBufferAttribute } from '../core/InterleavedBufferAttribute';
+import { SpriteMaterial } from '../materials/SpriteMaterial';
 
 var geometry;
 

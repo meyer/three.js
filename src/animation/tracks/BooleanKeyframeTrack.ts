@@ -1,5 +1,5 @@
-import { InterpolateDiscrete } from '../../constants.js';
-import { KeyframeTrack } from '../KeyframeTrack.js';
+import { InterpolateDiscrete } from '../../constants';
+import { KeyframeTrack } from '../KeyframeTrack';
 
 /**
  *
@@ -11,28 +11,18 @@ import { KeyframeTrack } from '../KeyframeTrack.js';
  * @author tschw
  */
 
-function BooleanKeyframeTrack( name, times, values ) {
+export class BooleanKeyframeTrack extends KeyframeTrack {
 
-	KeyframeTrack.call( this, name, times, values );
+	ValueTypeName = 'bool' as const;
+	ValueBufferType = Array;
 
-}
+	DefaultInterpolation = InterpolateDiscrete;
 
-BooleanKeyframeTrack.prototype = Object.assign( Object.create( KeyframeTrack.prototype ), {
-
-	constructor: BooleanKeyframeTrack,
-
-	ValueTypeName: 'bool',
-	ValueBufferType: Array,
-
-	DefaultInterpolation: InterpolateDiscrete,
-
-	InterpolantFactoryMethodLinear: undefined,
-	InterpolantFactoryMethodSmooth: undefined
+	InterpolantFactoryMethodLinear = undefined;
+	InterpolantFactoryMethodSmooth = undefined;
 
 	// Note: Actually this track could have a optimized / compressed
 	// representation of a single value and a custom interpolant that
 	// computes "firstValue ^ isOdd( index )".
 
-} );
-
-export { BooleanKeyframeTrack };
+}
